@@ -12,3 +12,10 @@ tower-http = { version = "0.6.2", features = ["fs", "trace", "cors"] }
 reqwest = { version = "0.12.12", features = ["stream"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.137"
+# Native (Phase 3) endpoints. Runtime queries (no compile-time DB needed).
+sqlx = { version = "0.8.3", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "json"] }
+sha2 = "0.10.8"
+hex = "0.4.3"
+chrono = { version = "0.4.39", features = ["serde"] }

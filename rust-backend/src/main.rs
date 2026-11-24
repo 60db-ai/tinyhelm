@@ -21,10 +21,13 @@ use axum::{
 };
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+mod native;
+
 #[derive(Clone)]
-struct AppState {
-    api_origin: String,
-    http: reqwest::Client,
+pub struct AppState {
+    pub api_origin: String,
+    pub http: reqwest::Client,
+    pub pool: Option<sqlx::PgPool>,
 }
 
 #[tokio::main]
@@ -41,17 +44,32 @@ async fn main() {
         std::env::var("TINYHELM_API_ORIGIN").unwrap_or_else(|_| "http://127.0.0.1:8000".into());
     let spa_dir = std::env::var("TINYHELM_SPA_DIR").unwrap_or_else(|_| "../frontend/dist".into());
 
+    // Phase 3: opt-in native Rust endpoints (comma-separated, e.g. RUST_NATIVE_ROUTES=servers).
+    // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
+    let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
+    let native_servers = native_routes.split(',').any(|r| r.trim() == "servers");
+    let pool = if native_servers { native::pool().await } else { None };
+    if native_servers && pool.is_none() {
+        tracing::warn!("RUST_NATIVE_ROUTES=servers but no DB pool; falling back to proxy");
+    }
+    let native_servers = native_servers && pool.is_some();
+
     let state = AppState {
         api_origin: api_origin.trim_end_matches('/').to_string(),
         http: reqwest::Client::new(),
+        pool,
     };
 
     // SPA static files with index.html fallback for client-side routing.
     let spa = ServeDir::new(&spa_dir).append_index_html_on_directories(true);
 
-    let app = Router::new()
-        .route("/healthz", get(|| async { "ok" }))
-        // Everything under /api and /webhooks still goes to Laravel until ported.
+    let mut app = Router::new().route("/healthz", get(|| async { "ok" }));
+    if native_servers {
+        tracing::info!("native route enabled: GET /api/v1/servers");
+        app = app.route("/api/v1/servers", get(native::list_servers));
+    }
+    let app = app
+        // Everything else under /api and /webhooks still goes to Laravel until ported.
         .route("/api/*path", get(proxy).post(proxy).patch(proxy).put(proxy).delete(proxy))
         .route("/webhooks/*path", get(proxy).post(proxy))
         .with_state(state)
