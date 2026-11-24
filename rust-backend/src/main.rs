@@ -88,7 +88,9 @@ async fn main() {
             .route("/api/v1/projects", get(native::list_projects).post(native::create_project))
             .route("/api/v1/projects/:uuid", patch(native::update_project).delete(native::delete_project))
             .route("/api/v1/projects/:uuid/environments", get(native::list_environments))
-            .route("/api/v1/team", get(native::get_current_team));
+            .route("/api/v1/team", get(native::get_current_team))
+            .route("/api/v1/team/envs", get(native::list_team_envs).post(native::create_team_env))
+            .route("/api/v1/team/envs/:id", patch(native::update_team_env).delete(native::delete_team_env));
     }
     if native_services {
         tracing::info!("native routes enabled: GET /api/v1/services[/:uuid]");
