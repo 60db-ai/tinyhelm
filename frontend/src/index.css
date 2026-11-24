@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* TinyHelm tokens — brand: deep purple #2e1a47, orange #f5811f. shadcn-compatible. */
+@theme {
+  --color-border: oklch(27% 0.03 300);
+  --color-input: oklch(27% 0.03 300);
+  --color-ring: oklch(62% 0.19 40);
+  --color-background: oklch(16% 0.02 300);
+  --color-foreground: oklch(97% 0 0);
+  --color-card: oklch(20% 0.025 300);
+  --color-card-foreground: oklch(97% 0 0);
+  --color-primary: oklch(32% 0.09 300);
+  --color-primary-foreground: oklch(98% 0 0);
+  --color-accent: oklch(68% 0.19 48);
+  --color-accent-foreground: oklch(20% 0.02 300);
+  --color-muted: oklch(24% 0.02 300);
+  --color-muted-foreground: oklch(70% 0.02 300);
+  --color-destructive: oklch(58% 0.22 27);
+  --radius: 0.625rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
