@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MetricsChart, type MetricPoint } from "@/components/metrics-chart";
 import { api, getToken, setToken, clearToken, ApiError, type Server, type Project } from "@/lib/api";
+import { ServersPage } from "@/pages/servers";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -66,7 +67,13 @@ function Shell({ onDisconnect }: { onDisconnect: () => void }) {
           <ApiStatus />
         </header>
         <main className="flex-1 overflow-auto p-6">
-          {active === "dashboard" ? <Dashboard /> : <Placeholder title={active} />}
+          {active === "dashboard" ? (
+            <Dashboard />
+          ) : active === "servers" ? (
+            <ServersPage />
+          ) : (
+            <Placeholder title={active} />
+          )}
         </main>
       </div>
     </div>
