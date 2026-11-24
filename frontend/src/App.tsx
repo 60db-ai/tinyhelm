@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { MetricsChart, type MetricPoint } from "@/components/metrics-chart";
 import { api, getToken, setToken, clearToken, type Server, type Project } from "@/lib/api";
 import { usePolledData } from "@/hooks/use-polled-data";
+import { connectRealtime } from "@/lib/realtime";
 import { ServersPage } from "@/pages/servers";
 import { ProjectsPage } from "@/pages/projects";
 
@@ -32,6 +33,19 @@ export default function App() {
 
 function Shell({ onDisconnect }: { onDisconnect: () => void }) {
   const [active, setActive] = useState<NavId>("dashboard");
+  const [live, setLive] = useState(false);
+
+  useEffect(() => {
+    let disconnect: (() => void) | undefined;
+    connectRealtime(() => window.dispatchEvent(new Event("tinyhelm:refresh")))
+      .then((d) => {
+        disconnect = d;
+        setLive(true);
+      })
+      .catch(() => setLive(false));
+    return () => disconnect?.();
+  }, []);
+
   return (
     <div className="flex min-h-screen">
       <aside className="flex w-60 shrink-0 flex-col border-r bg-[var(--color-card)]">
@@ -66,7 +80,14 @@ function Shell({ onDisconnect }: { onDisconnect: () => void }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b px-6">
           <h2 className="text-sm font-medium capitalize text-[var(--color-muted-foreground)]">{active}</h2>
-          <ApiStatus />
+          <div className="flex items-center gap-4">
+            {live && (
+              <span className="flex items-center gap-1.5 text-xs text-[var(--color-success)]">
+                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--color-success)]" /> Realtime
+              </span>
+            )}
+            <ApiStatus />
+          </div>
         </header>
         <main className="flex-1 overflow-auto p-6">
           {active === "dashboard" ? (

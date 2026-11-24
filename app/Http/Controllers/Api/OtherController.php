@@ -51,6 +51,19 @@ class OtherController extends Controller
         return response(config('constants.tinyhelm.version'));
     }
 
+    /**
+     * Public Reverb/Pusher settings the SPA needs to open a WebSocket. Browser-facing host/port only.
+     */
+    public function realtimeConfig(Request $request)
+    {
+        return response()->json([
+            'key' => env('PUSHER_APP_KEY', 'tinyhelm'),
+            'host' => env('PUSHER_HOST'),
+            'port' => (int) env('PUSHER_PORT', 6001),
+            'scheme' => env('PUSHER_SCHEME', 'https'),
+        ]);
+    }
+
     #[OA\Post(
         summary: 'Disable API',
         description: 'Disable API (only with root permissions).',

@@ -72,6 +72,7 @@ Route::group([
 ], function () {
 
     Route::get('/version', [OtherController::class, 'version'])->middleware(['api.ability:read']);
+    Route::get('/realtime/config', [OtherController::class, 'realtimeConfig'])->middleware(['api.ability:read']);
     Route::get('/audit-events', [AuditEventsController::class, 'index'])->middleware(['api.ability:read']);
 
     Route::get('/teams', [TeamController::class, 'teams'])->middleware(['api.ability:read']);

@@ -27,10 +27,16 @@ export function usePolledData<T>(fetcher: () => Promise<T>, intervalMs = 8000) {
     const onVisible = () => {
       if (!document.hidden) void refresh();
     };
+    // Pushed by the realtime WebSocket on any status event, for instant refresh.
+    const onSignal = () => {
+      if (!document.hidden) void refresh();
+    };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("tinyhelm:refresh", onSignal);
     return () => {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("tinyhelm:refresh", onSignal);
     };
   }, [refresh, intervalMs]);
 
