@@ -429,6 +429,13 @@ fn host_key_args(server: &ServerConnection) -> Result<Vec<String>, RemoteError> 
     ])
 }
 
+/// `PrivateKey::deleteFromStorage()`: drop the key file of a deleted key (missing file is fine).
+pub fn remove_key_file(key_uuid: &str) {
+    if let Ok(dir) = runtime_dir("keys") {
+        let _ = std::fs::remove_file(dir.join(format!("ssh_key@{key_uuid}")));
+    }
+}
+
 /// `PrivateKey::getKeyLocation()`: `ssh_key@<uuid>`, mode 0600, rewritten when the key changes.
 fn ensure_key_file(server: &ServerConnection) -> Result<PathBuf, RemoteError> {
     let path = runtime_dir("keys")?.join(format!("ssh_key@{}", server.key_uuid));
