@@ -7,15 +7,18 @@
 pub mod applications;
 pub mod audit;
 pub mod auth;
+pub mod cloud;
 pub mod dashboard;
 pub mod databases;
 pub mod envs;
 pub mod instance;
+pub mod git_sources;
 pub mod model;
 pub mod notifications;
 pub mod projects;
 pub mod resources;
 pub mod respond;
+pub mod security;
 pub mod servers;
 pub mod services;
 pub mod shared_envs;
@@ -43,7 +46,7 @@ pub(crate) mod prelude {
     pub(crate) use super::auth::Ctx;
     pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::{
-        applications::*, dashboard::*, databases::*, envs::*, instance::*, notifications::*, projects::*, resources::*, respond::*, servers::*, services::*, shared_envs::*, support::*, tags::*, team::*,
+        applications::*, cloud::*, dashboard::*, databases::*, envs::*, git_sources::*, instance::*, notifications::*, projects::*, resources::*, respond::*, security::*, servers::*, services::*, shared_envs::*, support::*, tags::*, team::*,
     };
 }
 
@@ -88,6 +91,9 @@ pub const GROUPS: &[&str] = &[
     "team",
     "notifications",
     "instance",
+    "security",
+    "cloud",
+    "git_sources",
 ];
 
 /// Native routes for the enabled groups, all behind [`auth::native_guard`].
@@ -294,6 +300,54 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
                 "/api/v1/databases/:uuid/tags/:tag_uuid",
                 delete(detach_database_tag),
             );
+    }
+    if on("security") {
+        r = r
+            .route("/api/v1/security/keys", get(list_keys).post(create_key))
+            .route(
+                "/api/v1/security/keys/:uuid",
+                get(get_key).patch(update_key).delete(delete_key),
+            )
+            .route(
+                "/api/v1/security/integration-tokens",
+                get(list_integration_tokens),
+            )
+            .route(
+                "/api/v1/security/integration-tokens/:uuid",
+                get(get_integration_token).delete(delete_integration_token),
+            );
+    }
+    if on("cloud") {
+        r = r
+            .route("/api/v1/cloud-tokens", get(list_cloud_tokens))
+            .route(
+                "/api/v1/cloud-tokens/:uuid",
+                get(get_cloud_token)
+                    .patch(update_cloud_token)
+                    .delete(delete_cloud_token),
+            )
+            .route(
+                "/api/v1/cloud-init-scripts",
+                get(list_cloud_init_scripts).post(create_cloud_init_script),
+            )
+            .route(
+                "/api/v1/cloud-init-scripts/:uuid",
+                get(get_cloud_init_script)
+                    .patch(update_cloud_init_script)
+                    .delete(delete_cloud_init_script),
+            )
+            .route("/api/v1/s3-storages", get(list_s3_storages))
+            .route(
+                "/api/v1/s3-storages/:uuid",
+                get(get_s3_storage).delete(delete_s3_storage),
+            );
+    }
+    if on("git_sources") {
+        r = r
+            .route("/api/v1/github-apps", get(list_github_apps))
+            .route("/api/v1/gitlab-apps", get(list_gitlab_apps))
+            .route("/api/v1/gitlab-apps/:id", delete(delete_gitlab_app))
+            .route("/api/v1/gitea-apps", get(list_gitea_apps));
     }
     // A path served natively for some methods must still reach Laravel for the others
     // (e.g. PATCH /applications/{uuid}/envs/bulk matches the DELETE-only {env_uuid} route).
