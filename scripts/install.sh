@@ -1088,9 +1088,9 @@ step_done "$SSH_KEY_DETAIL"
 step_start "Pulling images" "tinyhelm · postgres · redis · helper"
 # fd 3 is closed so the detached container restart in upgrade.sh does not hold the terminal open
 if [[ $- == *x* ]]; then
-    bash -x /data/tinyhelm/source/upgrade.sh "${LATEST_VERSION:-latest}" "${LATEST_HELPER_VERSION:-latest}" "${REGISTRY_URL:-docker.io}" "true" 3>&-
+    bash -x /data/tinyhelm/source/upgrade.sh "${LATEST_VERSION:-latest}" "${LATEST_HELPER_VERSION:-latest}" "${REGISTRY_URL:-ghcr.io}" "true" 3>&-
 else
-    bash /data/tinyhelm/source/upgrade.sh "${LATEST_VERSION:-latest}" "${LATEST_HELPER_VERSION:-latest}" "${REGISTRY_URL:-docker.io}" "true" 3>&-
+    bash /data/tinyhelm/source/upgrade.sh "${LATEST_VERSION:-latest}" "${LATEST_HELPER_VERSION:-latest}" "${REGISTRY_URL:-ghcr.io}" "true" 3>&-
 fi
 step_done
 

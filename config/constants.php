@@ -27,7 +27,7 @@ return [
         // Build-helper OCI image every deployment pulls and runs (on Kiri or Docker). Built from
         // docker/tinyhelm-helper/Dockerfile and published to GHCR by .github/workflows/helper-image.yml.
         // Override with HELPER_IMAGE for another registry.
-        'helper_image' => env('HELPER_IMAGE', 'ghcr.io/60db-ai/tinyhelm'),
+        'helper_image' => env('HELPER_IMAGE', 'ghcr.io/60db-ai/tinyhelm-helper'),
         // https://hub.docker.com/r/rclone/rclone/tags (also on ghcr.io with the same digest): copies backups to SFTP, FTPS, and WebDAV storages on the servers.
         'rclone_image' => env('RCLONE_IMAGE', env('REGISTRY_URL', 'docker.io').'/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5'),
         // Release metadata/scripts. These require TinyHelm's own release pipeline + CDN; override via env until it exists.

@@ -4876,13 +4876,13 @@ function tinyhelmRegistryUrl(): string
 function tinyhelmHelperImage(): string
 {
     $configuredHelperImage = config('constants.tinyhelm.helper_image');
-    $configuredDefaultHelperImage = 'ghcr.io/60db-ai/tinyhelm';
+    $configuredDefaultHelperImage = 'ghcr.io/60db-ai/tinyhelm-helper';
 
     if ($configuredHelperImage !== $configuredDefaultHelperImage) {
         return $configuredHelperImage;
     }
 
-    return 'ghcr.io/60db-ai/tinyhelm';
+    return 'ghcr.io/60db-ai/tinyhelm-helper';
 }
 
 function getHelperVersion(): string

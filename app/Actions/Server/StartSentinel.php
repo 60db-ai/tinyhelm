@@ -139,7 +139,7 @@ class StartSentinel
         $endpoint = $server->settings->ensureSentinelUrl();
         $debug = data_get($server, 'settings.is_sentinel_debug_enabled');
         $mountDir = devHostDockerPath($server, base_configuration_dir().'/sentinel');
-        $image = tinyhelmRegistryUrl().'/60db-ai/sentinel:'.$version;
+        $image = 'ghcr.io/60db-ai/sentinel:'.$version;
         $environments = [
             'TOKEN' => $token,
             'DEBUG' => $debug ? 'true' : 'false',

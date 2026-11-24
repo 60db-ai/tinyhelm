@@ -1,7 +1,7 @@
 name: Publish helper image
 
 # Builds the TinyHelm build-helper and publishes it to GitHub Container Registry
-# (ghcr.io/60db-ai/tinyhelm). This is the image every deployment pulls.
+# (ghcr.io/60db-ai/tinyhelm-helper). This is the image every deployment pulls.
 # Run manually (Actions > Publish helper image > Run workflow) or on Dockerfile/version changes.
 
 on:
@@ -18,7 +18,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/tinyhelm
+  IMAGE: ghcr.io/${{ github.repository_owner }}/tinyhelm-helper
 
 jobs:
   publish:

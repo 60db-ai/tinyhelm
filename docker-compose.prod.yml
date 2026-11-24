@@ -5,11 +5,11 @@ services:
   # "docker compose up" removes the old tinyhelm-realtime container (an inactive profile keeps it).
   # It uses the tinyhelm image, so install and upgrade do not pull another image.
   soketi:
-    image: "${REGISTRY_URL:-docker.io}/60db-ai/tinyhelm:${LATEST_IMAGE:-latest}"
+    image: "${REGISTRY_URL:-ghcr.io}/60db-ai/tinyhelm:${LATEST_IMAGE:-latest}"
     deploy:
       replicas: 0
   tinyhelm:
-    image: "${REGISTRY_URL:-docker.io}/60db-ai/tinyhelm:${LATEST_IMAGE:-latest}"
+    image: "${REGISTRY_URL:-ghcr.io}/60db-ai/tinyhelm:${LATEST_IMAGE:-latest}"
     volumes:
       - type: bind
         source: /data/tinyhelm/source/.env
