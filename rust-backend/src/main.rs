@@ -68,16 +68,20 @@ async fn main() {
 
     let mut app = Router::new().route("/healthz", get(|| async { "ok" }));
     if native_servers {
-        tracing::info!("native route enabled: GET /api/v1/servers");
-        app = app.route("/api/v1/servers", get(native::list_servers));
+        tracing::info!("native routes enabled: GET /api/v1/servers[/:uuid]");
+        app = app
+            .route("/api/v1/servers", get(native::list_servers))
+            .route("/api/v1/servers/:uuid", get(native::get_server));
     }
     if native_projects {
         tracing::info!("native route enabled: GET /api/v1/projects");
         app = app.route("/api/v1/projects", get(native::list_projects));
     }
     if native_applications {
-        tracing::info!("native route enabled: GET /api/v1/applications");
-        app = app.route("/api/v1/applications", get(native::list_applications));
+        tracing::info!("native routes enabled: GET /api/v1/applications[/:uuid]");
+        app = app
+            .route("/api/v1/applications", get(native::list_applications))
+            .route("/api/v1/applications/:uuid", get(native::get_application));
     }
     let app = app
         // Everything else under /api and /webhooks still goes to Laravel until ported.

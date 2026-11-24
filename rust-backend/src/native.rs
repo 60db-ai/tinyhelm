@@ -4,7 +4,7 @@
 //! migration pattern (read endpoint ported to Rust behind the gateway), NOT production-trusted:
 //! enable only after diffing responses against Laravel and a security review of the auth path.
 
-use axum::{extract::State, http::HeaderMap, http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{extract::{Path, State}, http::HeaderMap, http::StatusCode, response::{IntoResponse, Response}, Json};
 use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -133,6 +133,29 @@ pub async fn list_servers(State(state): State<crate::AppState>, headers: HeaderM
     }
 }
 
+/// GET /api/v1/servers/:uuid — single server, team-scoped.
+pub async fn get_server(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    match sqlx::query_as::<_, ServerRow>(
+        r#"SELECT uuid, name, description, ip, port, "user" FROM servers WHERE team_id = $1 AND uuid = $2 LIMIT 1"#,
+    )
+    .bind(team_id)
+    .bind(&uuid)
+    .fetch_optional(pool)
+    .await
+    {
+        Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
+        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"message": "Server not found."}))).into_response(),
+        Err(e) => {
+            tracing::error!("get_server query failed: {e}");
+            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+        }
+    }
+}
+
 #[derive(Serialize, sqlx::FromRow)]
 struct ProjectRow {
     uuid: String,
@@ -199,6 +222,34 @@ pub async fn list_applications(State(state): State<crate::AppState>, headers: He
         Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
         Err(e) => {
             tracing::error!("list_applications query failed: {e}");
+            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+        }
+    }
+}
+
+/// GET /api/v1/applications/:uuid — single application, team-scoped via environment -> project.
+pub async fn get_application(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    match sqlx::query_as::<_, ApplicationRow>(
+        r#"SELECT a.uuid, a.name, a.description, a.fqdn, a.status,
+                  a.git_repository, a.git_branch, a.build_pack
+           FROM applications a
+           JOIN environments e ON e.id = a.environment_id
+           JOIN projects p ON p.id = e.project_id
+           WHERE p.team_id = $1 AND a.uuid = $2 LIMIT 1"#,
+    )
+    .bind(team_id)
+    .bind(&uuid)
+    .fetch_optional(pool)
+    .await
+    {
+        Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
+        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"message": "Application not found."}))).into_response(),
+        Err(e) => {
+            tracing::error!("get_application query failed: {e}");
             (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
         }
     }
