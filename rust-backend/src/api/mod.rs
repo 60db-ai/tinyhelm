@@ -14,9 +14,11 @@ pub mod instance;
 pub mod model;
 pub mod notifications;
 pub mod projects;
+pub mod resources;
 pub mod respond;
 pub mod servers;
 pub mod services;
+pub mod shared_envs;
 pub mod support;
 pub mod tags;
 pub mod team;
@@ -39,10 +41,9 @@ pub(crate) mod prelude {
 
     pub(crate) use super::audit;
     pub(crate) use super::auth::Ctx;
-    pub(crate) use super::model::{to_laravel, ModelSpec};
+    pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::{
-        applications::*, dashboard::*, databases::*, envs::*, instance::*, notifications::*,
-        projects::*, respond::*, servers::*, services::*, support::*, tags::*, team::*,
+        applications::*, dashboard::*, databases::*, envs::*, instance::*, notifications::*, projects::*, resources::*, respond::*, servers::*, services::*, shared_envs::*, support::*, tags::*, team::*,
     };
 }
 
@@ -70,7 +71,7 @@ pub async fn pool() -> Option<PgPool> {
 
 use axum::{
     middleware,
-    routing::{delete, get, patch},
+    routing::{delete, get, patch, post},
     Router,
 };
 
@@ -220,6 +221,79 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
         r = r
             .route("/api/v1/tags", get(list_tags).post(create_tag))
             .route("/api/v1/tags/:uuid", delete(delete_tag));
+    }
+    // Step 3: project detail/environments, scoped shared variables, tag update, resource tags, resources.
+    if on("projects") {
+        r = r
+            .route("/api/v1/projects/:uuid", get(get_project))
+            .route(
+                "/api/v1/projects/:uuid/:environment",
+                get(environment_details),
+            )
+            .route(
+                "/api/v1/projects/:uuid/environments",
+                post(create_environment),
+            )
+            .route(
+                "/api/v1/projects/:uuid/environments/:environment",
+                patch(update_environment).delete(delete_environment),
+            )
+            .route(
+                "/api/v1/projects/:uuid/envs",
+                get(list_project_envs).post(create_project_env),
+            )
+            .route(
+                "/api/v1/projects/:uuid/envs/:env_id",
+                patch(update_project_env).delete(delete_project_env),
+            )
+            .route(
+                "/api/v1/projects/:uuid/environments/:environment/envs",
+                get(list_environment_envs).post(create_environment_env),
+            )
+            .route(
+                "/api/v1/projects/:uuid/environments/:environment/envs/:env_id",
+                patch(update_environment_env).delete(delete_environment_env),
+            )
+            .route("/api/v1/resources", get(list_resources));
+    }
+    if on("servers") {
+        r = r
+            .route(
+                "/api/v1/servers/:uuid/envs",
+                get(list_server_envs).post(create_server_env),
+            )
+            .route(
+                "/api/v1/servers/:uuid/envs/:env_id",
+                patch(update_server_env).delete(delete_server_env),
+            );
+    }
+    if on("tags") {
+        r = r
+            .route("/api/v1/tags/:uuid", patch(update_tag))
+            .route(
+                "/api/v1/applications/:uuid/tags",
+                get(list_application_tags).post(attach_application_tags),
+            )
+            .route(
+                "/api/v1/applications/:uuid/tags/:tag_uuid",
+                delete(detach_application_tag),
+            )
+            .route(
+                "/api/v1/services/:uuid/tags",
+                get(list_service_tags).post(attach_service_tags),
+            )
+            .route(
+                "/api/v1/services/:uuid/tags/:tag_uuid",
+                delete(detach_service_tag),
+            )
+            .route(
+                "/api/v1/databases/:uuid/tags",
+                get(list_database_tags).post(attach_database_tags),
+            )
+            .route(
+                "/api/v1/databases/:uuid/tags/:tag_uuid",
+                delete(detach_database_tag),
+            );
     }
     // A path served natively for some methods must still reach Laravel for the others
     // (e.g. PATCH /applications/{uuid}/envs/bulk matches the DELETE-only {env_uuid} route).

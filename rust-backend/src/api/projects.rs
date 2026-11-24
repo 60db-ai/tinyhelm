@@ -431,6 +431,485 @@ pub async fn delete_project(
     (StatusCode::OK, Json(json!({"message": "Project deleted."}))).into_response()
 }
 
+// =====================================================================================================
+// Project detail and environments
+// =====================================================================================================
+
+/// `Environment` columns in table order (Eloquent attribute order for `changed_fields`).
+const ENVIRONMENT_COLUMNS: &[&str] = &[
+    "id",
+    "name",
+    "project_id",
+    "created_at",
+    "updated_at",
+    "description",
+    "uuid",
+    "canvas_positions",
+];
+
+/// Relations `environment_details` loads and serializes (other database types are not included).
+const ENVIRONMENT_DETAIL_RELATIONS: &[(&str, &str)] = &[
+    ("applications", "applications"),
+    ("postgresqls", "standalone_postgresqls"),
+    ("redis", "standalone_redis"),
+    ("mongodbs", "standalone_mongodbs"),
+    ("mysqls", "standalone_mysqls"),
+    ("mariadbs", "standalone_mariadbs"),
+    ("services", "services"),
+];
+
+/// Tables counted by `Environment::isEmpty()` (soft-deleted rows excluded, as Eloquent does).
+const ENVIRONMENT_RESOURCE_TABLES: &[&str] = &[
+    "applications",
+    "standalone_redis",
+    "standalone_postgresqls",
+    "standalone_mysqls",
+    "standalone_keydbs",
+    "standalone_dragonflies",
+    "standalone_clickhouses",
+    "standalone_mariadbs",
+    "standalone_mongodbs",
+    "standalone_sqlites",
+    "services",
+];
+
+async fn count_live(
+    pool: &PgPool,
+    tables: &[&str],
+    environment_id: i64,
+) -> Result<i64, sqlx::Error> {
+    let sql = tables
+        .iter()
+        .map(|t| {
+            format!("(SELECT count(*) FROM {t} WHERE environment_id = $1 AND deleted_at IS NULL)")
+        })
+        .collect::<Vec<_>>()
+        .join(" + ");
+    sqlx::query_scalar::<_, i64>(&format!("SELECT {sql}"))
+        .bind(environment_id)
+        .fetch_one(pool)
+        .await
+}
+
+/// GET /api/v1/projects/:uuid — the project with its environments.
+pub async fn get_project(
+    State(state): State<crate::AppState>,
+    Extension(ctx): Extension<Ctx>,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match ctx.require(&state, "read").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let project = match project_row(pool, team_id, &uuid).await {
+        Ok(Some(p)) => p,
+        Ok(None) => return not_found("Project not found."),
+        Err(e) => return query_err("get_project", e),
+    };
+    let project_id = project.get("id").and_then(Value::as_i64);
+    let environments = match sqlx::query_scalar::<_, Value>(
+        "SELECT to_jsonb(e) FROM environments e WHERE project_id = $1",
+    )
+    .bind(project_id)
+    .fetch_all(pool)
+    .await
+    {
+        Ok(rows) => all_to_laravel(rows, &ModelSpec::default()),
+        Err(e) => return query_err("get_project", e),
+    };
+    let mut out = as_map(to_laravel(Value::Object(project), &ModelSpec::default()));
+    out.insert("environments".into(), Value::Array(environments));
+    ok_json(Value::Object(out))
+}
+
+/// GET /api/v1/projects/:uuid/:environment_name_or_uuid — the environment with its resources.
+pub async fn environment_details(
+    State(state): State<crate::AppState>,
+    Path((uuid, environment)): Path<(String, String)>,
+    req: axum::extract::Request,
+) -> Response {
+    let Some(ctx) = req.extensions().get::<Ctx>().cloned() else {
+        return crate::proxy(State(state), req).await;
+    };
+    let (pool, team_id) = match ctx.require(&state, "read").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let project_id = match resolve_project_id(pool, team_id, &uuid).await {
+        Ok(id) => id,
+        Err(r) => return r,
+    };
+    let env = match resolve_environment(pool, project_id, &environment).await {
+        Ok(e) => e,
+        Err(r) => return r,
+    };
+    let env_id = env.get("id").and_then(Value::as_i64).unwrap_or_default();
+    let tables: Vec<&str> = ENVIRONMENT_DETAIL_RELATIONS
+        .iter()
+        .map(|(_, t)| *t)
+        .collect();
+    match count_live(pool, &tables, env_id).await {
+        Ok(0) => {}
+        // ponytail: resources are serialized with serializeApiResource (exposeSensitiveFields, locked-value
+        // redaction, lazy relations); Laravel answers until that serializer is ported for every type.
+        Ok(_) => return crate::proxy(State(state), req).await,
+        Err(e) => return query_err("environment_details", e),
+    }
+    let mut out = as_map(to_laravel(Value::Object(env), &ModelSpec::default()));
+    for (relation, _) in ENVIRONMENT_DETAIL_RELATIONS {
+        out.insert((*relation).into(), json!([]));
+    }
+    ok_json(Value::Object(out))
+}
+
+/// `create_environment` (name only) and `update_environment` (name and description) validation.
+fn validate_environment(input: &Map<String, Value>, create: bool) -> Option<Response> {
+    let presence = if create {
+        Rule::Required
+    } else {
+        Rule::Nullable
+    };
+    let mut v = Validator::new(input, NAME_DESCRIPTION_MESSAGES);
+    v.field(
+        "name",
+        &[
+            presence,
+            Rule::Str,
+            Rule::Min(3),
+            Rule::Max(255),
+            Rule::Regex(NAME_PATTERN),
+        ],
+    );
+    if create {
+        v.reject_extra(&["name"]);
+    } else {
+        v.field(
+            "description",
+            &[
+                Rule::Nullable,
+                Rule::Str,
+                Rule::Max(255),
+                Rule::Regex(DESCRIPTION_PATTERN),
+            ],
+        );
+        v.reject_extra(&["name", "description"]);
+    }
+    v.fails().then(|| v.response())
+}
+
+fn environment_conflict() -> Response {
+    (
+        StatusCode::CONFLICT,
+        Json(json!({"message": "Environment with this name already exists."})),
+    )
+        .into_response()
+}
+
+async fn environment_name_taken(
+    pool: &PgPool,
+    project_id: i64,
+    name: &str,
+    except_id: Option<i64>,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM environments WHERE project_id = $1 AND name = $2 \
+         AND ($3::bigint IS NULL OR id <> $3))",
+    )
+    .bind(project_id)
+    .bind(name)
+    .bind(except_id)
+    .fetch_one(pool)
+    .await
+}
+
+/// The controller-level audit row (`api.project.environment_<action>`).
+#[allow(clippy::too_many_arguments)]
+async fn audit_environment(
+    pool: &PgPool,
+    ctx: &Ctx,
+    action: &str,
+    team_id: i64,
+    project_uuid: &str,
+    env_uuid: &str,
+    env_name: &str,
+    changed: Option<Vec<&str>>,
+) {
+    let mut context = json!({
+        "team_id": team_id,
+        "project_uuid": project_uuid,
+        "environment_uuid": env_uuid,
+        "environment_name": env_name,
+    });
+    if let Some(changed) = changed {
+        context["changed_fields"] = json!(changed);
+    }
+    audit::record(
+        pool,
+        ctx,
+        &format!("api.project.environment_{action}"),
+        context,
+        "info",
+    )
+    .await;
+}
+
+/// POST /api/v1/projects/:uuid/environments — 409 when the name exists; returns `{"uuid": ...}`.
+pub async fn create_environment(
+    State(state): State<crate::AppState>,
+    Extension(ctx): Extension<Ctx>,
+    Path(uuid): Path<String>,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Response {
+    let (pool, team_id) = match ctx.require(&state, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let input = match json_input(&headers, &body) {
+        Ok(i) => i,
+        Err(r) => return r,
+    };
+    if let Some(r) = validate_environment(&input, true) {
+        return r;
+    }
+    let project_id = match resolve_project_id(pool, team_id, &uuid).await {
+        Ok(id) => id,
+        Err(r) => return r,
+    };
+    let requested = input_str(&input, "name").unwrap_or_default();
+    match environment_name_taken(pool, project_id, &requested, None).await {
+        Ok(true) => return environment_conflict(),
+        Ok(false) => {}
+        Err(e) => return query_err("create_environment", e),
+    }
+    let name = safe_name(Some(requested));
+    let env_uuid = new_public_id();
+    if let Err(e) = sqlx::query(&format!(
+        "INSERT INTO environments (name, project_id, uuid, created_at, updated_at) \
+         VALUES ($1, $2, $3, {NOW}, {NOW})"
+    ))
+    .bind(&name)
+    .bind(project_id)
+    .bind(&env_uuid)
+    .execute(pool)
+    .await
+    {
+        return query_err("create_environment", e);
+    }
+
+    let new = as_map(json!({"name": name, "project_id": project_id, "uuid": env_uuid}));
+    let changes = audit_changes(
+        None,
+        Some(&new),
+        &fields_of(&new),
+        ENVIRONMENT_AUDIT_EXCLUDE,
+    );
+    record_mutation(
+        &state,
+        pool,
+        &ctx,
+        team_id,
+        "environment",
+        "created",
+        Some(&env_uuid),
+        Some(&name),
+        vec![],
+        changes,
+    )
+    .await;
+    audit_environment(
+        pool, &ctx, "created", team_id, &uuid, &env_uuid, &name, None,
+    )
+    .await;
+
+    (StatusCode::CREATED, Json(json!({ "uuid": env_uuid }))).into_response()
+}
+
+/// PATCH /api/v1/projects/:uuid/environments/:environment_name_or_uuid
+pub async fn update_environment(
+    State(state): State<crate::AppState>,
+    Extension(ctx): Extension<Ctx>,
+    Path((uuid, environment)): Path<(String, String)>,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Response {
+    let (pool, team_id) = match ctx.require(&state, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let input = match json_input(&headers, &body) {
+        Ok(i) => i,
+        Err(r) => return r,
+    };
+    if let Some(r) = validate_environment(&input, false) {
+        return r;
+    }
+    let project_id = match resolve_project_id(pool, team_id, &uuid).await {
+        Ok(id) => id,
+        Err(r) => return r,
+    };
+    let old = match resolve_environment(pool, project_id, &environment).await {
+        Ok(e) => e,
+        Err(r) => return r,
+    };
+    let env_id = old.get("id").and_then(Value::as_i64).unwrap_or_default();
+    let old_name = old.get("name").and_then(Value::as_str).unwrap_or_default();
+
+    // `$request->filled('name') && $request->name !== $environment->name`
+    if let Some(requested) = input_str(&input, "name").filter(|n| !n.is_empty()) {
+        if requested != old_name {
+            match environment_name_taken(pool, project_id, &requested, Some(env_id)).await {
+                Ok(true) => return environment_conflict(),
+                Ok(false) => {}
+                Err(e) => return query_err("update_environment", e),
+            }
+        }
+    }
+
+    // `$environment->update($request->only(['name', 'description']))` through the safe-string mutators.
+    let mut new = old.clone();
+    if input.contains_key("name") {
+        new.insert("name".into(), json!(safe_name(input_str(&input, "name"))));
+    }
+    if input.contains_key("description") {
+        new.insert(
+            "description".into(),
+            json!(safe_description(input_str(&input, "description"))),
+        );
+    }
+    let changed = changed_fields(&old, &new, ENVIRONMENT_AUDIT_EXCLUDE, ENVIRONMENT_COLUMNS);
+    if !changed.is_empty() {
+        if let Err(e) = sqlx::query(&format!(
+            "UPDATE environments SET name = $1, description = $2, updated_at = {NOW} WHERE id = $3"
+        ))
+        .bind(new.get("name").and_then(Value::as_str))
+        .bind(new.get("description").and_then(Value::as_str))
+        .bind(env_id)
+        .execute(pool)
+        .await
+        {
+            return query_err("update_environment", e);
+        }
+        let changes = audit_changes(Some(&old), Some(&new), &changed, ENVIRONMENT_AUDIT_EXCLUDE);
+        record_mutation(
+            &state,
+            pool,
+            &ctx,
+            team_id,
+            "environment",
+            "updated",
+            new.get("uuid").and_then(Value::as_str),
+            new.get("name").and_then(Value::as_str),
+            changed,
+            changes,
+        )
+        .await;
+    }
+
+    let env_uuid = new
+        .get("uuid")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let env_name = new
+        .get("name")
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let requested_fields: Vec<&str> = ["name", "description"]
+        .into_iter()
+        .filter(|f| input.contains_key(*f))
+        .collect();
+    audit_environment(
+        pool,
+        &ctx,
+        "updated",
+        team_id,
+        &uuid,
+        &env_uuid,
+        &env_name,
+        Some(requested_fields),
+    )
+    .await;
+
+    ok_json(json!({
+        "uuid": env_uuid,
+        "name": env_name,
+        "description": new.get("description").cloned().unwrap_or(Value::Null),
+    }))
+}
+
+/// DELETE /api/v1/projects/:uuid/environments/:environment_name_or_uuid — only empty environments;
+/// their shared variables cascade through the FK.
+pub async fn delete_environment(
+    State(state): State<crate::AppState>,
+    Extension(ctx): Extension<Ctx>,
+    Path((uuid, environment)): Path<(String, String)>,
+) -> Response {
+    let (pool, team_id) = match ctx.require(&state, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let project_id = match resolve_project_id(pool, team_id, &uuid).await {
+        Ok(id) => id,
+        Err(r) => return r,
+    };
+    let env = match resolve_environment(pool, project_id, &environment).await {
+        Ok(e) => e,
+        Err(r) => return r,
+    };
+    let env_id = env.get("id").and_then(Value::as_i64).unwrap_or_default();
+    match count_live(pool, ENVIRONMENT_RESOURCE_TABLES, env_id).await {
+        Ok(0) => {}
+        Ok(_) => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(json!({"message": "Environment has resources, so it cannot be deleted."})),
+            )
+                .into_response();
+        }
+        Err(e) => return query_err("delete_environment", e),
+    }
+    if let Err(e) = sqlx::query("DELETE FROM environments WHERE id = $1")
+        .bind(env_id)
+        .execute(pool)
+        .await
+    {
+        return query_err("delete_environment", e);
+    }
+    let changes = audit_changes(
+        Some(&env),
+        None,
+        &fields_of(&env),
+        ENVIRONMENT_AUDIT_EXCLUDE,
+    );
+    let env_uuid = env.get("uuid").and_then(Value::as_str).unwrap_or_default();
+    let env_name = env.get("name").and_then(Value::as_str).unwrap_or_default();
+    record_mutation(
+        &state,
+        pool,
+        &ctx,
+        team_id,
+        "environment",
+        "deleted",
+        Some(env_uuid),
+        Some(env_name),
+        vec![],
+        changes,
+    )
+    .await;
+    audit_environment(
+        pool, &ctx, "deleted", team_id, &uuid, env_uuid, env_name, None,
+    )
+    .await;
+
+    (
+        StatusCode::OK,
+        Json(json!({"message": "Environment deleted."})),
+    )
+        .into_response()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
