@@ -10,6 +10,7 @@ pub mod auth;
 pub mod dashboard;
 pub mod databases;
 pub mod envs;
+pub mod model;
 pub mod projects;
 pub mod respond;
 pub mod servers;
@@ -34,6 +35,7 @@ pub(crate) mod prelude {
     pub(crate) use sqlx::{PgPool, Row};
 
     pub(crate) use super::audit;
+    pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::auth::Ctx;
     pub(crate) use super::{
         applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
