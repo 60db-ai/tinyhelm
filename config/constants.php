@@ -24,9 +24,9 @@ return [
         // Development only: IP for the seeded sslip.io wildcard domain and application domains (for example a Tailscale IP).
         'dev_seed_ip' => env('DEV_SEED_IP') ?: '127.0.0.1',
         'registry_url' => env('REGISTRY_URL', 'docker.io'),
-        // Build-helper container used by every deployment. Defaults to the upstream published image so deploys
-        // work out of the box; set HELPER_IMAGE to a TinyHelm-owned image once it is published to your registry.
-        'helper_image' => env('HELPER_IMAGE', env('REGISTRY_URL', 'docker.io').'/coollabsio/coolify-helper'),
+        // Build-helper container used by every deployment. MUST be published to your registry (build + push
+        // 60db/tinyhelm:<helper_version>) or deploys fail; override with HELPER_IMAGE for another registry.
+        'helper_image' => env('HELPER_IMAGE', env('REGISTRY_URL', 'docker.io').'/60db/tinyhelm'),
         // https://hub.docker.com/r/rclone/rclone/tags (also on ghcr.io with the same digest): copies backups to SFTP, FTPS, and WebDAV storages on the servers.
         'rclone_image' => env('RCLONE_IMAGE', env('REGISTRY_URL', 'docker.io').'/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5'),
         // Release metadata/scripts. These require TinyHelm's own release pipeline + CDN; override via env until it exists.

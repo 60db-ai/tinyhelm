@@ -4876,13 +4876,13 @@ function tinyhelmRegistryUrl(): string
 function tinyhelmHelperImage(): string
 {
     $configuredHelperImage = config('constants.tinyhelm.helper_image');
-    $configuredDefaultHelperImage = config('constants.tinyhelm.registry_url', 'docker.io').'/coollabsio/coolify-helper';
+    $configuredDefaultHelperImage = config('constants.tinyhelm.registry_url', 'docker.io').'/60db/tinyhelm';
 
     if ($configuredHelperImage !== $configuredDefaultHelperImage) {
         return $configuredHelperImage;
     }
 
-    return tinyhelmRegistryUrl().'/coollabsio/coolify-helper';
+    return tinyhelmRegistryUrl().'/60db/tinyhelm';
 }
 
 function getHelperVersion(): string
