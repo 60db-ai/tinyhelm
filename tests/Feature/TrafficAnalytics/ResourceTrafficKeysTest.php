@@ -403,7 +403,7 @@ it('finds the preview domain for normal and compose preview keys', function () {
     ]);
     $application->previews()->create([
         'pull_request_id' => 12,
-        'pull_request_html_url' => 'https://github.com/coollabsio/shop/pull/12',
+        'pull_request_html_url' => 'https://github.com/60db-ai/shop/pull/12',
         'fqdn' => 'https://12.shop.test',
         'docker_compose_domains' => json_encode(['api' => ['domain' => 'https://api-12.shop.test']]),
     ]);

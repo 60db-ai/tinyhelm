@@ -53,7 +53,7 @@ function makeDockerRegistryValidationApplication(array $overrides = []): Applica
         'destination_id' => test()->destination->id,
         'destination_type' => test()->destination->getMorphClass(),
         'build_pack' => 'nixpacks',
-        'docker_registry_image_name' => 'ghcr.io/coollabsio/example',
+        'docker_registry_image_name' => 'ghcr.io/60db-ai/example',
         'docker_registry_image_tag' => 'latest',
     ], $overrides));
 }
@@ -72,7 +72,7 @@ describe('PATCH /api/v1/applications/{uuid} docker registry image validation', f
             ->assertInvalid(['docker_registry_image_name']);
 
         $application->refresh();
-        expect($application->docker_registry_image_name)->toBe('ghcr.io/coollabsio/example')
+        expect($application->docker_registry_image_name)->toBe('ghcr.io/60db-ai/example')
             ->and($application->docker_registry_image_tag)->toBe('latest');
     });
 
@@ -81,7 +81,7 @@ describe('PATCH /api/v1/applications/{uuid} docker registry image validation', f
 
         $response = $this->withHeaders(dockerRegistryApiHeaders($this->bearerToken))
             ->patchJson("/api/v1/applications/{$application->uuid}", [
-                'docker_registry_image_name' => 'ghcr.io/coollabsio/example',
+                'docker_registry_image_name' => 'ghcr.io/60db-ai/example',
                 'docker_registry_image_tag' => 'latest$(touch /tmp/pwned)',
             ]);
 
@@ -89,7 +89,7 @@ describe('PATCH /api/v1/applications/{uuid} docker registry image validation', f
             ->assertInvalid(['docker_registry_image_tag']);
 
         $application->refresh();
-        expect($application->docker_registry_image_name)->toBe('ghcr.io/coollabsio/example')
+        expect($application->docker_registry_image_name)->toBe('ghcr.io/60db-ai/example')
             ->and($application->docker_registry_image_tag)->toBe('latest');
     });
 

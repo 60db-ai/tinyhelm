@@ -1,13 +1,13 @@
-# documentation: https://github.com/coollabsio/orbit/blob/main/docs/operations.md
+# documentation: https://github.com/60db-ai/orbit/blob/main/docs/operations.md
 # slogan: Self-hosted workspace for teams with tasks, docs, chat, and an MCP server for AI clients.
 # category: productivity
-# tags: orbit,tasks,docs,wiki,chat,project-management,kanban,mcp,ai,coollabs
+# tags: orbit,tasks,docs,wiki,chat,project-management,kanban,mcp,ai,tinyhelm
 # logo: svgs/orbit.svg
 # port: 8080
 
 services:
   orbit:
-    image: ghcr.io/coollabsio/orbit:0.3.0
+    image: ghcr.io/60db-ai/orbit:0.3.0
     environment:
       - SERVICE_URL_ORBIT_8080
       - ORBIT_ENV=production

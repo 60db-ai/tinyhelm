@@ -65,10 +65,10 @@ function createComposeApplication(string $endpoint, array $composeDomains, bool 
 
     if ($endpoint === 'private-deploy-key') {
         $payload['private_key_uuid'] = PrivateKey::factory()->create(['team_id' => test()->team->id])->uuid;
-        $payload['git_repository'] = 'git@gitlab.com:coollabsio/tinyhelm-examples.git';
+        $payload['git_repository'] = 'git@gitlab.com:60db-ai/tinyhelm-examples.git';
     } else {
         // Not github.com: that path looks up the seeded public GithubApp (id 0).
-        $payload['git_repository'] = 'https://gitlab.com/coollabsio/tinyhelm-examples';
+        $payload['git_repository'] = 'https://gitlab.com/60db-ai/tinyhelm-examples';
     }
 
     return test()->withToken(test()->bearerToken)->postJson("/api/v1/applications/{$endpoint}", $payload);

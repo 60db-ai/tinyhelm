@@ -197,7 +197,7 @@ build_base_image() {
     wait_for_ssh "$VM_IP" "$BUILDER_NAME"
 
     log "Installing TinyHelm $VERSION in the builder VM (no backup data in this VM)"
-    vm_ssh "set -o pipefail; curl -fsSL https://cdn.coollabs.io/tinyhelm/install.sh | bash -s -- $VERSION" ||
+    vm_ssh "set -o pipefail; curl -fsSL https://cdn.tinyhelm.com/tinyhelm/install.sh | bash -s -- $VERSION" ||
         die "The TinyHelm install failed in the builder VM. No base image was saved."
     # A broken base image would be reused by every later run, so check it before it is saved.
     vm_ssh 'docker inspect tinyhelm tinyhelm-db tinyhelm-redis >/dev/null && [ -f /data/tinyhelm/source/.env ]' ||
@@ -242,7 +242,7 @@ done
 [ -e /dev/kvm ] || die "/dev/kvm is not available."
 
 if [ -z "$VERSION" ]; then
-    VERSION=$(curl -fsSL https://cdn.coollabs.io/tinyhelm/versions.json | jq -r '.tinyhelm.v4.version')
+    VERSION=$(curl -fsSL https://cdn.tinyhelm.com/tinyhelm/versions.json | jq -r '.tinyhelm.v4.version')
     echo "Latest stable version: $VERSION"
 fi
 [[ "${CLOUD_BACKUP,,}" =~ ^(y|yes)$ ]] && SELF_HOSTED=false || SELF_HOSTED=true
@@ -299,7 +299,7 @@ log "Confirming that the VM has no internet access"
 if vm_ssh 'timeout 5 bash -c "echo >/dev/tcp/1.1.1.1/443" 2>/dev/null || timeout 5 bash -c "echo >/dev/tcp/8.8.8.8/53" 2>/dev/null'; then
     die "The VM can reach the internet. Stopped before the backup was copied."
 fi
-if vm_ssh 'getent hosts cdn.coollabs.io >/dev/null'; then
+if vm_ssh 'getent hosts cdn.tinyhelm.com >/dev/null'; then
     die "The VM can resolve internet host names. Stopped before the backup was copied."
 fi
 

@@ -22,14 +22,14 @@ beforeEach(function () {
     $destination = StandaloneDocker::query()->where('server_id', $server->id)->firstOrFail();
     $this->application = Application::factory()->create([
         'build_pack' => 'dockercompose',
-        'git_repository' => 'https://github.com/coollabsio/private-repo',
+        'git_repository' => 'https://github.com/60db-ai/private-repo',
         'git_branch' => 'main',
         'base_directory' => '/',
         'docker_compose_location' => '/docker-compose.yml',
         'destination_id' => $destination->id,
         'destination_type' => $destination->getMorphClass(),
     ]);
-    $this->gitError = "Cloning into 'checkout'...\nfatal: unable to access 'https://x-access-token:ghs_SECRET123@github.com/coollabsio/private-repo.git/': The requested URL returned error: 403 <b>denied</b>";
+    $this->gitError = "Cloning into 'checkout'...\nfatal: unable to access 'https://x-access-token:ghs_SECRET123@github.com/60db-ai/private-repo.git/': The requested URL returned error: 403 <b>denied</b>";
 });
 
 function fakeComposeLoadServer(?string $failingStep, string $errorOutput): void

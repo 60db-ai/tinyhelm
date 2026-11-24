@@ -4,7 +4,7 @@
  * Sentinel reports container memory `used` in bytes. The application metrics
  * chart labels those values as megabytes, so the series must be converted.
  *
- * @see https://github.com/coollabsio/tinyhelm/issues/11246
+ * @see https://github.com/60db-ai/tinyhelm/issues/11246
  */
 it('converts sentinel container memory samples from bytes to megabytes', function () {
     $metrics = [

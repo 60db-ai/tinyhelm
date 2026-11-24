@@ -84,7 +84,7 @@ jobs:
           labels="$(docker buildx imagetools inspect "${sources[0]}" --format '{{ json .Image.Config.Labels }}' \
             | jq -r 'to_entries[] | "--annotation=index:\(.key)=\(.value)"')"
           mapfile -t annotations <<< "$labels"
-          docker buildx imagetools create "${annotations[@]}" --tag "ghcr.io/coollabsio/tinyhelm:$TAG" "${sources[@]}"
+          docker buildx imagetools create "${annotations[@]}" --tag "ghcr.io/60db-ai/tinyhelm:$TAG" "${sources[@]}"
 
   size:
     name: Compare size with latest
@@ -111,7 +111,7 @@ jobs:
           IMAGE_NAME: pr-${{ github.event.pull_request.number }}
           OUTPUT_FILE: ${{ runner.temp }}/size.md
         run: |
-          scripts/size.sh "$RUNNER_TEMP/images" coollabsio/tinyhelm:latest
+          scripts/size.sh "$RUNNER_TEMP/images" 60db-ai/tinyhelm:latest
           cat "$OUTPUT_FILE" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment the size on the pull request

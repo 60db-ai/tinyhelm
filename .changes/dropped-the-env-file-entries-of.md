@@ -1,7 +1,7 @@
 ---
 type: fixed
 ---
-Dropped the `env_file` entries of Docker Compose applications at deployment, so repository env files with default values did not reach the containers ([#2004](https://github.com/coollabsio/tinyhelm/issues/2004))
+Dropped the `env_file` entries of Docker Compose applications at deployment, so repository env files with default values did not reach the containers ([#2004](https://github.com/60db-ai/tinyhelm/issues/2004))
 
 - TinyHelm adds its `.env` file after the env files of each service, so TinyHelm variables override their values
 - A relative `env_file` path is read from the directory of the Compose file

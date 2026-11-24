@@ -90,7 +90,7 @@ class GithubPrivateRepositoryDeployKey extends Component
     public function mount()
     {
         if (isDev()) {
-            $this->repository_url = 'https://github.com/coollabsio/tinyhelm-examples/tree/main';
+            $this->repository_url = 'https://github.com/60db-ai/tinyhelm-examples/tree/main';
         }
         $this->parameters = get_route_parameters();
         $this->query = request()->query();

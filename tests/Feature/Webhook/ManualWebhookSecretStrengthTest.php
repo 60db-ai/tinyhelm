@@ -46,7 +46,7 @@ beforeEach(function () {
         'environment_id' => $this->environment->id,
         'destination_id' => $this->destination->id,
         'destination_type' => $this->destination->getMorphClass(),
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm-examples',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm-examples',
         'git_branch' => 'main',
         'build_pack' => 'nixpacks',
         'manual_webhook_secret_github' => 'short-legacy',

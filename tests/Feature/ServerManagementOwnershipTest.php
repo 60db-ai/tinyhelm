@@ -193,7 +193,7 @@ test('after a take back the server page shows the finish list until the user fin
         'name' => 'shop',
         'destination_id' => $this->server->standaloneDockers()->first()->id,
         'destination_type' => StandaloneDocker::class,
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
     ]);
 
     Livewire::test(Show::class, ['server_uuid' => $this->server->uuid])

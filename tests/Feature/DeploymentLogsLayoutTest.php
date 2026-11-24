@@ -85,7 +85,7 @@ it('links deployment commit hashes to the source commit page', function () {
     $this->application->update([
         'source_id' => $githubApp->id,
         'source_type' => $githubApp->getMorphClass(),
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
     ]);
     ApplicationDeploymentQueue::query()->create([
@@ -104,7 +104,7 @@ it('links deployment commit hashes to the source commit page', function () {
 
     $response->assertSuccessful();
     $response->assertSee(
-        'href="https://github.com/coollabsio/tinyhelm/commit/1234567890abcdef1234567890abcdef12345678" target="_blank" rel="noopener noreferrer"',
+        'href="https://github.com/60db-ai/tinyhelm/commit/1234567890abcdef1234567890abcdef12345678" target="_blank" rel="noopener noreferrer"',
         false,
     );
 });

@@ -20,7 +20,7 @@ defaults:
 jobs:
   clean:
     name: Clean manifests
-    if: ${{ github.repository == 'coollabsio/tinyhelm' }}
+    if: ${{ github.repository == '60db-ai/tinyhelm' }}
     permissions:
       contents: read
       actions: write # to disable this workflow after a failure

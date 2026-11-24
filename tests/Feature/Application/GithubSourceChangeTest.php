@@ -48,7 +48,7 @@ describe('GitHub Source Change Component', function () {
     test('deletes an incomplete github app and redirects without a render error', function () {
         $githubApp = GithubApp::create([
             'name' => 'Incomplete GitHub App',
-            'organization' => 'coollabsio',
+            'organization' => '60db-ai',
             'api_url' => 'https://api.github.com',
             'html_url' => 'https://github.com',
             'custom_user' => 'git',

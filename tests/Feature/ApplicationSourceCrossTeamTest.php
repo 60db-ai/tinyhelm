@@ -130,7 +130,7 @@ test('changeSource dispatches configuration changed for an owned source', functi
         'html_url' => 'https://github.com',
         'is_public' => true,
     ]);
-    $this->applicationA->update(['git_repository' => 'coollabsio/tinyhelm']);
+    $this->applicationA->update(['git_repository' => '60db-ai/tinyhelm']);
 
     Livewire::test(Source::class, ['application' => $this->applicationA->fresh()])
         ->call('changeSource', $source->id, GithubApp::class)
@@ -152,7 +152,7 @@ test('changeSource dispatches configuration changed when repository metadata loo
         'html_url' => 'https://github.com',
         'is_public' => true,
     ]);
-    $this->applicationA->update(['git_repository' => 'coollabsio/tinyhelm']);
+    $this->applicationA->update(['git_repository' => '60db-ai/tinyhelm']);
 
     Livewire::test(Source::class, ['application' => $this->applicationA->fresh()])
         ->call('changeSource', $source->id, GithubApp::class)
@@ -176,7 +176,7 @@ describe('after the user switches the session team', function () {
             'https://api.github.com/repos/*' => Http::response(['id' => 123]),
         ]);
         $this->teamB->members()->attach($this->userA->id, ['role' => 'owner']);
-        $this->applicationA->update(['git_repository' => 'coollabsio/tinyhelm']);
+        $this->applicationA->update(['git_repository' => '60db-ai/tinyhelm']);
 
         $this->ownKey = makePrivateKey('own-ssh-key', 'OWN_KEY_MATERIAL', 'own-fingerprint', $this->teamA->id);
         $this->ownGithubApp = GithubApp::create([
@@ -387,9 +387,9 @@ test('the ssh host keys section shows only when git uses ssh or keys are saved',
 
     $shown ? $component->assertSee('SSH host keys') : $component->assertDontSee('SSH host keys');
 })->with([
-    'https repository' => ['https://github.com/coollabsio/tinyhelm-examples', null, false],
+    'https repository' => ['https://github.com/60db-ai/tinyhelm-examples', null, false],
     'ssh repository' => ['git@git.example.com:org/repo.git', null, true],
-    'https repository with saved submodule keys' => ['https://github.com/coollabsio/tinyhelm-examples', 'git.example.com ssh-ed25519 AAAA', true],
+    'https repository with saved submodule keys' => ['https://github.com/60db-ai/tinyhelm-examples', 'git.example.com ssh-ed25519 AAAA', true],
 ]);
 
 test('fetch reads the published host keys of GitHub and Bitbucket for deployments', function () {

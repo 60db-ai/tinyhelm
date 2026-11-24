@@ -299,7 +299,7 @@ it('does not pull an extra image for the soketi placeholder', function (string $
 
     expect($result->successful())->toBeTrue($result->errorOutput())
         ->and(collect(explode("\n", trim($result->output())))->unique()->sort()->values()->all())
-        ->toBe(['postgres:15-alpine', 'redis:7-alpine', 'registry.example.com/coollabsio/tinyhelm:4.5.1']);
+        ->toBe(['postgres:15-alpine', 'redis:7-alpine', 'registry.example.com/60db-ai/tinyhelm:4.5.1']);
 })->with([
     'production compose' => ['docker-compose.prod.yml'],
 ]);

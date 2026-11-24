@@ -139,7 +139,7 @@
             $otherCount = count($row['others']) + $row['moreActions'];
         @endphp
         <details class="group/others">
-            <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-md text-[12px] font-medium text-neutral-600 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coollabs dark:text-fg-dim dark:hover:text-fg dark:focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+            <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-md text-[12px] font-medium text-neutral-600 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinyhelm dark:text-fg-dim dark:hover:text-fg dark:focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
                 <x-reicon name="chevron-down" class="size-3.5 shrink-0 -rotate-90 group-open/others:rotate-0 {{ $motion }}" />
                 {{ number_format($otherCount) }} other {{ $otherCount === 1 ? 'fix' : 'fixes' }}
             </summary>

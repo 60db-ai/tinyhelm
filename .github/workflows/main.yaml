@@ -20,7 +20,7 @@ defaults:
 jobs:
   plan:
     name: Plan build
-    if: ${{ github.repository == 'coollabsio/tinyhelm' }}
+    if: ${{ github.repository == '60db-ai/tinyhelm' }}
     permissions:
       contents: read
     runs-on: ubuntu-26.04 # https://github.com/actions/runner-images
@@ -42,7 +42,7 @@ jobs:
           BRANCH: main
         run: |
           gh auth setup-git
-          labels="$(docker buildx imagetools inspect ghcr.io/coollabsio/tinyhelm:main --format '{{ json (index .Image "linux/amd64").Config.Labels }}')" || labels='{}'
+          labels="$(docker buildx imagetools inspect ghcr.io/60db-ai/tinyhelm:main --format '{{ json (index .Image "linux/amd64").Config.Labels }}')" || labels='{}'
           MAIN_VERSION="$(jq -r '.["org.opencontainers.image.version"] // empty' <<< "$labels")"
           MAIN_REVISION="$(jq -r '.["org.opencontainers.image.revision"] // empty' <<< "$labels")"
           export MAIN_VERSION MAIN_REVISION
@@ -90,4 +90,4 @@ jobs:
           labels="$(docker buildx imagetools inspect "${sources[0]}" --format '{{ json .Image.Config.Labels }}' \
             | jq -r 'to_entries[] | "--annotation=index:\(.key)=\(.value)"')"
           mapfile -t annotations <<< "$labels"
-          docker buildx imagetools create "${annotations[@]}" --tag ghcr.io/coollabsio/tinyhelm:main "${sources[@]}"
+          docker buildx imagetools create "${annotations[@]}" --tag ghcr.io/60db-ai/tinyhelm:main "${sources[@]}"

@@ -814,7 +814,7 @@
                     :disabled="selecting">
                     <div class="flex flex-col">
                         <div class="text-[13px] font-semibold text-black dark:text-fg">PostgreSQL 18 <span
-                                class="ml-1 rounded-full bg-coollabs/10 px-2 py-0.5 text-[10px] font-medium text-coollabs dark:bg-brand/15 dark:text-brand-light">Default</span>
+                                class="ml-1 rounded-full bg-tinyhelm/10 px-2 py-0.5 text-[10px] font-medium text-tinyhelm dark:bg-brand/15 dark:text-brand-light">Default</span>
                         </div>
                         <div class="mt-1 pr-8 text-[11px] leading-4 text-neutral-500 dark:text-fg-faint">
                             PostgreSQL is a powerful, open-source object-relational database system (no extensions).
@@ -976,7 +976,7 @@
                     :disabled="selecting">
                     <div class="flex flex-col">
                         <div class="text-[13px] font-semibold text-black dark:text-fg">Valkey 9 <span
-                                class="ml-1 rounded-full bg-coollabs/10 px-2 py-0.5 text-[10px] font-medium text-coollabs dark:bg-brand/15 dark:text-brand-light">Default</span></div>
+                                class="ml-1 rounded-full bg-tinyhelm/10 px-2 py-0.5 text-[10px] font-medium text-tinyhelm dark:bg-brand/15 dark:text-brand-light">Default</span></div>
                         <div class="mt-1 pr-8 text-[11px] leading-4 text-neutral-500 dark:text-fg-faint">
                             An open-source (BSD) fork of Redis from the Linux Foundation. It works with all Redis clients.
                         </div>

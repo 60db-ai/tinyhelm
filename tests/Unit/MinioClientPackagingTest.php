@@ -12,7 +12,7 @@ it('uses the mx MinIO-compatible client in development', function () {
         $contents = file_get_contents($developmentFile);
 
         expect($contents)
-            ->toContain('ghcr.io/coollabsio/mx:0.2.1')
+            ->toContain('ghcr.io/60db-ai/mx:0.2.1')
             ->not->toContain('quay.io/minio/aistor/mc:')
             ->not->toContain('minio/mc:');
     }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Patches TinyHelm 4.0 to 4.4 to the security fix release of its own line.
 # Only the tinyhelm container is recreated, the compose files and the other containers stay as they are.
-# Usage: curl -fsSL https://cdn.coollabs.io/tinyhelm/patch.sh | sudo bash
+# Usage: curl -fsSL https://cdn.tinyhelm.com/tinyhelm/patch.sh | sudo bash
 set -euo pipefail
 
 SOURCE_DIR=/data/tinyhelm/source
@@ -65,13 +65,13 @@ select_patch_version() {
 
 check_compose_files() {
 	local has_realtime=false needs_realtime=true
-	if grep -q 'coollabsio/tinyhelm-realtime:' "$SOURCE_DIR/docker-compose.prod.yml"; then
+	if grep -q '60db-ai/tinyhelm-realtime:' "$SOURCE_DIR/docker-compose.prod.yml"; then
 		has_realtime=true
 	fi
 	if [[ "$patch_version" == 4.4.* ]]; then
 		needs_realtime=false
 	fi
-	[ "$has_realtime" = "$needs_realtime" ] || die "the compose files in $SOURCE_DIR do not belong to TinyHelm $current_version, update to ${PATCH_VERSIONS[4]} instead: curl -fsSL https://cdn.coollabs.io/tinyhelm/upgrade.sh | sudo bash -s ${PATCH_VERSIONS[4]}"
+	[ "$has_realtime" = "$needs_realtime" ] || die "the compose files in $SOURCE_DIR do not belong to TinyHelm $current_version, update to ${PATCH_VERSIONS[4]} instead: curl -fsSL https://cdn.tinyhelm.com/tinyhelm/upgrade.sh | sudo bash -s ${PATCH_VERSIONS[4]}"
 	ok "the compose files belong to TinyHelm $current_version"
 }
 

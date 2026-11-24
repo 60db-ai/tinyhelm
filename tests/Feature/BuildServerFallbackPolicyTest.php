@@ -209,7 +209,7 @@ test('deployments-only servers build on a dedicated build server without the app
     $deploymentServer = makeRoleServer($team, 'deployment');
     makeRoleServer($team, 'both');
     $buildServer = makeRoleServer($team, 'build');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], buildServerEnabled: false);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], buildServerEnabled: false);
 
     $deploymentQueue->shouldReceive('update')->with(['build_server_id' => $buildServer->id])->once()->andReturnTrue();
     $deploymentQueue->shouldReceive('addLogEntry')->once()->with("Found a suitable build server ({$buildServer->name}).");
@@ -224,7 +224,7 @@ test('deployments-only servers never fall back to building themselves', function
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'deployment');
     makeRoleServer($team, 'both');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], $buildServerEnabled);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], $buildServerEnabled);
 
     $deploymentQueue->shouldNotReceive('addLogEntry');
 
@@ -326,7 +326,7 @@ function markAsAdditionalServer(ApplicationDeploymentJob $job, bool $forceRebuil
 test('additional deployments-only servers pull the registry image without a build server', function (bool $buildServerEnabled) {
     $team = Team::factory()->create(['is_build_server_fallback_enabled' => false]);
     $deploymentServer = makeRoleServer($team, 'deployment');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], $buildServerEnabled);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], $buildServerEnabled);
     markAsAdditionalServer($job);
 
     $deploymentQueue->shouldNotReceive('update');
@@ -345,7 +345,7 @@ test('additional servers do not use a build server when the application enables 
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'both');
     makeRoleServer($team, 'build');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app']);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app']);
     markAsAdditionalServer($job);
 
     $deploymentQueue->shouldNotReceive('update');
@@ -360,7 +360,7 @@ test('additional servers do not use a build server when the application enables 
 test('additional deployments-only servers pull the image even when the build cache is disabled', function () {
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'deployment');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app']);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app']);
     markAsAdditionalServer($job, forceRebuild: true);
 
     $deploymentQueue->shouldReceive('addLogEntry');
@@ -373,7 +373,7 @@ test('additional deployments-only servers pull the image even when the build cac
 test('main deployments-only servers still require a build server', function () {
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'deployment');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app']);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app']);
 
     $deploymentQueue->shouldNotReceive('addLogEntry');
 
@@ -384,16 +384,16 @@ test('main deployments-only servers still require a build server', function () {
 test('additional deployments-only servers fail instead of building when the registry image is missing', function (bool $restartOnly) {
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'deployment');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], restartOnly: $restartOnly);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], restartOnly: $restartOnly);
     markAsAdditionalServer($job);
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'saved_outputs'))->setValue($job, collect());
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'pull_request_id'))->setValue($job, 0);
-    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/coollabsio/app:abc123');
+    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/60db-ai/app:abc123');
 
     $deploymentQueue->shouldNotReceive('addLogEntry');
 
     expect(fn () => (new ReflectionMethod(ApplicationDeploymentJob::class, 'should_skip_build'))->invoke($job))
-        ->toThrow(DeploymentException::class, 'Image (ghcr.io/coollabsio/app:abc123) not found in the registry; the main server must push it first.');
+        ->toThrow(DeploymentException::class, 'Image (ghcr.io/60db-ai/app:abc123) not found in the registry; the main server must push it first.');
 })->with([
     'deploy' => [false],
     'restart' => [true],
@@ -402,7 +402,7 @@ test('additional deployments-only servers fail instead of building when the regi
 test('additional servers that can build still pull the image when the build cache is disabled', function (string $role) {
     $team = Team::factory()->create(['is_build_server_fallback_enabled' => false]);
     $deploymentServer = makeRoleServer($team, $role);
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app']);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app']);
     markAsAdditionalServer($job, forceRebuild: true);
 
     $deploymentQueue->shouldReceive('addLogEntry')->once()->with('Additional server: pulls the image from the registry, no build server needed.');
@@ -419,7 +419,7 @@ test('additional servers that can build still pull the image when the build cach
 test('additional Compose servers that can build keep a disabled build cache', function () {
     $team = Team::factory()->create();
     $deploymentServer = makeRoleServer($team, 'both');
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['build_pack' => 'dockercompose', 'docker_registry_image_name' => 'ghcr.io/coollabsio/app']);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['build_pack' => 'dockercompose', 'docker_registry_image_name' => 'ghcr.io/60db-ai/app']);
     markAsAdditionalServer($job, forceRebuild: true);
 
     $deploymentQueue->shouldReceive('addLogEntry');
@@ -432,16 +432,16 @@ test('additional Compose servers that can build keep a disabled build cache', fu
 test('additional servers that can build fail instead of building when the registry image is missing', function (string $role, bool $restartOnly) {
     $team = Team::factory()->create(['is_build_server_fallback_enabled' => false]);
     $deploymentServer = makeRoleServer($team, $role);
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], restartOnly: $restartOnly);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], restartOnly: $restartOnly);
     markAsAdditionalServer($job);
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'saved_outputs'))->setValue($job, collect());
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'pull_request_id'))->setValue($job, 0);
-    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/coollabsio/app:abc123');
+    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/60db-ai/app:abc123');
 
     $deploymentQueue->shouldNotReceive('addLogEntry');
 
     expect(fn () => (new ReflectionMethod(ApplicationDeploymentJob::class, 'should_skip_build'))->invoke($job))
-        ->toThrow(DeploymentException::class, 'Image (ghcr.io/coollabsio/app:abc123) not found in the registry; the main server must push it first. Additional servers do not build, so they run the same image as the main server.');
+        ->toThrow(DeploymentException::class, 'Image (ghcr.io/60db-ai/app:abc123) not found in the registry; the main server must push it first. Additional servers do not build, so they run the same image as the main server.');
 })->with([
     'deployments and builds, deploy' => ['both', false],
     'deployments and builds, restart' => ['both', true],
@@ -483,11 +483,11 @@ test('strict teams restart on an available build server', function () {
 test('a restart that has to rebuild applies the build server rules again', function (string $role, bool $buildServerEnabled, string $message) {
     $team = Team::factory()->create(['is_build_server_fallback_enabled' => false]);
     $deploymentServer = makeRoleServer($team, $role);
-    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/coollabsio/app'], buildServerEnabled: $buildServerEnabled, restartOnly: true);
+    [$job, $deploymentQueue] = makeBuildServerSelectionJob($team, $deploymentServer, ['docker_registry_image_name' => 'ghcr.io/60db-ai/app'], buildServerEnabled: $buildServerEnabled, restartOnly: true);
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'is_this_additional_server'))->setValue($job, false);
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'saved_outputs'))->setValue($job, collect());
     (new ReflectionProperty(ApplicationDeploymentJob::class, 'pull_request_id'))->setValue($job, 0);
-    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/coollabsio/app:abc123');
+    (new ReflectionProperty(ApplicationDeploymentJob::class, 'production_image_name'))->setValue($job, 'ghcr.io/60db-ai/app:abc123');
 
     $deploymentQueue->shouldReceive('addLogEntry');
     invokeBuildServerSelection($job);

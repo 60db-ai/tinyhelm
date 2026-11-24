@@ -28,7 +28,7 @@ defaults:
 jobs:
   plan:
     name: Plan releases
-    if: ${{ github.repository == 'coollabsio/tinyhelm' }}
+    if: ${{ github.repository == '60db-ai/tinyhelm' }}
     permissions:
       contents: read
     runs-on: ubuntu-26.04 # https://github.com/actions/runner-images
@@ -110,7 +110,7 @@ jobs:
           labels="$(docker buildx imagetools inspect "${sources[0]}" --format '{{ json .Image.Config.Labels }}' \
             | jq -r 'to_entries[] | "--annotation=index:\(.key)=\(.value)"')"
           mapfile -t annotations <<< "$labels"
-          for repository in ghcr.io/coollabsio/tinyhelm docker.io/coollabsio/tinyhelm; do
+          for repository in ghcr.io/60db-ai/tinyhelm docker.io/60db-ai/tinyhelm; do
             docker buildx imagetools create "${annotations[@]}" --tag "$repository:${TAG#v}" "${sources[@]}"
           done
 
@@ -173,7 +173,7 @@ jobs:
           TAGS: ${{ steps.plan.outputs.tags }}
         run: |
           jq -r 'to_entries[] | "\(.key) \(.value)"' <<< "$TAGS" | while read -r tag release; do
-            for repository in ghcr.io/coollabsio/tinyhelm docker.io/coollabsio/tinyhelm; do
+            for repository in ghcr.io/60db-ai/tinyhelm docker.io/60db-ai/tinyhelm; do
               docker buildx imagetools create --tag "$repository:${tag#v}" "$repository:${release#v}"
             done
           done

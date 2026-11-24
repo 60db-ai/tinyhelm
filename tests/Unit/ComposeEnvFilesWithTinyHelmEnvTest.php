@@ -4,7 +4,7 @@
  * The deployment gives each Compose service TinyHelm's .env file. The env files of the user stay in
  * front of it, so they can hold defaults that TinyHelm variables override.
  *
- * @see https://github.com/coollabsio/tinyhelm/issues/2004
+ * @see https://github.com/60db-ai/tinyhelm/issues/2004
  */
 it('keeps the env files of the user in front of the TinyHelm env file', function (mixed $envFile, array $expected) {
     expect(composeEnvFilesWithTinyHelmEnv($envFile))->toBe($expected);

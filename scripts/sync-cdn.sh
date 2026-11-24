@@ -4,8 +4,8 @@ set -euo pipefail
 OPTION="$*"
 CHANNEL="${1:-}"
 VERSION="${2:-}"
-CDN_REPOSITORY=coollabsio/coollabs-cdn
-CDN_URL=https://cdn.coollabs.io
+CDN_REPOSITORY=60db-ai/tinyhelm-cdn
+CDN_URL=https://cdn.tinyhelm.com
 FILES=releases.json,docker-compose.yml,docker-compose.prod.yml,.env.production,install.sh,upgrade.sh,upgrade-postgres.sh,patch.sh,service-templates-latest.json
 WORK_DIR="$(mktemp -d)"
 
@@ -50,7 +50,7 @@ select_channel() {
 }
 
 fetch_releases() {
-	gh api "repos/coollabsio/tinyhelm/releases?per_page=30" | jq . > "$WORK_DIR/releases.json"
+	gh api "repos/60db-ai/tinyhelm/releases?per_page=30" | jq . > "$WORK_DIR/releases.json"
 	ok "releases.json lists the $(jq length "$WORK_DIR/releases.json") newest GitHub releases"
 }
 
@@ -103,7 +103,7 @@ publish_channel() {
 		return
 	fi
 	cat > "$WORK_DIR/body.md" <<-BODY
-		Syncs the stable channel to TinyHelm v$VERSION, see its [release notes](https://github.com/coollabsio/tinyhelm/releases/tag/v$VERSION).
+		Syncs the stable channel to TinyHelm v$VERSION, see its [release notes](https://github.com/60db-ai/tinyhelm/releases/tag/v$VERSION).
 
 		## Changes
 

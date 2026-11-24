@@ -652,7 +652,7 @@ describe('domain edits after the session team changes', function () {
         $application = createDnsTestApplication($this, 'https://main.example.com');
         $preview = ApplicationPreview::create([
             'application_id' => $application->id, 'pull_request_id' => 7,
-            'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/7', 'fqdn' => 'https://app.example.com',
+            'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/7', 'fqdn' => 'https://app.example.com',
         ]);
         app(CloudflareDnsProvider::class)->createRecord($this->zone, 'app.example.com', '203.0.113.10', $preview);
 

@@ -72,7 +72,7 @@ Guest mounts:
   $ROOT -> $GUEST_TINYHELM_ROOT
 
 Installed from:
-  https://github.com/coollabsio/coold/releases/tag/$VERSION
+  https://github.com/60db-ai/coold/releases/tag/$VERSION
   https://github.com/superfly/corrosion/releases/tag/$CORROSION_VERSION
 USAGE
 }

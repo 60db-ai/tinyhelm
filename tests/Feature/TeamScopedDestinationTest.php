@@ -196,8 +196,8 @@ describe('PublicGitRepository destination team scope', function () {
         try {
             Livewire::withUrlParams(['destination' => $this->destinationB->uuid])
                 ->test(PublicGitRepository::class, $routeParams)
-                ->set('repository_url', 'https://github.com/coollabsio/tinyhelm')
-                ->set('git_repository', 'coollabsio/tinyhelm')
+                ->set('repository_url', 'https://github.com/60db-ai/tinyhelm')
+                ->set('git_repository', '60db-ai/tinyhelm')
                 ->set('git_branch', 'main')
                 ->set('port', 3000)
                 ->set('build_pack', 'nixpacks')

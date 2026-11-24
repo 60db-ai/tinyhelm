@@ -214,7 +214,7 @@ test('team members cannot check or finish the transfer', function () {
 });
 
 test('a Docker image application has no manual webhook step', function () {
-    $application = finishTestApplication($this, ['source_type' => null, 'source_id' => null, 'build_pack' => 'dockerimage', 'git_repository' => 'coollabsio/tinyhelm']);
+    $application = finishTestApplication($this, ['source_type' => null, 'source_id' => null, 'build_pack' => 'dockerimage', 'git_repository' => '60db-ai/tinyhelm']);
 
     expect(array_column($this->checklist->start($this->server), 'key'))->not->toContain("manual_webhook:{$application->uuid}");
 });

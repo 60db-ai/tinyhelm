@@ -13,7 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 uses(RefreshDatabase::class);
 
 /**
- * Regression coverage for https://github.com/coollabsio/tinyhelm/issues/6995:
+ * Regression coverage for https://github.com/60db-ai/tinyhelm/issues/6995:
  * each deployment parses the compose file again, and that parse must not reset the values
  * that the user saved, or write stale values into the compose file.
  */

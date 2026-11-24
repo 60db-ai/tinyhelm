@@ -26,7 +26,7 @@ use Symfony\Component\Yaml\Yaml;
 uses(RefreshDatabase::class);
 
 /**
- * Regression coverage for https://github.com/coollabsio/tinyhelm/issues/6653: a Compose file that is
+ * Regression coverage for https://github.com/60db-ai/tinyhelm/issues/6653: a Compose file that is
  * valid YAML but not a valid Compose file (a service indented under another service) was saved
  * without an error, and the next deployment could not use it.
  */

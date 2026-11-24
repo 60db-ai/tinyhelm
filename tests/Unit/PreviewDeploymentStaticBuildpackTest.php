@@ -4,7 +4,7 @@
  * Preview deployments of static build pack applications must build the image
  * from the generated nginx Dockerfile, not from a Dockerfile in the repository.
  *
- * @see https://github.com/coollabsio/tinyhelm/issues/8238
+ * @see https://github.com/60db-ai/tinyhelm/issues/8238
  */
 
 use App\Jobs\ApplicationDeploymentJob;

@@ -24,7 +24,7 @@ function createApplicationForAdvancedStopGracePeriodTest(): Application
 
     return Application::create([
         'name' => 'stop-grace-period-test-app',
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
         'git_branch' => 'main',
         'build_pack' => 'nixpacks',
         'ports_exposes' => '3000',

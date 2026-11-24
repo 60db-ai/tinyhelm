@@ -39,7 +39,7 @@ function makeDeploymentJobForCommitCheck(string $pinnedSha, string $branchHeadSh
             return [
                 'commands' => collect([]),
                 'branch' => 'main',
-                'fullRepoUrl' => 'https://github.com/coollabsio/tinyhelm.git',
+                'fullRepoUrl' => 'https://github.com/60db-ai/tinyhelm.git',
             ];
         }
     };

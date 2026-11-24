@@ -44,5 +44,5 @@ it('treats MinIO-compatible images as MinIO services', function (string $image) 
 })->with([
     'pgsty/silo:RELEASE.2026-10-15T00-00-00Z',
     'docker.io/pgsty/silo:RELEASE.2026-10-15T00-00-00Z',
-    'ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z',
+    'ghcr.io/60db-ai/minio:RELEASE.2025-10-15T17-29-55Z',
 ]);

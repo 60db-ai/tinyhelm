@@ -45,7 +45,7 @@ test('a deployment whose job cannot be dispatched fails and does not block the n
     expect($failedDeployment->status)->toBe('failed')
         ->and($failedDeployment->logs)->toContain('Deployment could not be started');
 
-    $this->application->update(['docker_registry_image_name' => 'ghcr.io/coollabs/app']);
+    $this->application->update(['docker_registry_image_name' => 'ghcr.io/tinyhelm/app']);
     queue_application_deployment($this->application->fresh(), 'prr-next-deployment');
 
     expect(ApplicationDeploymentQueue::where('deployment_uuid', 'prr-next-deployment')->value('status'))->toBe('in_progress');

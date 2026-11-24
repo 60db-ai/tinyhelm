@@ -123,10 +123,10 @@ it('keeps the helper containers of running backups and imports and removes orpha
         $scripts[] = $script = remoteProcessScript($process);
 
         return Process::result(str_contains($script, 'tinyhelm-helper') ? json_encode([
-            ['ID' => 'running', 'Names' => 'backup-of-runningdb', 'Image' => 'ghcr.io/coollabsio/tinyhelm-helper:1.0.13'],
-            ['ID' => 'running', 'Names' => "volume-backup-{$volumeExecution->uuid}", 'Image' => 'ghcr.io/coollabsio/tinyhelm-helper:1.0.13'],
-            ['ID' => 'running', 'Names' => "backup-decompress-{$importOperation}", 'Image' => 'ghcr.io/coollabsio/tinyhelm-helper:1.0.13'],
-            ['ID' => 'orphan', 'Names' => 'backup-of-endeddb', 'Image' => 'ghcr.io/coollabsio/tinyhelm-helper:1.0.13'],
+            ['ID' => 'running', 'Names' => 'backup-of-runningdb', 'Image' => 'ghcr.io/60db-ai/tinyhelm-helper:1.0.13'],
+            ['ID' => 'running', 'Names' => "volume-backup-{$volumeExecution->uuid}", 'Image' => 'ghcr.io/60db-ai/tinyhelm-helper:1.0.13'],
+            ['ID' => 'running', 'Names' => "backup-decompress-{$importOperation}", 'Image' => 'ghcr.io/60db-ai/tinyhelm-helper:1.0.13'],
+            ['ID' => 'orphan', 'Names' => 'backup-of-endeddb', 'Image' => 'ghcr.io/60db-ai/tinyhelm-helper:1.0.13'],
         ]) : '');
     });
 

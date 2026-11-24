@@ -136,10 +136,10 @@ services:
       - tinyhelm
 
   tinyhelm-helper:
-    image: coollabsio/tinyhelm-helper:dev
+    image: 60db-ai/tinyhelm-helper:dev
     pull_policy: build
     build:
-      context: https://github.com/coollabsio/tinyhelm-helper.git#main:src
+      context: https://github.com/60db-ai/tinyhelm-helper.git#main:src
       args:
         - IMAGE_VERSION=dev
     command: ["true"]
@@ -184,7 +184,7 @@ services:
 
   minio:
     profiles: ["minio"]
-    image: coollabsio/maxio:latest
+    image: 60db-ai/maxio:latest
     pull_policy: always
     ports:
       - "${DEV_BIND_ADDRESS:-0.0.0.0}:${FORWARD_MINIO_PORT:-9000}:9000"
@@ -202,7 +202,7 @@ services:
 
   minio-init:
     profiles: ["minio"]
-    image: ghcr.io/coollabsio/mx:0.2.1
+    image: ghcr.io/60db-ai/mx:0.2.1
     pull_policy: always
     restart: "no"
     depends_on:

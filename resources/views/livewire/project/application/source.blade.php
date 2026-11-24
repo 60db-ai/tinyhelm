@@ -28,7 +28,7 @@
             </x-slot:actions>
 
             <div class="grid gap-4 lg:grid-cols-2">
-                <x-forms.input placeholder="coollabsio/tinyhelm-example" id="gitRepository" label="Repository"
+                <x-forms.input placeholder="60db-ai/tinyhelm-example" id="gitRepository" label="Repository"
                     canGate="update" :canResource="$application" />
                 <x-forms.input placeholder="main" id="gitBranch" label="Branch" canGate="update"
                     :canResource="$application" />
@@ -226,10 +226,10 @@
                 <div class="grid gap-2 sm:grid-cols-2">
                     @if ($currentSource)
                         <div
-                            class="relative flex min-h-16 items-center gap-3 rounded-xl border border-coollabs/30 bg-coollabs/[0.06] p-3 ring-1 ring-coollabs/20 dark:border-brand-light/30 dark:bg-brand/[0.12] dark:ring-brand-light/15"
+                            class="relative flex min-h-16 items-center gap-3 rounded-xl border border-tinyhelm/30 bg-tinyhelm/[0.06] p-3 ring-1 ring-tinyhelm/20 dark:border-brand-light/30 dark:bg-brand/[0.12] dark:ring-brand-light/15"
                             aria-current="true">
                             <div
-                                class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-coollabs/20 bg-white text-coollabs dark:border-brand-light/20 dark:bg-white/[0.04] dark:text-brand-light">
+                                class="flex size-9 shrink-0 items-center justify-center rounded-lg border border-tinyhelm/20 bg-white text-tinyhelm dark:border-brand-light/20 dark:bg-white/[0.04] dark:text-brand-light">
                                 <x-git-icon class="size-4" :git="$currentSourceMorph" />
                             </div>
                             <div class="min-w-0 flex-1">
@@ -305,7 +305,7 @@
                     <p class="mt-3 text-[12px] leading-5 text-neutral-500 dark:text-fg-dim">
                         No other sources available.
                         <a href="{{ route('source.all') }}" {{ wireNavigate() }}
-                            class="font-medium text-coollabs underline-offset-2 hover:underline dark:text-brand-light">Connect
+                            class="font-medium text-tinyhelm underline-offset-2 hover:underline dark:text-brand-light">Connect
                             another source</a>
                         to switch providers.
                     </p>

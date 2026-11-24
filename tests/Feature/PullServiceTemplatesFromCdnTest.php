@@ -155,7 +155,7 @@ it('logs without notifying when the CDN responds with a non-success status', fun
     Team::factory()->create(['id' => 0])->discordNotificationSettings()->update(['discord_enabled' => true]);
     Notification::fake();
     Http::fake([
-        'cdn.coollabs.io/*' => Http::response('nope', 503),
+        'cdn.tinyhelm.com/*' => Http::response('nope', 503),
     ]);
     config(['app.env' => 'production']);
 
@@ -175,11 +175,11 @@ it('takes the service templates of the channel of the running version', function
 
     expect(service_templates_cdn_url())->toBe($url);
 })->with([
-    'stable' => ['4.7.5', 'https://cdn.coollabs.io/tinyhelm/service-templates-latest.json'],
-    'beta' => ['4.8.0-beta.1', 'https://cdn.coollabs.io/tinyhelm/preview/service-templates-latest.json'],
-    'release candidate' => ['4.8.0-rc.2', 'https://cdn.coollabs.io/tinyhelm/preview/service-templates-latest.json'],
-    'alpha' => ['4.8.0-alpha.1', 'https://cdn.coollabs.io/tinyhelm/nightly/service-templates-latest.json'],
-    'nightly' => ['4.8.0-alpha.0.20261116.1', 'https://cdn.coollabs.io/tinyhelm/nightly/service-templates-latest.json'],
+    'stable' => ['4.7.5', 'https://cdn.tinyhelm.com/tinyhelm/service-templates-latest.json'],
+    'beta' => ['4.8.0-beta.1', 'https://cdn.tinyhelm.com/tinyhelm/preview/service-templates-latest.json'],
+    'release candidate' => ['4.8.0-rc.2', 'https://cdn.tinyhelm.com/tinyhelm/preview/service-templates-latest.json'],
+    'alpha' => ['4.8.0-alpha.1', 'https://cdn.tinyhelm.com/tinyhelm/nightly/service-templates-latest.json'],
+    'nightly' => ['4.8.0-alpha.0.20261116.1', 'https://cdn.tinyhelm.com/tinyhelm/nightly/service-templates-latest.json'],
     'pull request' => ['4.7.5-pr.12345', null],
 ]);
 
@@ -192,7 +192,7 @@ it('uses the service templates of the image in development', function () {
 it('pulls the service templates of the nightly channel on a nightly', function () {
     $json = json_encode(['buzz' => ['category' => 'messaging', 'compose' => '', 'slogan' => 'Buzz']], JSON_THROW_ON_ERROR);
     Http::preventStrayRequests();
-    Http::fake(['https://cdn.coollabs.io/tinyhelm/nightly/service-templates-latest.json' => Http::response($json)]);
+    Http::fake(['https://cdn.tinyhelm.com/tinyhelm/nightly/service-templates-latest.json' => Http::response($json)]);
     config(['app.env' => 'production', 'constants.tinyhelm.version' => '4.8.0-alpha.0.20261116.1']);
     $path = service_templates_path();
     $original = File::get($path);

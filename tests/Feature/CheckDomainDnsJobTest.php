@@ -63,7 +63,7 @@ it('persists dns results for application previews', function () {
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 41,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/41',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/41',
         'fqdn' => 'https://preview.example.com',
         'domain_dns_statuses' => [
             $statusKey => [

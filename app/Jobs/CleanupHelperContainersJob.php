@@ -49,7 +49,7 @@ class CleanupHelperContainersJob implements ShouldBeEncrypted, ShouldBeUnique, S
 
     private static function helperContainersCommand(): string
     {
-        return 'docker container ps --format \'{{json .}}\' | jq -s \'map(select(.Image|test("(^|/)coollabsio/tinyhelm-helper(:|@)")))\'';
+        return 'docker container ps --format \'{{json .}}\' | jq -s \'map(select(.Image|test("(^|/)60db-ai/tinyhelm-helper(:|@)")))\'';
     }
 
     /**

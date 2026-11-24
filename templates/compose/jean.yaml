@@ -1,4 +1,4 @@
-# documentation: https://github.com/coollabsio/jean/blob/main/docs/headless-server.md
+# documentation: https://github.com/60db-ai/jean/blob/main/docs/headless-server.md
 # slogan: Open-source desktop and server client for orchestrating AI coding agents.
 # category: development
 # tags: jean,ai,coding,agents,development,git,worktrees
@@ -7,7 +7,7 @@
 
 services:
   jean:
-    image: 'ghcr.io/coollabsio/jean-server:${JEAN_VERSION:-v1.0.16}'
+    image: 'ghcr.io/60db-ai/jean-server:${JEAN_VERSION:-v1.0.16}'
     environment:
       - SERVICE_URL_JEAN_3456
       - JEAN_HEADLESS=${JEAN_HEADLESS:-1}

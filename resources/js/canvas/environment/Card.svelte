@@ -9,7 +9,7 @@
   let card;
   let portDot = $state();
   // Same as the deploy canvas drop target: accent border and a soft 4px ring.
-  const DROP_TARGET = 'border-coollabs! dark:border-warning! ring-4 ring-coollabs/15 dark:ring-warning/15';
+  const DROP_TARGET = 'border-tinyhelm! dark:border-warning! ring-4 ring-tinyhelm/15 dark:ring-warning/15';
 
   const extra = $derived(node.extra_zones?.length || 0);
   const security = $derived(node.security?.text ? node.security : null);
@@ -32,7 +32,7 @@
 <div
   bind:this={card}
   class="group absolute flex w-[260px] flex-col rounded-xl border bg-white p-3 shadow-sm transition-shadow hover:shadow-md dark:bg-raised {selected
-    ? 'border-coollabs ring-2 ring-coollabs/25 dark:border-warning dark:ring-warning/25'
+    ? 'border-tinyhelm ring-2 ring-tinyhelm/25 dark:border-warning dark:ring-warning/25'
     : node.missing
       ? 'border-dashed border-red-300 dark:border-red-500/40'
       : 'border-neutral-200 hover:border-neutral-300 dark:border-white/[0.08] dark:hover:border-white/[0.16]'} {movable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} {dropTarget ? DROP_TARGET : ''}"
@@ -150,7 +150,7 @@
   {#if port}
     <span
       bind:this={portDot}
-      class="absolute top-1/2 -right-1.5 size-3 -translate-y-1/2 cursor-crosshair rounded-full border-2 border-white bg-neutral-400 opacity-0 shadow transition-[opacity,scale,background-color] group-hover:opacity-100 hover:scale-120 hover:bg-coollabs dark:border-raised dark:bg-neutral-500 dark:hover:bg-warning"
+      class="absolute top-1/2 -right-1.5 size-3 -translate-y-1/2 cursor-crosshair rounded-full border-2 border-white bg-neutral-400 opacity-0 shadow transition-[opacity,scale,background-color] group-hover:opacity-100 hover:scale-120 hover:bg-tinyhelm dark:border-raised dark:bg-neutral-500 dark:hover:bg-warning"
       data-ec-port
       role="presentation"
       title={port}

@@ -28,7 +28,7 @@ beforeEach(function () {
         'destination_id' => $destination->id,
         'destination_type' => StandaloneDocker::class,
         'build_pack' => 'nixpacks',
-        'docker_registry_image_name' => 'ghcr.io/coollabs/app',
+        'docker_registry_image_name' => 'ghcr.io/tinyhelm/app',
     ]);
 });
 

@@ -1,6 +1,6 @@
 ---
 type: fixed
 ---
-Missing warning when GitHub registered a GitHub App on the personal account instead of the entered `Organization` ([#12574](https://github.com/coollabsio/tinyhelm/issues/12574))
+Missing warning when GitHub registered a GitHub App on the personal account instead of the entered `Organization` ([#12574](https://github.com/60db-ai/tinyhelm/issues/12574))
 
 - TinyHelm now stores the account that owns the GitHub App and tells you when it is not the organization that you entered

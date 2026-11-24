@@ -96,7 +96,7 @@ it('honours force_domain_override for conflicting docker_compose_domains on appl
             'project_uuid' => $this->project->uuid,
             'environment_uuid' => $this->environment->uuid,
             'server_uuid' => $this->server->uuid,
-            'git_repository' => 'https://gitlab.com/coollabsio/tinyhelm-examples',
+            'git_repository' => 'https://gitlab.com/60db-ai/tinyhelm-examples',
             'git_branch' => 'v4.x',
             'build_pack' => 'dockercompose',
             'docker_compose_domains' => [

@@ -65,7 +65,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
-        // A duplicate login or 2FA submission carries a stale token on an already authenticated session, see https://github.com/coollabsio/tinyhelm/issues/10670
+        // A duplicate login or 2FA submission carries a stale token on an already authenticated session, see https://github.com/60db-ai/tinyhelm/issues/10670
         if ($e instanceof TokenMismatchException && $request->routeIs('login.store', 'two-factor.login.store') && $request->user()) {
             return redirect()->intended(RouteServiceProvider::HOME);
         }

@@ -18,7 +18,7 @@ defaults:
 jobs:
   remove:
     name: Remove arch tags
-    if: ${{ github.repository == 'coollabsio/tinyhelm' }}
+    if: ${{ github.repository == '60db-ai/tinyhelm' }}
     permissions:
       contents: read
     environment:

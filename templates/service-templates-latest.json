@@ -2702,7 +2702,7 @@
         "outdated": true
     },
     "jean": {
-        "documentation": "https://github.com/coollabsio/jean/blob/main/docs/headless-server.md?utm_source=tinyhelm.com",
+        "documentation": "https://github.com/60db-ai/jean/blob/main/docs/headless-server.md?utm_source=tinyhelm.com",
         "slogan": "Open-source desktop and server client for orchestrating AI coding agents.",
         "compose": "c2VydmljZXM6CiAgamVhbjoKICAgIGltYWdlOiAnZ2hjci5pby9jb29sbGFic2lvL2plYW4tc2VydmVyOiR7SkVBTl9WRVJTSU9OOi12MS4wLjE2fScKICAgIGVudmlyb25tZW50OgogICAgICAtIFNFUlZJQ0VfVVJMX0pFQU5fMzQ1NgogICAgICAtICdKRUFOX0hFQURMRVNTPSR7SkVBTl9IRUFETEVTUzotMX0nCiAgICAgIC0gJ0pFQU5fSE9TVD0ke0pFQU5fSE9TVDotMC4wLjAuMH0nCiAgICAgIC0gJ0pFQU5fUE9SVD0ke0pFQU5fUE9SVDotMzQ1Nn0nCiAgICAgIC0gJ0pFQU5fVE9LRU49JHtTRVJWSUNFX1BBU1NXT1JEXzY0X0pFQU59JwogICAgICAtICdKRUFOX05PX1RPS0VOPSR7SkVBTl9OT19UT0tFTjotMH0nCiAgICAgIC0gJ0pFQU5fQUxMT1dfVU5TQUZFX05PX1RPS0VOPSR7SkVBTl9BTExPV19VTlNBRkVfTk9fVE9LRU46LTB9JwogICAgICAtICdKRUFOX0FMTE9XX05BVElWRV9PUEVOPSR7SkVBTl9BTExPV19OQVRJVkVfT1BFTjotMH0nCiAgICAgIC0gJ0pFQU5fQUxMT1dFRF9PUklHSU5TPSR7SkVBTl9BTExPV0VEX09SSUdJTlM6LX0nCiAgICAgIC0gSkVBTl9EQVRBX0RJUj0vaG9tZS9qZWFuLy5sb2NhbC9zaGFyZS9jb20uamVhbi5kZXNrdG9wCiAgICB2b2x1bWVzOgogICAgICAtICdqZWFuLWRhdGE6L2hvbWUvamVhbi8ubG9jYWwvc2hhcmUvY29tLmplYW4uZGVza3RvcCcKICAgIGhlYWx0aGNoZWNrOgogICAgICB0ZXN0OgogICAgICAgIC0gQ01ELVNIRUxMCiAgICAgICAgLSAnY3VybCAtZnNTIGh0dHA6Ly8xMjcuMC4wLjE6MzQ1Ni9yZWFkeXogPi9kZXYvbnVsbCB8fCBleGl0IDEnCiAgICAgIGludGVydmFsOiAxMHMKICAgICAgdGltZW91dDogNXMKICAgICAgcmV0cmllczogMTIKICAgICAgc3RhcnRfcGVyaW9kOiAxNXMK",
         "tags": [
@@ -3693,7 +3693,7 @@
         "template_last_updated_at": "2026-11-16T08:50:06+01:00"
     },
     "next-image-transformation": {
-        "documentation": "https://github.com/coollabsio/next-image-transformation?utm_source=tinyhelm.com",
+        "documentation": "https://github.com/60db-ai/next-image-transformation?utm_source=tinyhelm.com",
         "slogan": "Drop-in replacement for Vercel's Nextjs image optimization service.",
         "compose": "c2VydmljZXM6CiAgbmV4dC1pbWFnZS10cmFuc2Zvcm1hdGlvbjoKICAgIGltYWdlOiAnZ2hjci5pby9jb29sbGFic2lvL25leHQtaW1hZ2UtdHJhbnNmb3JtYXRpb246MC4wLjMnCiAgICBlbnZpcm9ubWVudDoKICAgICAgLSBTRVJWSUNFX1VSTF9UUkFOU0ZPUk1BVElPTl8zMDAwCiAgICAgIC0gTk9ERV9FTlY9cHJvZHVjdGlvbgogICAgICAtICdBTExPV0VEX1JFTU9URV9ET01BSU5TPSR7QUxMT1dFRF9SRU1PVEVfRE9NQUlOUzotKn0nCiAgICAgIC0gJ0lNR1BST1hZX1VSTD0ke0lNR1BST1hZX1VSTDotaHR0cDovL2ltZ3Byb3h5OjgwODB9JwogICAgaGVhbHRoY2hlY2s6CiAgICAgIHRlc3Q6ICd3Z2V0IC1xTy0gaHR0cDovLzEyNy4wLjAuMTozMDAwL2hlYWx0aCB8fCBleGl0IDEnCiAgICAgIGludGVydmFsOiAycwogICAgICB0aW1lb3V0OiAxMHMKICAgICAgcmV0cmllczogNQogIGltZ3Byb3h5OgogICAgaW1hZ2U6ICdkYXJ0aHNpbS9pbWdwcm94eTp2My4zMS40JwogICAgZW52aXJvbm1lbnQ6CiAgICAgIC0gSU1HUFJPWFlfQVVUT19XRUJQPXRydWUKICAgICAgLSBJTUdQUk9YWV9KUEVHX1BST0dSRVNTSVZFPXRydWUKICAgICAgLSBJTUdQUk9YWV9VU0VfRVRBRz10cnVlCiAgICBoZWFsdGhjaGVjazoKICAgICAgdGVzdDoKICAgICAgICAtIENNRAogICAgICAgIC0gaW1ncHJveHkKICAgICAgICAtIGhlYWx0aAogICAgICBpbnRlcnZhbDogMnMKICAgICAgdGltZW91dDogMTBzCiAgICAgIHJldHJpZXM6IDUK",
         "tags": [
@@ -4210,7 +4210,7 @@
         "port": "80"
     },
     "orbit": {
-        "documentation": "https://github.com/coollabsio/orbit/blob/main/docs/operations.md?utm_source=tinyhelm.com",
+        "documentation": "https://github.com/60db-ai/orbit/blob/main/docs/operations.md?utm_source=tinyhelm.com",
         "slogan": "Self-hosted workspace for teams with tasks, docs, chat, and an MCP server for AI clients.",
         "compose": "c2VydmljZXM6CiAgb3JiaXQ6CiAgICBpbWFnZTogJ2doY3IuaW8vY29vbGxhYnNpby9vcmJpdDowLjMuMCcKICAgIGVudmlyb25tZW50OgogICAgICAtIFNFUlZJQ0VfVVJMX09SQklUXzgwODAKICAgICAgLSBPUkJJVF9FTlY9cHJvZHVjdGlvbgogICAgICAtICdPUkJJVF9QVUJMSUNfT1JJR0lOPSR7U0VSVklDRV9VUkxfT1JCSVR9JwogICAgICAtICdPUkJJVF9UUlVTVEVEX1BST1hJRVM9JHtPUkJJVF9UUlVTVEVEX1BST1hJRVM6LTEyNy4wLjAuMS8zMiwxMC4wLjAuMC84LDE3Mi4xNi4wLjAvMTIsMTkyLjE2OC4wLjAvMTZ9JwogICAgICAtICdPUkJJVF9BUFBfS0VZPSR7U0VSVklDRV9SRUFMQkFTRTY0XzMyX0FQUEtFWX0nCiAgICB2b2x1bWVzOgogICAgICAtICdvcmJpdC1kYXRhOi92YXIvbGliL29yYml0JwogICAgICAtICdvcmJpdC1iYWNrdXBzOi92YXIvYmFja3Vwcy9vcmJpdCcKICAgIHN0b3BfZ3JhY2VfcGVyaW9kOiA0MHMKICAgIGhlYWx0aGNoZWNrOgogICAgICB0ZXN0OgogICAgICAgIC0gQ01ECiAgICAgICAgLSAvb3JiaXQKICAgICAgICAtIGhlYWx0aGNoZWNrCiAgICAgIGludGVydmFsOiA1cwogICAgICB0aW1lb3V0OiAzcwogICAgICByZXRyaWVzOiAxMAo=",
         "tags": [
@@ -4223,7 +4223,7 @@
             "kanban",
             "mcp",
             "ai",
-            "coollabs"
+            "tinyhelm"
         ],
         "category": "productivity",
         "logo": "svgs/orbit.svg",

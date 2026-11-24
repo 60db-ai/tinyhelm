@@ -1,4 +1,4 @@
 ---
 type: fixed
 ---
-Could not select `Server` in the `System status` menu of a server to go back to the server page ([#12621](https://github.com/coollabsio/tinyhelm/issues/12621))
+Could not select `Server` in the `System status` menu of a server to go back to the server page ([#12621](https://github.com/60db-ai/tinyhelm/issues/12621))

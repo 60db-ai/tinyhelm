@@ -247,7 +247,7 @@ it('defaults the registry setting to docker io when no registry is saved', funct
 it('uses the database registry for helper images when the configured helper image is default', function () {
     config([
         'constants.tinyhelm.registry_url' => 'ghcr.io',
-        'constants.tinyhelm.helper_image' => 'ghcr.io/coollabsio/tinyhelm-helper',
+        'constants.tinyhelm.helper_image' => 'ghcr.io/60db-ai/tinyhelm-helper',
     ]);
 
     updateTinyHelmTestCreateRootServerAndSettings([
@@ -255,7 +255,7 @@ it('uses the database registry for helper images when the configured helper imag
     ]);
 
     expect(tinyhelmRegistryUrl())->toBe('docker.io')
-        ->and(tinyhelmHelperImage())->toBe('docker.io/coollabsio/tinyhelm-helper');
+        ->and(tinyhelmHelperImage())->toBe('docker.io/60db-ai/tinyhelm-helper');
 });
 
 it('preserves an explicit custom helper image override', function () {

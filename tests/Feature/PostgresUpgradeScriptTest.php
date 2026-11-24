@@ -49,9 +49,9 @@ it('detects the current TinyHelm image tag from the running container image', fu
     expect($exitCode)->toBe(0)
         ->and($output)->toBe($expectedTag);
 })->with([
-    'scripts standard registry image' => ['scripts/upgrade-postgres.sh', 'ghcr.io/coollabsio/tinyhelm:4.0.0-beta.420', '4.0.0-beta.420'],
-    'scripts registry with port' => ['scripts/upgrade-postgres.sh', 'registry.example.com:5000/coollabsio/tinyhelm:4.0.1', '4.0.1'],
-    'scripts digest suffix' => ['scripts/upgrade-postgres.sh', 'ghcr.io/coollabsio/tinyhelm:4.0.2@sha256:abcdef', '4.0.2'],
+    'scripts standard registry image' => ['scripts/upgrade-postgres.sh', 'ghcr.io/60db-ai/tinyhelm:4.0.0-beta.420', '4.0.0-beta.420'],
+    'scripts registry with port' => ['scripts/upgrade-postgres.sh', 'registry.example.com:5000/60db-ai/tinyhelm:4.0.1', '4.0.1'],
+    'scripts digest suffix' => ['scripts/upgrade-postgres.sh', 'ghcr.io/60db-ai/tinyhelm:4.0.2@sha256:abcdef', '4.0.2'],
 ]);
 
 it('passes the preserved TinyHelm image tag to docker compose when starting the stack', function (string $scriptPath) {

@@ -38,7 +38,7 @@ beforeEach(function () {
         'destination_id' => $destination->id,
         'destination_type' => $destination->getMorphClass(),
         'build_pack' => 'dockercompose',
-        'git_repository' => 'https://github.com/coollabsio/compose-app',
+        'git_repository' => 'https://github.com/60db-ai/compose-app',
         'git_branch' => 'main',
         'base_directory' => '/',
         'docker_compose_location' => '/docker-compose.yaml',

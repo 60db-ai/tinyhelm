@@ -4,7 +4,7 @@
     <span {{ $attributes->merge(['class' => 'text-xs opacity-90']) }}>v{{ $version }}</span>
 @else
     <a {{ $attributes->merge(['class' => 'text-xs cursor-pointer opacity-90 hover:opacity-100 dark:hover:text-white hover:text-black']) }}
-        href="https://github.com/coollabsio/tinyhelm/releases/tag/v{{ config('constants.tinyhelm.version') }}" target="_blank">
+        href="https://github.com/60db-ai/tinyhelm/releases/tag/v{{ config('constants.tinyhelm.version') }}" target="_blank">
         v{{ $version }}
     </a>
 @endif

@@ -61,7 +61,7 @@ beforeEach(function () {
         'static_image' => 'nginx:alpine',
         'base_directory' => '/',
         'is_http_basic_auth_enabled' => false,
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
         'ports_exposes' => '3000',
         'swarm_replicas' => 1,
@@ -78,7 +78,7 @@ function createAuditedApplicationPreview(Application $application, int $pullRequ
     return ApplicationPreview::create(array_merge([
         'application_id' => $application->id,
         'pull_request_id' => $pullRequestId,
-        'pull_request_html_url' => "https://github.com/coollabsio/tinyhelm/pull/{$pullRequestId}",
+        'pull_request_html_url' => "https://github.com/60db-ai/tinyhelm/pull/{$pullRequestId}",
     ], $attributes));
 }
 
@@ -120,7 +120,7 @@ it('audits adding, retagging and deleting a preview', function () {
             'environment_uuid' => $this->environment->uuid,
             'application_uuid' => $this->application->uuid,
         ])
-        ->call('add', 42, 'https://github.com/coollabsio/tinyhelm/pull/42');
+        ->call('add', 42, 'https://github.com/60db-ai/tinyhelm/pull/42');
 
     $created = applicationSettingsAuditEvents('ui.application.preview_created');
     expect($created)->toHaveCount(1)

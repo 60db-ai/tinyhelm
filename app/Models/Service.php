@@ -1190,7 +1190,7 @@ class Service extends BaseModel
                     }
                     $fields->put('Sessy', $data->toArray());
                     break;
-                case $image->contains('coollabsio/openclaw'):
+                case $image->contains('60db-ai/openclaw'):
                     $data = collect([]);
                     $username = $this->environment_variables()->where('key', 'SERVICE_USER_OPENCLAW')->first();
                     $password = $this->environment_variables()->where('key', 'SERVICE_PASSWORD_OPENCLAW')->first();
@@ -1224,7 +1224,7 @@ class Service extends BaseModel
                     }
                     $fields->put('Openclaw', $data->toArray());
                     break;
-                case $image->contains('coollabsio/jean-server'):
+                case $image->contains('60db-ai/jean-server'):
                     $data = collect([]);
                     $settings = [
                         'Token' => ['key' => 'SERVICE_PASSWORD_64_JEAN', 'rules' => 'required', 'isPassword' => true, 'sortOrder' => 1, 'customHelper' => 'Token required to access Jean Server. Variable name: SERVICE_PASSWORD_64_JEAN'],

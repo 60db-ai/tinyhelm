@@ -147,7 +147,7 @@ it('retries a GitHub API read when GitHub returns a server error', function () {
             ->push(['id' => 42], 200),
     ]);
 
-    expect(data_get(githubApi($this->githubApp, 'repos/coollabsio/tinyhelm'), 'data.id'))->toBe(42)
+    expect(data_get(githubApi($this->githubApp, 'repos/60db-ai/tinyhelm'), 'data.id'))->toBe(42)
         ->and(githubRepositoryRequests())->toBe(2)
         ->and(githubInstallationTokenRequests())->toBe(1);
 });
@@ -161,7 +161,7 @@ it('retries a GitHub API read after the connection retry of the HTTP client also
             ->push(['id' => 42], 200),
     ]);
 
-    expect(data_get(githubApi($this->githubApp, 'repos/coollabsio/tinyhelm'), 'data.id'))->toBe(42);
+    expect(data_get(githubApi($this->githubApp, 'repos/60db-ai/tinyhelm'), 'data.id'))->toBe(42);
 });
 
 it('does not retry a GitHub API write when GitHub returns a server error', function () {
@@ -170,7 +170,7 @@ it('does not retry a GitHub API write when GitHub returns a server error', funct
         'https://api.github.com/repos/*' => Http::response('<html>Bad Gateway</html>', 502),
     ]);
 
-    expect(fn () => githubApi($this->githubApp, 'repos/coollabsio/tinyhelm/issues/1/comments', 'post', ['body' => 'Deployed']))
+    expect(fn () => githubApi($this->githubApp, 'repos/60db-ai/tinyhelm/issues/1/comments', 'post', ['body' => 'Deployed']))
         ->toThrow(Exception::class, 'GitHub API call failed')
         ->and(githubRepositoryRequests())->toBe(1);
 });

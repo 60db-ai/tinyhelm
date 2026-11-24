@@ -13,7 +13,7 @@
  * container at /artifacts/{uuid}/, so the command must run inside the
  * container via executeInDocker().
  *
- * @see https://github.com/coollabsio/tinyhelm/issues/8417
+ * @see https://github.com/60db-ai/tinyhelm/issues/8417
  */
 it('generates host command (not executeInDocker) when preserveRepository is true', function () {
     $deploymentUuid = 'test-deployment-uuid';

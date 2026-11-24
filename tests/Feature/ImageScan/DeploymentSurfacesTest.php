@@ -111,7 +111,7 @@ function surfacesPullRequestBody(ApplicationDeploymentQueue $deployment): string
     $preview = ApplicationPreview::forceCreate([
         'application_id' => test()->application->id,
         'pull_request_id' => 7,
-        'pull_request_html_url' => 'https://github.com/coollabsio/app/pull/7',
+        'pull_request_html_url' => 'https://github.com/60db-ai/app/pull/7',
     ]);
     $job = new ApplicationPullRequestUpdateJob(test()->application->fresh(), $preview, ProcessStatus::ERROR, $deployment->deployment_uuid);
 

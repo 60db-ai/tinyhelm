@@ -181,12 +181,12 @@ test('webhook jobs run on the webhooks queue on cloud and on high on self-hosted
         githubAppId: null,
         action: 'opened',
         pullRequestId: 1,
-        pullRequestHtmlUrl: 'https://github.com/coollabsio/tinyhelm/pull/1',
+        pullRequestHtmlUrl: 'https://github.com/60db-ai/tinyhelm/pull/1',
         pullRequestTitle: null,
         beforeSha: null,
         afterSha: null,
         commitSha: 'abc123',
-        fullName: 'coollabsio/tinyhelm',
+        fullName: '60db-ai/tinyhelm',
     );
 
     $serverLimitJob = new ServerLimitCheckJob(new Team);

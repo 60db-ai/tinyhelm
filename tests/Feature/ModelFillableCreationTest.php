@@ -158,11 +158,11 @@ it('creates Application with all fillable attributes', function () {
         'name' => 'Full Fillable App',
         'description' => 'App with every fillable attr set',
         'fqdn' => 'https://app.example.com',
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
         'git_branch' => 'main',
         'git_commit_sha' => 'abc123def456',
-        'git_full_url' => 'https://github.com/coollabsio/tinyhelm.git',
-        'docker_registry_image_name' => 'ghcr.io/coollabsio/tinyhelm',
+        'git_full_url' => 'https://github.com/60db-ai/tinyhelm.git',
+        'docker_registry_image_name' => 'ghcr.io/60db-ai/tinyhelm',
         'docker_registry_image_tag' => 'latest',
         'build_pack' => 'nixpacks',
         'static_image' => 'nginx:alpine',
@@ -246,7 +246,7 @@ it('creates Application with all fillable attributes', function () {
     expect($application->exists)->toBeTrue();
     expect($application->uuid)->toBe('custom-app-uuid');
     expect($application->name)->toBe('Full Fillable App');
-    expect((string) $application->git_repository)->toBe('https://github.com/coollabsio/tinyhelm');
+    expect((string) $application->git_repository)->toBe('https://github.com/60db-ai/tinyhelm');
     expect($application->build_pack)->toBe('nixpacks');
     expect($application->ports_exposes)->toBe('3000');
     expect($application->environment_id)->toBe($this->environment->id);
@@ -1101,7 +1101,7 @@ it('creates GithubApp with all fillable attributes', function () {
         'team_id' => $this->team->id,
         'private_key_id' => $this->server->private_key_id,
         'name' => 'Full Fillable GH App',
-        'organization' => 'coollabsio',
+        'organization' => '60db-ai',
         'api_url' => 'https://api.github.com',
         'html_url' => 'https://github.com',
         'custom_user' => 'git',
@@ -1121,7 +1121,7 @@ it('creates GithubApp with all fillable attributes', function () {
 
     expect($githubApp->exists)->toBeTrue();
     expect($githubApp->name)->toBe('Full Fillable GH App');
-    expect($githubApp->organization)->toBe('coollabsio');
+    expect($githubApp->organization)->toBe('60db-ai');
     expect($githubApp->app_id)->toBe(12345);
     expect($githubApp->installation_id)->toBe(67890);
     expect($githubApp->client_id)->toBe('Iv1.abc123');

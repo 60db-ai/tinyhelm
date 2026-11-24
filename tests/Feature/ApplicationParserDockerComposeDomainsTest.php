@@ -650,7 +650,7 @@ YAML,
     $preview = $isPreview ? ApplicationPreview::create([
         'application_id' => $application->id,
         'pull_request_id' => 1,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/1',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/1',
         'docker_compose_domains' => $application->docker_compose_domains,
     ]) : null;
 
@@ -692,7 +692,7 @@ YAML,
     $preview = ApplicationPreview::create([
         'application_id' => $application->id,
         'pull_request_id' => 7915,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/7915',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/7915',
         'fqdn' => 'https://7915.app.example.com,https://7915.api.example.com',
         'docker_compose_domains' => json_encode([
             'frontend' => ['domain' => 'https://7915.app.example.com,https://7915.api.example.com'],

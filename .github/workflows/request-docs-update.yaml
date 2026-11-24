@@ -36,7 +36,7 @@ jobs:
               We kindly ask you to also review and update the **TinyHelm Documentation** to include this new service or it's new configuration needs.
               This will help ensure that our documentation remains accurate and up-to-date for all users.
 
-              TinyHelm Docs Repository: https://github.com/coollabsio/tinyhelm-docs
+              TinyHelm Docs Repository: https://github.com/60db-ai/tinyhelm-docs
               How to Contribute a new Service to the Docs: https://tinyhelm.com/docs/get-started/contribute/service#adding-a-new-service-template-to-the-tinyhelm-documentation
           - label: "🛠️ Feature"
             body: |
@@ -46,7 +46,7 @@ jobs:
               We kindly ask you to also update the **TinyHelm Documentation** to include information about this new feature.
               This will help ensure that our documentation remains accurate and up-to-date for all users.
 
-              TinyHelm Docs Repository: https://github.com/coollabsio/tinyhelm-docs
+              TinyHelm Docs Repository: https://github.com/60db-ai/tinyhelm-docs
               How to Contribute to the Docs: https://tinyhelm.com/docs/get-started/contribute/documentation
     steps:
       - name: Comment on the pull request

@@ -134,8 +134,8 @@ const DATABASE_DOCKER_IMAGES = [
 const SPECIFIC_SERVICES = [
     'quay.io/minio/minio',
     'minio/minio',
-    'ghcr.io/coollabsio/minio',
-    'coollabsio/minio',
+    'ghcr.io/60db-ai/minio',
+    '60db-ai/minio',
     'pgsty/silo',
     'docker.io/pgsty/silo',
     'svhd/logto',

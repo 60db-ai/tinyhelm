@@ -16,7 +16,7 @@ beforeEach(function () {
 
     // The .env template of the installer has an empty ROOT_USERNAME line.
     putenv('ROOT_USERNAME=');
-    putenv('ROOT_USER_EMAIL=root@coollabs.io');
+    putenv('ROOT_USER_EMAIL=root@tinyhelm.com');
     putenv('ROOT_USER_PASSWORD=Rw-Seeder-Test-Aa1!');
 });
 
@@ -34,7 +34,7 @@ it('creates the root user when ROOT_USERNAME is empty', function () {
     expect(User::find(0))
         ->not->toBeNull()
         ->name->toBe('Root User')
-        ->email->toBe('root@coollabs.io');
+        ->email->toBe('root@tinyhelm.com');
     expect(InstanceSettings::find(0)->is_registration_enabled)->toBeFalse();
 });
 

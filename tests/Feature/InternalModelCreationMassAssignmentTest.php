@@ -26,7 +26,7 @@ it('creates application settings for internally created applications', function 
 
     $application = Application::create([
         'name' => 'internal-app',
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
         'git_branch' => 'main',
         'build_pack' => 'nixpacks',
         'ports_exposes' => '3000',

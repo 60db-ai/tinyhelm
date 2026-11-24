@@ -1,7 +1,7 @@
 ---
 type: fixed
 ---
-High CPU use of the TinyHelm container every minute, because each scheduler process compiled the full PHP app again ([#6285](https://github.com/coollabsio/tinyhelm/issues/6285))
+High CPU use of the TinyHelm container every minute, because each scheduler process compiled the full PHP app again ([#6285](https://github.com/60db-ai/tinyhelm/issues/6285))
 
 - Short-lived PHP processes reuse compiled code from an opcache file cache, and each long-running PHP process uses about 10 MB less memory
 - The cleanup of upload chunks runs hourly instead of every two minutes, and the dispatcher of scheduled backups and tasks starts one PHP process less each minute

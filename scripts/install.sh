@@ -18,12 +18,12 @@ set -e # Exit immediately if a command exits with a non-zero status
 ## $1 could be empty, so we need to disable this check
 #set -u # Treat unset variables as an error and exit
 set -o pipefail # Cause a pipeline to return the status of the last command that exited with a non-zero status
-CDN="https://cdn.coollabs.io/tinyhelm"
+CDN="https://cdn.tinyhelm.com/tinyhelm"
 CHANNEL="stable"
 case "$1" in
 --preview | --nightly)
     CHANNEL="${1#--}"
-    CDN="https://cdn.coollabs.io/tinyhelm/$CHANNEL"
+    CDN="https://cdn.tinyhelm.com/tinyhelm/$CHANNEL"
     shift
     ;;
 esac
@@ -273,7 +273,7 @@ UI_INSTALL_STARTED=$(ui_now)
 echo "=========================================="
 echo "   TinyHelm Installation - ${DATE}"
 echo "=========================================="
-echo "Source code: https://github.com/coollabsio/tinyhelm/blob/v4.x/scripts/install.sh"
+echo "Source code: https://github.com/60db-ai/tinyhelm/blob/v4.x/scripts/install.sh"
 
 # Predefined root user
 ROOT_USERNAME=${ROOT_USERNAME:-}
@@ -548,7 +548,7 @@ if [ "$OS_TYPE" = 'amzn' ]; then
 fi
 
 # Fetch versions.json once and parse all values from it
-VERSIONS_JSON=$(curl -L --silent https://cdn.coollabs.io/tinyhelm/versions.json)
+VERSIONS_JSON=$(curl -L --silent https://cdn.tinyhelm.com/tinyhelm/versions.json)
 CHANNEL_VERSIONS=$(echo "$VERSIONS_JSON" | sed -n "/^    \"$CHANNEL\": {/,/^    }/p")
 LATEST_VERSION=$(echo "$CHANNEL_VERSIONS" | sed -n '/"tinyhelm"/,/}/s/.*"version": *"\([^"]*\)".*/\1/p' | head -n 1)
 LATEST_HELPER_VERSION=$(echo "$CHANNEL_VERSIONS" | sed -n '/"helper"/,/}/s/.*"version": *"\([^"]*\)".*/\1/p' | head -n 1)

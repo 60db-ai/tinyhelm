@@ -119,8 +119,8 @@ test('compose deployments skip build contexts they cannot inspect locally', func
         ->and($job->logEntries)->toContain("Skipping ARG injection for service api: {$reason}. Docker ignores build-time variables that the Dockerfile does not declare, so add 'ARG <NAME>' lines to the Dockerfile for the ones you need: APP_ENV, API_TOKEN, TINYHELM_URL.")
         ->and(implode("\n", $job->logEntries))->not->toContain('secret');
 })->with([
-    'git URL' => ['https://github.com/coollabsio/tinyhelm.git#main:docker', 'the build context is a remote Git URL'],
-    'git SSH URL' => [['context' => 'git@github.com:coollabsio/tinyhelm.git'], 'the build context is a remote Git URL'],
+    'git URL' => ['https://github.com/60db-ai/tinyhelm.git#main:docker', 'the build context is a remote Git URL'],
+    'git SSH URL' => [['context' => 'git@github.com:60db-ai/tinyhelm.git'], 'the build context is a remote Git URL'],
     'context variable' => ['${APP_DIR:-.}', 'the build context or Dockerfile path uses variables'],
     'Dockerfile variable' => [['context' => '.', 'dockerfile' => '${DOCKERFILE}'], 'the build context or Dockerfile path uses variables'],
     'inline Dockerfile' => [['context' => '.', 'dockerfile_inline' => "FROM alpine\n"], 'the service uses an inline Dockerfile (dockerfile_inline)'],

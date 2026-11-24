@@ -169,7 +169,7 @@ test('admin can update application webhooks', function () {
 
 test('member cannot view application webhook secrets', function () {
     $this->application->update([
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
         'manual_webhook_secret_github' => 'github-secret-value',
         'manual_webhook_secret_gitlab' => 'gitlab-secret-value',
@@ -194,7 +194,7 @@ test('member cannot view application webhook secrets', function () {
 
 test('admin can view application webhook secrets', function () {
     $this->application->update([
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
         'manual_webhook_secret_github' => 'github-secret-value',
         'manual_webhook_secret_gitlab' => 'gitlab-secret-value',

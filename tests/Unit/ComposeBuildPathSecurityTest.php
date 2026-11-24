@@ -29,8 +29,8 @@ test('compose build paths resolve for short and long syntax', function (string|a
 test('compose build contexts that TinyHelm cannot inspect locally are skipped', function (mixed $build) {
     expect(resolveComposeDockerfilePath($build))->toBeNull();
 })->with([
-    'git URL' => ['https://github.com/coollabsio/tinyhelm.git#main:docker'],
-    'git SSH URL' => [['context' => 'git@github.com:coollabsio/tinyhelm.git']],
+    'git URL' => ['https://github.com/60db-ai/tinyhelm.git#main:docker'],
+    'git SSH URL' => [['context' => 'git@github.com:60db-ai/tinyhelm.git']],
     'context variable' => ['${APP_DIR:-.}'],
     'Dockerfile variable' => [['context' => '.', 'dockerfile' => '${DOCKERFILE}']],
     'command substitution' => [['context' => '$(touch /tmp/context-pwned)']],
@@ -67,7 +67,7 @@ test('compose build contexts inside the cloned repository are kept', function (m
     'monorepo context above the base directory' => [['context' => '..'], '/apps/web'],
     'base directory without a leading slash' => [['context' => '..'], 'apps'],
     'absolute context' => [['context' => '/srv/app'], '/'],
-    'git URL' => ['https://github.com/coollabsio/tinyhelm.git#main:docker', '/'],
+    'git URL' => ['https://github.com/60db-ai/tinyhelm.git#main:docker', '/'],
     'context variable' => [['context' => '${APP_DIR:-..}'], '/'],
     'no context' => [['dockerfile' => 'Dockerfile'], '/'],
     'invalid build definition' => [42, '/'],

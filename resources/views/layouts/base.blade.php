@@ -382,13 +382,13 @@
     <meta name="twitter:site" content="@tinyhelmio" />
     <meta name="twitter:title" content="TinyHelm" />
     <meta name="twitter:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
-    <meta name="twitter:image" content="https://cdn.coollabs.io/og-images/tinyhelm.png" />
+    <meta name="twitter:image" content="https://cdn.tinyhelm.com/og-images/tinyhelm.png" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tinyhelm.com" />
     <meta property="og:title" content="TinyHelm" />
     <meta property="og:description" content="An open-source & self-hostable Heroku / Netlify / Vercel alternative." />
     <meta property="og:site_name" content="TinyHelm" />
-    <meta property="og:image" content="https://cdn.coollabs.io/og-images/tinyhelm.png" />
+    <meta property="og:image" content="https://cdn.tinyhelm.com/og-images/tinyhelm.png" />
     @use('App\Models\InstanceSettings')
     @php
 
@@ -428,7 +428,7 @@
         }
     </style>
     @if (config('app.name') == 'TinyHelm Cloud')
-        <script defer data-domain="app.tinyhelm.com" src="https://analytics.coollabs.io/js/plausible.js"></script>
+        <script defer data-domain="app.tinyhelm.com" src="https://analytics.tinyhelm.com/js/plausible.js"></script>
     @endif
     @auth
         <script type="text/javascript" src="{{ URL::asset('js/echo.js') }}"></script>

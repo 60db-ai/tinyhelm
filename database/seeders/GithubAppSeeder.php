@@ -24,7 +24,7 @@ class GithubAppSeeder extends Seeder
         GithubApp::create([
             'name' => 'tinyhelm-laravel-dev-public',
             'uuid' => 'github-app',
-            'organization' => 'coollabsio',
+            'organization' => '60db-ai',
             'api_url' => 'https://api.github.com',
             'html_url' => 'https://github.com',
             'is_public' => false,

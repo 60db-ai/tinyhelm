@@ -1,10 +1,10 @@
 <?php
 
 test('generate_application_name strips owner from git repository', function () {
-    $name = generate_application_name('coollabsio/tinyhelm', 'main', 'test123');
+    $name = generate_application_name('60db-ai/tinyhelm', 'main', 'test123');
 
     expect($name)->toBe('tinyhelm:main-test123');
-    expect($name)->not->toContain('coollabsio');
+    expect($name)->not->toContain('60db-ai');
 });
 
 test('generate_application_name handles repository without owner', function () {

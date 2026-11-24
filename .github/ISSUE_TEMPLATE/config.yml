@@ -2,17 +2,17 @@ blank_issues_enabled: false
 
 contact_links:
   - name: 🤔 Questions and Community Support
-    url: https://coollabs.io/discord
+    url: https://tinyhelm.com/discord
     about: If you have any questions, reach out to us on Discord inside the "#support" channel.
 
   - name: 💡 Feature Request
-    url: https://github.com/coollabsio/tinyhelm/discussions/categories/feature-requests
+    url: https://github.com/60db-ai/tinyhelm/discussions/categories/feature-requests
     about: Suggest a new feature for TinyHelm. Feature code should branch from `next` and target `next`.
 
   - name: ⚙️ Service Request
-    url: https://github.com/coollabsio/tinyhelm/discussions/categories/service-requests
+    url: https://github.com/60db-ai/tinyhelm/discussions/categories/service-requests
     about: Request a new service integration for TinyHelm. Service code should branch from `next` and target `next`.
 
   - name: 🔧 Improvements
-    url: https://github.com/coollabsio/tinyhelm/discussions/categories/improvements
+    url: https://github.com/60db-ai/tinyhelm/discussions/categories/improvements
     about: Suggest improvements to existing features. Small fixes should target `main`; larger changes should target `next`.

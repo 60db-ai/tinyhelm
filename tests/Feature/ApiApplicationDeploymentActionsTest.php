@@ -54,7 +54,7 @@ function makeDeploymentActionApplication(Environment $environment, StandaloneDoc
         'environment_id' => $environment->id,
         'destination_id' => $destination->id,
         'destination_type' => $destination->getMorphClass(),
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
         'git_branch' => 'main',
         'git_commit_sha' => 'HEAD',
     ]);

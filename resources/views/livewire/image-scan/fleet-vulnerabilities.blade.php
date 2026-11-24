@@ -1,6 +1,6 @@
 @php
     $checkbox = fn (bool $selected) => $selected
-        ? 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-coollabs bg-coollabs text-white dark:border-brand dark:bg-brand dark:text-white'
+        ? 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-tinyhelm bg-tinyhelm text-white dark:border-brand dark:bg-brand dark:text-white'
         : 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-neutral-300 bg-white dark:border-white/[0.14] dark:bg-white/[0.045]';
     $groupLabel = 'px-2 pb-1 pt-2 text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-fg-faint';
     $muted = 'text-[11px] text-neutral-500 dark:text-fg-faint';
@@ -35,7 +35,7 @@
                 :title="$serversNotScanning === 1 ? '1 server does not scan images.' : $serversNotScanning.' servers do not scan images.'"
                 on-dismiss="localStorage.setItem({{ \Illuminate\Support\Js::from($serversKey) }}, '1'); hidden = true">
                 <a href="{{ route('server.index') }}" {{ wireNavigate() }}
-                    class="font-medium text-coollabs hover:underline dark:text-brand-light">Go to servers</a>
+                    class="font-medium text-tinyhelm hover:underline dark:text-brand-light">Go to servers</a>
             </x-callout>
         </div>
     @endif

@@ -57,7 +57,7 @@ it('removes helper containers of finished deployments and upload containers of b
         'backup-of-killed' => 'ggg777',
         'backup-of-done' => 'hhh888',
         'backup-of-deleted' => 'iii999',
-    ])->map(fn (string $id, string $name): array => ['ID' => $id, 'Names' => $name, 'Image' => 'ghcr.io/coollabsio/tinyhelm-helper:1.0.13'])->values();
+    ])->map(fn (string $id, string $name): array => ['ID' => $id, 'Names' => $name, 'Image' => 'ghcr.io/60db-ai/tinyhelm-helper:1.0.13'])->values();
 
     $removed = [];
     Process::fake(function (PendingProcess $process) use ($containers, &$removed) {

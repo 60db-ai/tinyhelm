@@ -1035,7 +1035,7 @@ test('list_github_branches uses anonymous github api for public sources', functi
     ]);
 
     Http::fake([
-        'https://api.github.com/repos/coollabsio/tinyhelm/branches*' => Http::response([
+        'https://api.github.com/repos/60db-ai/tinyhelm/branches*' => Http::response([
             ['name' => 'v4.x', 'protected' => true, 'commit' => ['sha' => 'abc123']],
             ['name' => 'next', 'protected' => false, 'commit' => ['sha' => 'def456']],
         ], 200),
@@ -1043,7 +1043,7 @@ test('list_github_branches uses anonymous github api for public sources', functi
 
     $response = mcpReadCall('list_github_branches', [
         'github_app_uuid' => $publicApp->uuid,
-        'owner' => 'coollabsio',
+        'owner' => '60db-ai',
         'repo' => 'tinyhelm',
     ]);
     $response->assertOk();
@@ -1073,7 +1073,7 @@ test('list_github_branches rejects private apps missing installation credentials
 
     $response = mcpReadCall('list_github_branches', [
         'github_app_uuid' => $privateApp->uuid,
-        'owner' => 'coollabsio',
+        'owner' => '60db-ai',
         'repo' => 'tinyhelm',
     ]);
     $response->assertOk();
@@ -1110,7 +1110,7 @@ test('list_github_branches rejects owner or repo path segment injection', functi
 
     $badRepo = mcpReadCall('list_github_branches', [
         'github_app_uuid' => $publicApp->uuid,
-        'owner' => 'coollabsio',
+        'owner' => '60db-ai',
         'repo' => 'tinyhelm/extra',
     ]);
     $badRepo->assertOk();

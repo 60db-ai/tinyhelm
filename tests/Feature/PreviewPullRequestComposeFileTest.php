@@ -38,7 +38,7 @@ beforeEach(function () {
         'destination_id' => $destination->id,
         'destination_type' => $destination->getMorphClass(),
         'build_pack' => 'dockercompose',
-        'git_repository' => 'https://github.com/coollabsio/compose-app',
+        'git_repository' => 'https://github.com/60db-ai/compose-app',
         'git_branch' => 'main',
         'base_directory' => '/',
         'docker_compose_location' => '/docker-compose.yml',
@@ -91,7 +91,7 @@ function pullRequestComposePreview(Application $application, bool $isSameReposit
     $preview = ApplicationPreview::create([
         'application_id' => $application->id,
         'pull_request_id' => 42,
-        'pull_request_html_url' => 'https://github.com/coollabsio/compose-app/pull/42',
+        'pull_request_html_url' => 'https://github.com/60db-ai/compose-app/pull/42',
     ]);
     if ($isSameRepository) {
         $preview->forceFill(['is_same_repository' => true])->save();

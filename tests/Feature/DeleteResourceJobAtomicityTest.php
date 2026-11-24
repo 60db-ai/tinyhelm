@@ -318,7 +318,7 @@ it('deletes preview metadata locally when its application destination is missing
         'uuid' => 'preview-without-destination',
         'application_id' => $this->application->id,
         'pull_request_id' => 45,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/45',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/45',
     ]);
     $previewStorage = $preview->persistentStorages()->create([
         'name' => 'preview-without-destination-data',

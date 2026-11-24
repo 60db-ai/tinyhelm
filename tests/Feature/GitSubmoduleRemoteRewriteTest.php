@@ -9,7 +9,7 @@ function applicationWithGitSettings(bool $shallow = true): Application
     $application = new Application;
     $application->forceFill([
         'uuid' => 'test-app-uuid',
-        'git_repository' => 'coollabsio/private-app',
+        'git_repository' => '60db-ai/private-app',
         'git_branch' => 'main',
         'git_commit_sha' => 'HEAD',
     ]);

@@ -198,7 +198,7 @@ Before you rate a vulnerability or write an advisory, find the security boundary
 - If a path is reachable by a member only because of a different missing authorization check, report that check as the main issue, with high severity. Rate each injection behind it by the role it needs when the check works.
 - Always fix low-severity findings (escape shell arguments, validate input, confine paths) when you find them. Do not dismiss them because the attacker is an admin.
 - Do not put exploit details, payloads, or unreleased advisory IDs in commits, PR descriptions, code comments, or this file.
-- To reply on a security advisory, add a comment. Do not edit the advisory description. Comments API (public preview): `gh api repos/coollabsio/tinyhelm/security-advisories/<GHSA-ID>/comments` lists comments, and `gh api -X POST repos/coollabsio/tinyhelm/security-advisories/<GHSA-ID>/comments -F body=@comment.md` adds one. The API cannot delete comments. `gh api -X PATCH repos/coollabsio/tinyhelm/security-advisories/<GHSA-ID>/comments/<comment-id> -F body=@comment.md` edits one. Advisory comments do not link bare commit SHAs: write `[<short-sha>](https://github.com/coollabsio/tinyhelm/commit/<full-sha>)`.
+- To reply on a security advisory, add a comment. Do not edit the advisory description. Comments API (public preview): `gh api repos/60db-ai/tinyhelm/security-advisories/<GHSA-ID>/comments` lists comments, and `gh api -X POST repos/60db-ai/tinyhelm/security-advisories/<GHSA-ID>/comments -F body=@comment.md` adds one. The API cannot delete comments. `gh api -X PATCH repos/60db-ai/tinyhelm/security-advisories/<GHSA-ID>/comments/<comment-id> -F body=@comment.md` edits one. Advisory comments do not link bare commit SHAs: write `[<short-sha>](https://github.com/60db-ai/tinyhelm/commit/<full-sha>)`.
 
 ### Event Broadcasting
 - Laravel Reverb WebSocket server for real-time updates (port 6001) and a Node terminal WebSocket server (port 6002), both run inside the `tinyhelm` container as s6 services
@@ -337,7 +337,7 @@ The summary reads as one sentence with the heading of its section, never in the 
 
 - Start with a capital letter or a code span, and end without a period. A reason follows after a comma.
 - Write for the person who runs TinyHelm. Name the page, setting, or API field that changes, not the class or the file.
-- Link the issues that a change fixes or closes at the end of the summary, for example `([#1234](https://github.com/coollabsio/tinyhelm/issues/1234))`. Do not link pull requests.
+- Link the issues that a change fixes or closes at the end of the summary, for example `([#1234](https://github.com/60db-ai/tinyhelm/issues/1234))`. Do not link pull requests.
 - Do not use bold. Put each UI name, such as a page, tab, button, setting, or label, in its own code span, for example `Advanced` > `Deployment`.
 - Do not put exploit details, payloads, or unreleased advisory IDs in a change file.
 
@@ -362,7 +362,7 @@ The summary reads as one sentence with the heading of its section, never in the 
 | Pull request image `pr-<number>` | PR from a branch of this repository | Automatic, on each push |
 
 - `upstream.json` pins the helper, Sentinel, and Traefik versions. A change of `upstream.json` releases nothing. `RELEASE.md` tells how to ship it.
-- The helper image is in [coollabsio/tinyhelm-helper](https://github.com/coollabsio/tinyhelm-helper). Change it there, not in this repository.
+- The helper image is in [60db-ai/tinyhelm-helper](https://github.com/60db-ai/tinyhelm-helper). Change it there, not in this repository.
 
 <laravel-boost-guidelines>
 === foundation rules ===

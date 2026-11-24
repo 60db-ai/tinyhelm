@@ -14,7 +14,7 @@ ARG PHP_UV_VERSION=0.3.1
 # =================================================================
 # Get MinIO client
 # =================================================================
-FROM ghcr.io/coollabsio/mx:0.2.1 AS minio-client
+FROM ghcr.io/60db-ai/mx:0.2.1 AS minio-client
 
 # =================================================================
 # Final Stage: Production image
@@ -139,11 +139,11 @@ LABEL org.opencontainers.image.title="TinyHelm Development" \
     org.opencontainers.image.created="${CREATED}" \
     org.opencontainers.image.revision="${GIT_SHA}" \
     org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.authors="coollabsio" \
-    org.opencontainers.image.vendor="coollabsio" \
+    org.opencontainers.image.authors="60db-ai" \
+    org.opencontainers.image.vendor="60db-ai" \
     org.opencontainers.image.url="https://tinyhelm.com" \
-    org.opencontainers.image.source="https://github.com/coollabsio/tinyhelm" \
-    org.opencontainers.image.documentation="https://github.com/coollabsio/tinyhelm/blob/main/CONTRIBUTING.md" \
+    org.opencontainers.image.source="https://github.com/60db-ai/tinyhelm" \
+    org.opencontainers.image.documentation="https://github.com/60db-ai/tinyhelm/blob/main/CONTRIBUTING.md" \
     org.opencontainers.image.base.name="docker.io/serversideup/php:${SERVERSIDEUP_PHP_VERSION}" \
     io.tinyhelm.nginx.version="${NGINX_VERSION}" \
     io.tinyhelm.cloudflared.version="${CLOUDFLARED_VERSION}" \

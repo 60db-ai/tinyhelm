@@ -100,7 +100,7 @@ jobs:
           context: .
           file: docker/production/Dockerfile
           platforms: ${{ matrix.platform }}
-          tags: coollabsio/tinyhelm:test
+          tags: 60db-ai/tinyhelm:test
           outputs: type=oci,dest=${{ runner.temp }}/image,tar=false,rewrite-timestamp=true,compression=zstd,compression-level=11,force-compression=true
           build-args: |
             TINYHELM_VERSION=${{ needs.plan.outputs.tinyhelm }}

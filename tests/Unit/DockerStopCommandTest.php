@@ -5,7 +5,7 @@
  * `--timeout` is rejected by Docker < 28, so TinyHelm picks the flag from the stored engine version.
  * Unknown versions keep the historical `--time` flag.
  *
- * @see https://github.com/coollabsio/tinyhelm/issues/11244
+ * @see https://github.com/60db-ai/tinyhelm/issues/11244
  */
 it('parses docker engine versions', function (?string $raw, ?string $expected) {
     expect(parseDockerEngineVersion($raw))->toBe($expected);

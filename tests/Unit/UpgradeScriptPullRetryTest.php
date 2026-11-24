@@ -23,7 +23,7 @@ function runUpgradeScriptPullImage(string $script, int $failures): array
         sleep() { :; }
         {$log[0]}
         {$pullImage[0]}
-        pull_image ghcr.io/coollabsio/tinyhelm-helper:1.0.14
+        pull_image ghcr.io/60db-ai/tinyhelm-helper:1.0.14
         BASH;
 
     exec('bash -c '.escapeshellarg($harness).' >/dev/null 2>&1', result_code: $exitCode);

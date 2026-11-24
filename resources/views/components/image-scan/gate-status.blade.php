@@ -12,7 +12,7 @@
     $isBlocked = (bool) data_get($result, 'blocked');
     $isSkipped = ! $isBlocked && filled(data_get($result, 'error'));
     $headline = (string) data_get($result, 'headline', '');
-    $linkClasses = 'inline-flex items-center gap-0.5 font-semibold normal-case text-coollabs transition-colors hover:text-coollabs-100 dark:text-brand-light dark:hover:text-brand-light/80';
+    $linkClasses = 'inline-flex items-center gap-0.5 font-semibold normal-case text-tinyhelm transition-colors hover:text-tinyhelm-100 dark:text-brand-light dark:hover:text-brand-light/80';
 @endphp
 
 @if ($isBlocked || $isSkipped)

@@ -49,7 +49,7 @@ function createDockerImageApplication(Environment $environment, StandaloneDocker
         'destination_id' => $destination->id,
         'destination_type' => StandaloneDocker::class,
         'build_pack' => 'dockerimage',
-        'docker_registry_image_name' => 'ghcr.io/coollabsio/example',
+        'docker_registry_image_name' => 'ghcr.io/60db-ai/example',
         'docker_registry_image_tag' => 'latest',
     ]);
 }

@@ -135,7 +135,7 @@ class DockerImage extends Component
         $application = new Application([
             'name' => 'docker-image-'.new_public_id(),
             'repository_project_id' => 0,
-            'git_repository' => 'coollabsio/tinyhelm',
+            'git_repository' => '60db-ai/tinyhelm',
             'git_branch' => 'main',
             'build_pack' => 'dockerimage',
             'ports_exposes' => 80,

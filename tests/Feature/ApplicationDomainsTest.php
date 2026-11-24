@@ -150,7 +150,7 @@ it('generates a preview domain when the application has no domain', function () 
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 41,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/41',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/41',
     ]);
 
     Livewire::test(PreviewDomains::class, ['preview' => $preview])
@@ -172,7 +172,7 @@ it('generates compose preview domains when the application has no domains', func
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 42,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/42',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/42',
     ]);
 
     Livewire::test(PreviewDomains::class, ['preview' => $preview])
@@ -196,7 +196,7 @@ it('derives preview domain services from compose and defaults the selected servi
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 49,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/49',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/49',
         'docker_compose_domains' => json_encode([
             'removed-service' => ['domain' => ''],
         ]),
@@ -228,7 +228,7 @@ it('handles compose parsing failures without exposing stale preview services', f
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 52,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/52',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/52',
         'docker_compose_domains' => json_encode([
             'stale-service' => ['domain' => ''],
         ]),
@@ -252,7 +252,7 @@ it('does not erase preview domains when compose parsing fails during persistence
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 53,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/53',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/53',
         'docker_compose_domains' => json_encode($storedDomains),
         'fqdn' => 'https://web-preview.example.com,https://worker-preview.example.com',
     ]);
@@ -280,7 +280,7 @@ it('preserves empty compose service slots after removing the last preview domain
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 50,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/50',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/50',
         'docker_compose_domains' => json_encode([
             'web' => ['domain' => 'https://web-preview.example.com'],
         ]),
@@ -309,7 +309,7 @@ it('rejects missing and unknown services when adding compose preview domains', f
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 51,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/51',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/51',
     ]);
 
     Livewire::test(PreviewDomains::class, ['preview' => $preview])
@@ -337,7 +337,7 @@ it('generates a compose preview domain only for the selected service', function 
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 48,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/48',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/48',
         'docker_compose_domains' => json_encode([
             'web' => ['domain' => 'https://custom-web.example.net'],
             'api' => ['domain' => 'https://custom-api.example.net'],
@@ -373,7 +373,7 @@ it('keeps compose services without application domains private when configuring 
             'environment_uuid' => $this->environment->uuid,
             'application_uuid' => $this->application->uuid,
         ])
-        ->call('add', 43, 'https://github.com/coollabsio/tinyhelm/pull/43');
+        ->call('add', 43, 'https://github.com/60db-ai/tinyhelm/pull/43');
 
     $preview = ApplicationPreview::query()
         ->where('application_id', $this->application->id)
@@ -395,7 +395,7 @@ it('generates a domain when configuring a preview', function () {
             'environment_uuid' => $this->environment->uuid,
             'application_uuid' => $this->application->uuid,
         ])
-        ->call('add', 43, 'https://github.com/coollabsio/tinyhelm/pull/43')
+        ->call('add', 43, 'https://github.com/60db-ai/tinyhelm/pull/43')
         ->assertDispatched('success');
 
     $preview = ApplicationPreview::query()
@@ -412,7 +412,7 @@ it('manages preview domains and their dns status', function () {
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 44,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/44',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/44',
         'fqdn' => 'https://44.example.com',
     ]);
 
@@ -444,7 +444,7 @@ it('removes the intended preview domains by stable identities after reindexing',
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 47,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/47',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/47',
         'fqdn' => implode(',', $domains),
     ]);
 
@@ -466,7 +466,7 @@ it('renders preview domain delete confirmations with stable keys', function () {
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 48,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/48',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/48',
         'fqdn' => implode(',', $domains),
     ]);
 
@@ -493,7 +493,7 @@ it('removes only the matching compose preview domain when services share a URL',
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 49,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/49',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/49',
         'docker_compose_domains' => json_encode([
             'web' => ['domain' => $url],
             'worker' => ['domain' => $url],
@@ -518,7 +518,7 @@ it('adds a preview domain and starts its dns check asynchronously', function () 
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 45,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/45',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/45',
     ]);
 
     Livewire::test(PreviewDomains::class, ['preview' => $preview])
@@ -541,7 +541,7 @@ it('notifies when an asynchronous preview dns check finds a mismatch', function 
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 46,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/46',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/46',
         'fqdn' => $url,
         'domain_dns_statuses' => [
             $statusKey => [
@@ -577,7 +577,7 @@ it('does not overwrite a completed preview dns result with stale checking state'
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 48,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/48',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/48',
         'fqdn' => $url,
         'domain_dns_statuses' => [
             $statusKey => [
@@ -2956,7 +2956,7 @@ it('shows the detected compose service port for preview domains', function () {
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 8069,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/8069',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/8069',
         'docker_compose_domains' => json_encode([
             'web' => ['domain' => 'https://preview.example.com'],
         ]),
@@ -2979,7 +2979,7 @@ it('does not show an application port for a preview compose service without a de
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 8070,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/8070',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/8070',
         'docker_compose_domains' => json_encode([
             'frontend' => ['domain' => 'https://preview.example.com'],
         ]),
@@ -3282,7 +3282,7 @@ it('does not inherit the application port for single-service compose domains', f
         $preview = ApplicationPreview::create([
             'application_id' => $this->application->id,
             'pull_request_id' => 1,
-            'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/1',
+            'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/1',
             'docker_compose_domains' => $this->application->docker_compose_domains,
         ]);
         $component = Livewire::test(PreviewDomains::class, ['preview' => $preview]);
@@ -3614,7 +3614,7 @@ it('restarts a preview dns check when the domain already has a completed result'
     $preview = ApplicationPreview::create([
         'application_id' => $this->application->id,
         'pull_request_id' => 54,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/54',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/54',
         'fqdn' => $url,
         'domain_dns_statuses' => [
             $statusKey => [

@@ -270,8 +270,8 @@ class CleanupDocker implements ShouldBeUnique
         $escapedHelperVersion = preg_replace('/([.\\\\+*?\[\]^$(){}|])/', '\\\\$1', $helperImageVersion);
 
         return "docker images --format '{{.Repository}}:{{.Tag}}' | ".
-            "grep -E '(^|/)coollabsio/(tinyhelm-helper|tinyhelm-realtime|sentinel):' | ".
-            "grep -v -E ':<none>$|(^|/)coollabsio/tinyhelm-helper:{$escapedHelperVersion}$' | ".
+            "grep -E '(^|/)60db-ai/(tinyhelm-helper|tinyhelm-realtime|sentinel):' | ".
+            "grep -v -E ':<none>$|(^|/)60db-ai/tinyhelm-helper:{$escapedHelperVersion}$' | ".
             'xargs -r docker rmi 2>/dev/null || true';
     }
 
@@ -297,12 +297,12 @@ class CleanupDocker implements ShouldBeUnique
 
         // Build grep pattern to exclude TinyHelm infrastructure images (current version only)
         // This pattern matches the image name regardless of registry prefix:
-        // - ghcr.io/coollabsio/tinyhelm-helper:1.0.12
-        // - docker.io/coollabsio/tinyhelm-helper:1.0.12
-        // - coollabsio/tinyhelm-helper:1.0.12
-        // Pattern: (^|/)coollabsio/tinyhelm-helper:VERSION$
+        // - ghcr.io/60db-ai/tinyhelm-helper:1.0.12
+        // - docker.io/60db-ai/tinyhelm-helper:1.0.12
+        // - 60db-ai/tinyhelm-helper:1.0.12
+        // Pattern: (^|/)60db-ai/tinyhelm-helper:VERSION$
         $escapedHelperVersion = preg_replace('/([.\\\\+*?\[\]^$(){}|])/', '\\\\$1', $helperImageVersion);
-        $infraExcludePattern = "(^|/)coollabsio/tinyhelm-helper:{$escapedHelperVersion}$";
+        $infraExcludePattern = "(^|/)60db-ai/tinyhelm-helper:{$escapedHelperVersion}$";
 
         // Delete unused images that:
         // - Are not application images (don't match app repos)

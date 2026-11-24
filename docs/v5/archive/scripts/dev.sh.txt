@@ -87,7 +87,7 @@ resolve_coold_asset_checksum() {
   local url
 
   arch="$(coold_asset_arch)"
-  url="https://github.com/coollabsio/coold/releases/download/${version}/${asset}-linux-musl-${arch}.tar.gz.sha256"
+  url="https://github.com/60db-ai/coold/releases/download/${version}/${asset}-linux-musl-${arch}.tar.gz.sha256"
 
   curl -fsSL --retry 3 --max-time 30 "$url" | awk '{ print $1; exit }'
 }

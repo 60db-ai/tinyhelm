@@ -51,7 +51,7 @@ Every release is tagged `v<version>`, such as `v4.6.0-beta.1`, and publishes the
     ```
 
 4. The pushed commit changes `release.json`, so it runs the release workflow, which builds and publishes the release and moves its tags
-5. After a stable release that moves `latest`, merge the pull request of the stable channel on `coollabsio/coollabs-cdn`, see [CDN](#cdn)
+5. After a stable release that moves `latest`, merge the pull request of the stable channel on `60db-ai/tinyhelm-cdn`, see [CDN](#cdn)
 
 > [!TIP]
 > To take the release commit back before the push:
@@ -164,7 +164,7 @@ Print what the next run publishes with `scripts/plan-version.sh --nightly`.
 
 ## Main builds
 
-The main workflow builds `main` twice a day when it changed since the last build and moves `ghcr.io/coollabsio/tinyhelm:main` to it, to test fixes before their patch release. A main build is versioned `<stable version>.<YYYYMMDD>.<N>`, `4.5.0.20261028.1`, which sorts after `4.5.0` and before `4.5.1`.
+The main workflow builds `main` twice a day when it changed since the last build and moves `ghcr.io/60db-ai/tinyhelm:main` to it, to test fixes before their patch release. A main build is versioned `<stable version>.<YYYYMMDD>.<N>`, `4.5.0.20261028.1`, which sorts after `4.5.0` and before `4.5.1`.
 
 - ghcr.io only, no version tag, no git tag, no GitHub release and no channel of the CDN, an instance installs it through the custom channel with the tag `main`
 
@@ -172,7 +172,7 @@ Print what the next run builds with `scripts/plan-version.sh --main`.
 
 ## Pull requests
 
-The pull request workflow builds every pull request and publishes the image of a pull request from a branch of this repository as `ghcr.io/coollabsio/tinyhelm:pr-<number>`. Its version is `<base>-pr.<number>`, with the base a nightly of its base branch takes, or the stable version for `main`:
+The pull request workflow builds every pull request and publishes the image of a pull request from a branch of this repository as `ghcr.io/60db-ai/tinyhelm:pr-<number>`. Its version is `<base>-pr.<number>`, with the base a nightly of its base branch takes, or the stable version for `main`:
 
 - Into `next`: `4.6.0-beta.1-pr.1234` after `4.6.0-beta.1`, or `4.7.0-alpha.0-pr.1234` before the first alpha of 4.7.0
 - Into `main`: `4.5.3-pr.1234`
@@ -184,7 +184,7 @@ The pull request workflow builds every pull request and publishes the image of a
 
 ## CDN
 
-`scripts/sync-cdn.sh` syncs a channel of `coollabsio/coollabs-cdn` from the commit of the version it syncs: the install and upgrade scripts, the compose files, the environment file, the service templates, the GitHub releases and the block of the channel in `/tinyhelm/versions.json`.
+`scripts/sync-cdn.sh` syncs a channel of `60db-ai/tinyhelm-cdn` from the commit of the version it syncs: the install and upgrade scripts, the compose files, the environment file, the service templates, the GitHub releases and the block of the channel in `/tinyhelm/versions.json`.
 
 | Channel   | Path                | Synced by                                                 |
 | --------- | ------------------- | --------------------------------------------------------- |
@@ -194,7 +194,7 @@ The pull request workflow builds every pull request and publishes the image of a
 
 - The preview channel takes betas and release candidates, alphas reach the nightly channel only
 - The stable channel opens a pull request from `sync/stable-v<version>`, squash merge it. A new sync of the same version updates it, a sync of a newer version closes it
-- `CDN_TOKEN` in the environment `release` is a fine-grained token for `coollabsio/coollabs-cdn` alone, with read and write access to contents and pull requests
+- `CDN_TOKEN` in the environment `release` is a fine-grained token for `60db-ai/tinyhelm-cdn` alone, with read and write access to contents and pull requests
 - `/tinyhelm/versions.json` has a `stable`, `preview` and `nightly` block, each with the TinyHelm version of its channel and the helper, Sentinel and Traefik versions of the `upstream.json` it was synced from. An instance takes the newest version of its channel and the more stable ones
 - Every stable sync also sets the `tinyhelm` and `traefik` keys, which older instances read, to the stable versions, so older instances upgrade to a version that reads the blocks
 

@@ -232,7 +232,7 @@ $report['github_app'] = $ghApp->uuid;
 // 1) Nixpacks git app with GH source
 $appNix = Application::create([
     'name' => 'demo-nixpacks-app',
-    'git_repository' => 'https://github.com/coollabsio/tinyhelm-examples',
+    'git_repository' => 'https://github.com/60db-ai/tinyhelm-examples',
     'git_branch' => 'nodejs',
     'build_pack' => 'nixpacks',
     'ports_exposes' => '3000',
@@ -321,7 +321,7 @@ $preview = new ApplicationPreview;
 $preview->forceFill([
     'application_id' => $appNix->id,
     'pull_request_id' => 101,
-    'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm-examples/pull/101',
+    'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm-examples/pull/101',
     'fqdn' => 'https://pr-101.nixpacks.demo.transfer.local',
     'status' => 'exited',
     'git_type' => 'github',
@@ -341,7 +341,7 @@ $previewVol->save();
 // 2) Dockerfile app
 $appDocker = Application::create([
     'name' => 'demo-dockerfile-app',
-    'git_repository' => 'https://github.com/coollabsio/tinyhelm-examples',
+    'git_repository' => 'https://github.com/60db-ai/tinyhelm-examples',
     'git_branch' => 'main',
     'build_pack' => 'dockerfile',
     'ports_exposes' => '80',
@@ -359,7 +359,7 @@ $appDocker->tags()->syncWithoutDetaching([$tagDemo->id]);
 // 3) Docker image / static-ish
 $appImage = Application::create([
     'name' => 'demo-image-app',
-    'git_repository' => 'coollabsio/tinyhelm-examples',
+    'git_repository' => '60db-ai/tinyhelm-examples',
     'git_branch' => 'main',
     'build_pack' => 'dockercompose',
     'ports_exposes' => '80',

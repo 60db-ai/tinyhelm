@@ -3,7 +3,7 @@
     $segmentActive = 'bg-white text-black shadow-sm ring-1 ring-neutral-200 dark:bg-white/[0.09] dark:text-fg dark:ring-white/[0.08]';
     $segmentIdle = 'text-neutral-500 hover:text-black dark:text-fg-faint dark:hover:text-fg';
     $checkbox = fn (bool $selected) => $selected
-        ? 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-coollabs bg-coollabs text-white dark:border-brand dark:bg-brand dark:text-white'
+        ? 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-tinyhelm bg-tinyhelm text-white dark:border-brand dark:bg-brand dark:text-white'
         : 'flex size-4 shrink-0 items-center justify-center rounded-[5px] border border-neutral-300 bg-white dark:border-white/[0.14] dark:bg-white/[0.045]';
     $muted = 'text-[11px] text-neutral-500 dark:text-fg-faint';
 @endphp
@@ -89,7 +89,7 @@
                             @endphp
                             <li wire:key="security-image-{{ $row['key'] }}" x-data="{ open: @js($row['open']) }">
                                 <div class="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3">
-                                    <button type="button" class="group flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coollabs dark:focus-visible:outline-brand"
+                                    <button type="button" class="group flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinyhelm dark:focus-visible:outline-brand"
                                         x-on:click="open = ! open" aria-expanded="{{ $row['open'] ? 'true' : 'false' }}"
                                         x-bind:aria-expanded="open ? 'true' : 'false'" aria-controls="{{ $bodyId }}">
                                         <x-reicon name="chevron-down"
@@ -220,7 +220,7 @@
                 @if ($showIgnored)
                     <div class="flex items-center justify-between gap-2 border-b border-neutral-200 px-4 py-2 dark:border-white/[0.08]">
                         <span class="text-[12px] font-medium text-neutral-700 dark:text-fg">Ignored</span>
-                        <button type="button" class="text-[12px] font-medium text-coollabs hover:underline dark:text-brand-light"
+                        <button type="button" class="text-[12px] font-medium text-tinyhelm hover:underline dark:text-brand-light"
                             wire:click="$set('showIgnored', false)">Back to the results</button>
                     </div>
                 @endif
@@ -347,7 +347,7 @@
 
                 @if ($ignoredCount > 0 && ! $showIgnored)
                     <div class="border-t border-neutral-200 px-4 py-2.5 dark:border-white/[0.08]">
-                        <button type="button" class="text-[12px] font-medium text-coollabs hover:underline dark:text-brand-light"
+                        <button type="button" class="text-[12px] font-medium text-tinyhelm hover:underline dark:text-brand-light"
                             wire:click="$set('showIgnored', true)">{{ number_format($ignoredCount) }} ignored</button>
                     </div>
                 @endif

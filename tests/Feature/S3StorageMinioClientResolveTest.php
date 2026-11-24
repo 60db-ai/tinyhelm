@@ -52,10 +52,10 @@ it('pins the IPv6 address of a dual-stack S3 host when only IPv6 connects from t
     [$server, $storage] = minioResolveTestSetup('http://localhost:9000');
     fakeRemoteProcesses(['*/dev/tcp/*' => '::1', '*' => '']);
 
-    $options = $storage->minioClientResolveOptions($server, 'ghcr.io/coollabsio/tinyhelm-helper:1.0.0', 'tinyhelm');
+    $options = $storage->minioClientResolveOptions($server, 'ghcr.io/60db-ai/tinyhelm-helper:1.0.0', 'tinyhelm');
 
     expect($options)->toBe(" --resolve 'localhost:9000=::1'");
-    Process::assertRan(fn ($process) => str_contains(remoteProcessScript($process), "docker run --rm --network 'tinyhelm' 'ghcr.io/coollabsio/tinyhelm-helper:1.0.0' bash -c")
+    Process::assertRan(fn ($process) => str_contains(remoteProcessScript($process), "docker run --rm --network 'tinyhelm' 'ghcr.io/60db-ai/tinyhelm-helper:1.0.0' bash -c")
         && str_contains(remoteProcessScript($process), "for ip in '\\''127.0.0.1'\\'' '\\''::1'\\''; do")
         && str_contains(remoteProcessScript($process), '/dev/tcp/$ip/9000'));
 });

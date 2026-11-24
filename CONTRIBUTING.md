@@ -69,7 +69,7 @@ This includes:
 - Architectural changes
 - Changes touching many files
 
-Discussion happens in GitHub Discussions: https://github.com/coollabsio/tinyhelm/discussions/categories/general
+Discussion happens in GitHub Discussions: https://github.com/60db-ai/tinyhelm/discussions/categories/general
 
 Pull requests introducing major changes without prior discussion will be closed without review.
 
@@ -230,7 +230,7 @@ To build and run TinyHelm locally, see: [Development](./DEVELOPMENT.md)
 
 ### Testing the TinyHelm Helper Locally
 
-The helper image lives in [coollabsio/tinyhelm-helper](https://github.com/coollabsio/tinyhelm-helper). The development setup builds its `main` branch as `coollabsio/tinyhelm-helper:dev`, set the helper version override to `dev` to use it. `scripts/dev-helper` builds it from there too, or from a local checkout with `HELPER_CONTEXT=../tinyhelm-helper/src`.
+The helper image lives in [60db-ai/tinyhelm-helper](https://github.com/60db-ai/tinyhelm-helper). The development setup builds its `main` branch as `60db-ai/tinyhelm-helper:dev`, set the helper version override to `dev` to use it. `scripts/dev-helper` builds it from there too, or from a local checkout with `HELPER_CONTEXT=../tinyhelm-helper/src`.
 
 Use `scripts/dev-helper` to build a local helper image and test it with the running development instance. The script requires the standard local TinyHelm container and the seeded Dockerfile, Docker Compose, and Nixpacks applications.
 
@@ -257,7 +257,7 @@ Clear the helper override when finished:
 ./scripts/dev-helper reset
 ```
 
-The default image repository is `docker.io/coollabsio/tinyhelm-helper`. Set `HELPER_IMAGE_REPOSITORY` to test another repository, or `TINYHELM_CONTAINER` if the local TinyHelm container has a different name.
+The default image repository is `docker.io/60db-ai/tinyhelm-helper`. Set `HELPER_IMAGE_REPOSITORY` to test another repository, or `TINYHELM_CONTAINER` if the local TinyHelm container has a different name.
 
 ### macOS Development with Lima
 Mac users can use [Lima](https://lima-vm.io/) to run a lightweight Linux virtual machine for local TinyHelm development. This is useful if you prefer a Linux-based Docker environment on macOS.

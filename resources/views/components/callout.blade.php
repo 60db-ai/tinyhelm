@@ -25,9 +25,9 @@
         ],
         'info' => [
             'icon' => 'info-circle',
-            'shell' => 'border-coollabs/20 bg-coollabs/[0.055] dark:border-brand-light/15 dark:bg-brand/[0.06]',
-            'iconClass' => 'text-coollabs dark:text-brand-light',
-            'titleClass' => 'text-coollabs dark:text-brand-light',
+            'shell' => 'border-tinyhelm/20 bg-tinyhelm/[0.055] dark:border-brand-light/15 dark:bg-brand/[0.06]',
+            'iconClass' => 'text-tinyhelm dark:text-brand-light',
+            'titleClass' => 'text-tinyhelm dark:text-brand-light',
             'textClass' => 'text-neutral-600 dark:text-fg-dim',
         ],
         'success' => [

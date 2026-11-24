@@ -50,6 +50,6 @@
 
 > [!IMPORTANT]
 >
-> - [ ] I have read and understood the [contributor guidelines](https://github.com/coollabsio/tinyhelm/blob/HEAD/CONTRIBUTING.md). If I have failed to follow any guideline, I understand that this PR may be closed without review.
-> - [ ] I have searched [existing issues](https://github.com/coollabsio/tinyhelm/issues) and [pull requests](https://github.com/coollabsio/tinyhelm/pulls) (including closed ones) to ensure this isn't a duplicate.
+> - [ ] I have read and understood the [contributor guidelines](https://github.com/60db-ai/tinyhelm/blob/HEAD/CONTRIBUTING.md). If I have failed to follow any guideline, I understand that this PR may be closed without review.
+> - [ ] I have searched [existing issues](https://github.com/60db-ai/tinyhelm/issues) and [pull requests](https://github.com/60db-ai/tinyhelm/pulls) (including closed ones) to ensure this isn't a duplicate.
 > - [ ] I have tested all the changes thoroughly with a local development instance of TinyHelm and I am confident that they will work as expected when a maintainer tests them.

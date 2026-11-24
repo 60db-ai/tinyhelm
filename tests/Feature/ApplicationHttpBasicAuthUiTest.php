@@ -66,7 +66,7 @@ function createApplicationForHttpBasicAuth(array $overrides = []): Application
         'http_basic_auth_username' => 'admin',
         'http_basic_auth_password' => 'secret',
         'redirect' => 'no',
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
         'ports_exposes' => '3000',
     ], $overrides));

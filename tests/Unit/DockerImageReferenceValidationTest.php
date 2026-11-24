@@ -12,7 +12,7 @@ it('accepts valid docker registry image names', function (string $imageName) {
 })->with([
     'single component' => 'nginx',
     'namespace image' => 'library/nginx',
-    'ghcr image' => 'ghcr.io/coollabsio/tinyhelm',
+    'ghcr image' => 'ghcr.io/60db-ai/tinyhelm',
     'repository component with repeated hyphens' => 'ghcr.io/acme/my--service',
     'registry with port' => 'registry.example.com:5000/team/app',
     'IPv6 registry' => '[2a01:4f8::1]/team/app',

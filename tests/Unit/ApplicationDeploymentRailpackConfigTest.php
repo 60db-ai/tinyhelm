@@ -250,7 +250,7 @@ it('pins docker config while running railpack buildx commands', function () {
         $reflection,
         'railpack_build_command',
         [
-            'coollabsio/tinyhelm:test',
+            '60db-ai/tinyhelm:test',
             collect([]),
         ],
     );
@@ -265,7 +265,7 @@ it('stops the railpack builder after the build when no other build uses it', fun
         'uuid' => 'application-uuid',
     ]);
 
-    $command = invokeRailpackMethod($job, $reflection, 'railpack_build_command', ['coollabsio/tinyhelm:test', collect([])]);
+    $command = invokeRailpackMethod($job, $reflection, 'railpack_build_command', ['60db-ai/tinyhelm:test', collect([])]);
 
     $sharedLock = strpos($command, 'flock -s 9');
     $bootstrap = strpos($command, railpackBuilderBootstrapScript());
@@ -289,7 +289,7 @@ it('filters reserved docker client variables from railpack build secrets', funct
         $reflection,
         'railpack_build_command',
         [
-            'coollabsio/tinyhelm:test',
+            '60db-ai/tinyhelm:test',
             collect([
                 'DOCKER_CONFIG' => '/tmp/no-buildx',
                 'DOCKER_HOST' => 'tcp://invalid:2375',
@@ -318,7 +318,7 @@ it('builds railpack docker command with matching env and secret flags for all ra
         $reflection,
         'railpack_build_command',
         [
-            'coollabsio/tinyhelm:test',
+            '60db-ai/tinyhelm:test',
             collect([
                 'RAILPACK_NODE_VERSION' => '22',
                 'RAILPACK_INSTALL_CMD' => 'npm ci && npm run postinstall',
@@ -382,7 +382,7 @@ it('uses the railpack frontend version from the helper environment', function ()
     [$job, $reflection] = makeRailpackDeploymentJob(['uuid' => 'application-uuid']);
 
     $command = invokeRailpackMethod($job, $reflection, 'railpack_build_command', [
-        'coollabsio/tinyhelm:test',
+        '60db-ai/tinyhelm:test',
         collect(['RAILPACK_VERSION' => '9.9.9']),
     ]);
 
@@ -397,7 +397,7 @@ it('falls back to the railpack CLI version when the helper does not set RAILPACK
     [$job, $reflection] = makeRailpackDeploymentJob(['uuid' => 'application-uuid']);
 
     $command = invokeRailpackMethod($job, $reflection, 'railpack_build_command', [
-        'coollabsio/tinyhelm:test',
+        '60db-ai/tinyhelm:test',
         collect(),
     ]);
 
@@ -418,7 +418,7 @@ it('interpolates build-time variable references for railpack by sourcing the bui
         $reflection,
         'railpack_build_command',
         [
-            'coollabsio/tinyhelm:test',
+            '60db-ai/tinyhelm:test',
             collect([
                 'BETTER_AUTH_URL' => '$TINYHELM_URL',
                 'TINYHELM_URL' => 'https://sapere-10.bobman.dev',

@@ -185,7 +185,7 @@ export const TYPES = {
     title: 'Git repository', sub: 'Build from source', stage: 'source', kind: 'application', icon: ICONS.git,
     fields: [
       { key: 'mode', label: 'Access', kind: 'segmented', options: [['public', 'Public'], ['github', 'GitHub app'], ['key', 'Deploy key']], rerender: true, value: 'public' },
-      { key: 'repository', label: 'Repository URL', kind: 'text', placeholder: 'https://github.com/coollabsio/tinyhelm-examples', show: d => d.mode !== 'github', required: true, secret: v => /^\w+:\/\/[^/]*@/.test(v) },
+      { key: 'repository', label: 'Repository URL', kind: 'text', placeholder: 'https://github.com/60db-ai/tinyhelm-examples', show: d => d.mode !== 'github', required: true, secret: v => /^\w+:\/\/[^/]*@/.test(v) },
       { key: 'ghApp', label: 'GitHub app', kind: 'select', load: () => LOADERS.ghApps(), show: d => d.mode === 'github', rerender: true, required: true },
       { key: 'ghRepo', label: 'Repository', kind: 'select', load: d => LOADERS.repos(d.ghApp), show: d => d.mode === 'github', rerender: true, required: true },
       { key: 'key', label: 'Deploy key', kind: 'select', load: () => LOADERS.keys(), show: d => d.mode === 'key', required: true },

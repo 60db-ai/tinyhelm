@@ -1,4 +1,4 @@
-# documentation: https://github.com/coollabsio/next-image-transformation
+# documentation: https://github.com/60db-ai/next-image-transformation
 # slogan: Drop-in replacement for Vercel's Nextjs image optimization service.
 # category: media
 # tags: nextjs,image,transformation,service
@@ -8,7 +8,7 @@
 
 services:
   next-image-transformation:
-    image: ghcr.io/coollabsio/next-image-transformation:0.0.3
+    image: ghcr.io/60db-ai/next-image-transformation:0.0.3
     environment:
       - SERVICE_URL_TRANSFORMATION_3000
       - NODE_ENV=production

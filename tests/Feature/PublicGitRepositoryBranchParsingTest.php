@@ -57,7 +57,7 @@ test('defaults to main branch when no tree segment in URL', function () {
 });
 
 test('parses version-style branch with slash from GitHub URL', function () {
-    $result = parseBranchFromUrl('https://github.com/coollabsio/tinyhelm-examples/tree/release/v2.0');
+    $result = parseBranchFromUrl('https://github.com/60db-ai/tinyhelm-examples/tree/release/v2.0');
 
     expect($result['branch'])->toBe('release/v2.0');
     expect($result['base_directory'])->toBe('/');

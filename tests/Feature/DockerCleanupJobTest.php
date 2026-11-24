@@ -611,22 +611,22 @@ it('removes old helper, realtime and sentinel images from any registry but keeps
     $command = (new ReflectionMethod(CleanupDocker::class, 'buildTinyHelmImageCleanupCommand'))->invoke(new CleanupDocker, '1.0.17');
 
     $output = dockerCleanupRunImageCommand($command, [
-        'coollabsio/tinyhelm-helper:1.0.17',
-        'ghcr.io/coollabsio/tinyhelm-helper:1.0.17',
-        'coollabsio/tinyhelm-helper:1.0.14',
-        'ghcr.io/coollabsio/tinyhelm-helper:1.0.15',
-        'coollabsio/tinyhelm-helper:1.0.170',
-        'coollabsio/tinyhelm-realtime:1.0.19',
-        'ghcr.io/coollabsio/tinyhelm-realtime:1.0.17',
-        'coollabsio/sentinel:1.0.1',
-        'ghcr.io/coollabsio/sentinel:0.0.22',
-        'coollabsio/sentinel:<none>',
-        'coollabsio/tinyhelm:4.4.6',
+        '60db-ai/tinyhelm-helper:1.0.17',
+        'ghcr.io/60db-ai/tinyhelm-helper:1.0.17',
+        '60db-ai/tinyhelm-helper:1.0.14',
+        'ghcr.io/60db-ai/tinyhelm-helper:1.0.15',
+        '60db-ai/tinyhelm-helper:1.0.170',
+        '60db-ai/tinyhelm-realtime:1.0.19',
+        'ghcr.io/60db-ai/tinyhelm-realtime:1.0.17',
+        '60db-ai/sentinel:1.0.1',
+        'ghcr.io/60db-ai/sentinel:0.0.22',
+        '60db-ai/sentinel:<none>',
+        '60db-ai/tinyhelm:4.4.6',
         'postgres:16',
     ]);
 
     expect($command)->not->toContain('awk')
-        ->and($output)->toBe('rmi coollabsio/tinyhelm-helper:1.0.14 ghcr.io/coollabsio/tinyhelm-helper:1.0.15 coollabsio/tinyhelm-helper:1.0.170 coollabsio/tinyhelm-realtime:1.0.19 ghcr.io/coollabsio/tinyhelm-realtime:1.0.17 coollabsio/sentinel:1.0.1 ghcr.io/coollabsio/sentinel:0.0.22');
+        ->and($output)->toBe('rmi 60db-ai/tinyhelm-helper:1.0.14 ghcr.io/60db-ai/tinyhelm-helper:1.0.15 60db-ai/tinyhelm-helper:1.0.170 60db-ai/tinyhelm-realtime:1.0.19 ghcr.io/60db-ai/tinyhelm-realtime:1.0.17 60db-ai/sentinel:1.0.1 ghcr.io/60db-ai/sentinel:0.0.22');
 });
 
 it('removes unused images pulled by digest but keeps application images', function () {

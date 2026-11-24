@@ -70,7 +70,7 @@
                 <div class="grid min-w-0 grid-cols-1 gap-3 @lg:grid-cols-2 @5xl:grid-cols-3 @7xl:grid-cols-4"
                     x-data="{
                         dragged: null,
-                        lifted: ['z-20', 'scale-[1.02]', 'shadow-lg', 'ring-2', 'ring-coollabs/40', 'dark:ring-brand-light/30', 'cursor-grabbing'],
+                        lifted: ['z-20', 'scale-[1.02]', 'shadow-lg', 'ring-2', 'ring-tinyhelm/40', 'dark:ring-brand-light/30', 'cursor-grabbing'],
                         start(event) {
                             this.dragged = event.currentTarget.closest('[data-star-id]');
                             this.dragged.classList.add(...this.lifted);

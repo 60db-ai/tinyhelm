@@ -9,17 +9,17 @@ it('matches helper image references without matching similarly named images', fu
     $directory = sys_get_temp_dir().'/tinyhelm-helper-filter-'.bin2hex(random_bytes(4));
     $docker = $directory.'/docker';
     $images = [
-        'coollabsio/tinyhelm-helper:1.0.15',
-        'docker.io/coollabsio/tinyhelm-helper:1.0.16',
-        'ghcr.io/coollabsio/tinyhelm-helper@sha256:abc',
-        'registry.example/team/coollabsio/tinyhelm-helper:latest',
-        'coollabsio/tinyhelm:latest',
-        'coollabsio/tinyhelm:4.3.12',
-        'coollabsio/tinyhelm-realtime:1.0.10',
+        '60db-ai/tinyhelm-helper:1.0.15',
+        'docker.io/60db-ai/tinyhelm-helper:1.0.16',
+        'ghcr.io/60db-ai/tinyhelm-helper@sha256:abc',
+        'registry.example/team/60db-ai/tinyhelm-helper:latest',
+        '60db-ai/tinyhelm:latest',
+        '60db-ai/tinyhelm:4.3.12',
+        '60db-ai/tinyhelm-realtime:1.0.10',
         'tinyhelm-helper:latest',
         'someone/tinyhelm-helper:1.0.16',
-        'evil/coollabsio/tinyhelm-helper-copy:latest',
-        'coollabsio/not-tinyhelm-helper:latest',
+        'evil/60db-ai/tinyhelm-helper-copy:latest',
+        '60db-ai/not-tinyhelm-helper:latest',
     ];
 
     mkdir($directory);
@@ -53,7 +53,7 @@ it('preserves the helper image filter for non-root servers', function () {
     $sudo = $directory.'/sudo';
 
     mkdir($directory);
-    file_put_contents($docker, "#!/bin/sh\necho '{\"Image\":\"coollabsio/tinyhelm-helper:1.0.15\"}'\n");
+    file_put_contents($docker, "#!/bin/sh\necho '{\"Image\":\"60db-ai/tinyhelm-helper:1.0.15\"}'\n");
     file_put_contents($sudo, "#!/bin/sh\nexec \"\$@\"\n");
     chmod($docker, 0755);
     chmod($sudo, 0755);
@@ -65,7 +65,7 @@ it('preserves the helper image filter for non-root servers', function () {
         $process->mustRun();
 
         expect(array_column(json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR), 'Image'))
-            ->toBe(['coollabsio/tinyhelm-helper:1.0.15']);
+            ->toBe(['60db-ai/tinyhelm-helper:1.0.15']);
     } finally {
         unlink($docker);
         unlink($sudo);

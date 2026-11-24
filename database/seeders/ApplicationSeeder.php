@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 
 class ApplicationSeeder extends Seeder
 {
-    public const EXAMPLES_REPOSITORY = 'coollabsio/tinyhelm-examples';
+    public const EXAMPLES_REPOSITORY = '60db-ai/tinyhelm-examples';
 
     public const EXAMPLES_REPOSITORY_PROJECT_ID = 603035348;
 
@@ -57,7 +57,7 @@ class ApplicationSeeder extends Seeder
             'uuid' => 'dockerfile-pure',
             'name' => 'Pure Dockerfile Example',
             'fqdn' => "http://pure-dockerfile.{$sslipHost}",
-            'git_repository' => 'coollabsio/tinyhelm',
+            'git_repository' => '60db-ai/tinyhelm',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
             'build_pack' => 'dockerfile',
@@ -75,7 +75,7 @@ CMD ["nginx", "-g", "daemon off;"]
         Application::create([
             'uuid' => 'crashloop',
             'name' => 'Crash Loop Example',
-            'git_repository' => 'coollabsio/tinyhelm',
+            'git_repository' => '60db-ai/tinyhelm',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
             'build_pack' => 'dockerfile',
@@ -121,7 +121,7 @@ CMD ["sh", "-c", "echo Crashing in 5 seconds... && sleep 5 && exit 1"]
     }
 
     /**
-     * Railpack examples from coollabsio/tinyhelm-examples (main branch) and the deploy key / GitLab examples.
+     * Railpack examples from 60db-ai/tinyhelm-examples (main branch) and the deploy key / GitLab examples.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -161,8 +161,8 @@ CMD ["sh", "-c", "echo Crashing in 5 seconds... && sleep 5 && exit 1"]
             ['uuid' => 'ruby-rails', 'name' => 'Ruby on Rails Example', 'base_directory' => '/ruby/rails', 'ports_exposes' => '3000'],
             ['uuid' => 'elixir-phoenix', 'name' => 'Elixir Phoenix Example', 'base_directory' => '/elixir/phoenix', 'ports_exposes' => '4000'],
             // Deploy keys and GitLab
-            ['uuid' => 'github-deploy-key', 'name' => 'GitHub Deploy Key Example', 'git_repository' => 'git@github.com:coollabsio/tinyhelm-examples-deploy-key.git', 'ports_exposes' => '80', 'private_key_id' => 1],
-            ['uuid' => 'gitlab-deploy-key', 'name' => 'GitLab Deploy Key Example', 'git_repository' => 'git@gitlab.com:coollabsio/php-example.git', 'ports_exposes' => '80', 'source_id' => 1, 'source_type' => GitlabApp::class, 'private_key_id' => 1],
+            ['uuid' => 'github-deploy-key', 'name' => 'GitHub Deploy Key Example', 'git_repository' => 'git@github.com:60db-ai/tinyhelm-examples-deploy-key.git', 'ports_exposes' => '80', 'private_key_id' => 1],
+            ['uuid' => 'gitlab-deploy-key', 'name' => 'GitLab Deploy Key Example', 'git_repository' => 'git@gitlab.com:60db-ai/php-example.git', 'ports_exposes' => '80', 'source_id' => 1, 'source_type' => GitlabApp::class, 'private_key_id' => 1],
             ['uuid' => 'gitlab-public-example', 'name' => 'GitLab Public Example', 'git_repository' => 'https://gitlab.com/andrasbacsai/tinyhelm-examples.git', 'base_directory' => '/astro/static', 'ports_exposes' => '80', 'publish_directory' => '/dist', 'source_id' => 1, 'source_type' => GitlabApp::class, 'is_static' => true],
         ];
     }

@@ -25,13 +25,13 @@ it('selects the channel from the --preview or --nightly flag in install.sh', fun
 
     expect(trim($output))->toBe($selection);
 })->with([
-    'stable' => [[], 'stable https://cdn.coollabs.io/tinyhelm'],
-    'preview' => [['--preview'], 'preview https://cdn.coollabs.io/tinyhelm/preview'],
-    'nightly with a version' => [['--nightly', '4.6.0-beta.1.20261027.1'], 'nightly https://cdn.coollabs.io/tinyhelm/nightly 4.6.0-beta.1.20261027.1'],
+    'stable' => [[], 'stable https://cdn.tinyhelm.com/tinyhelm'],
+    'preview' => [['--preview'], 'preview https://cdn.tinyhelm.com/tinyhelm/preview'],
+    'nightly with a version' => [['--nightly', '4.6.0-beta.1.20261027.1'], 'nightly https://cdn.tinyhelm.com/tinyhelm/nightly 4.6.0-beta.1.20261027.1'],
 ]);
 
 it('builds the development helper image from the tinyhelm-helper repository', function (string $file) {
-    expect(file_get_contents(dirname(__DIR__, 2)."/{$file}"))->toContain('https://github.com/coollabsio/tinyhelm-helper.git#main:src');
+    expect(file_get_contents(dirname(__DIR__, 2)."/{$file}"))->toContain('https://github.com/60db-ai/tinyhelm-helper.git#main:src');
 })->with(['scripts/dev-helper', 'docker-compose.dev.yml', 'docker-compose.dev-multi.yml']);
 
 it('builds the testing host only for local development', function () {

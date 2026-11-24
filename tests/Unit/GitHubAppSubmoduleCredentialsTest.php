@@ -17,7 +17,7 @@ namespace {
         $application = new Application;
         $application->forceFill([
             'uuid' => 'test-app-uuid',
-            'git_repository' => 'coollabsio/private-app',
+            'git_repository' => '60db-ai/private-app',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
         ]);
@@ -52,7 +52,7 @@ namespace {
         $application = new Application;
         $application->forceFill([
             'uuid' => 'test-app-uuid',
-            'git_repository' => 'coollabsio/private-app',
+            'git_repository' => '60db-ai/private-app',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
         ]);
@@ -72,13 +72,13 @@ namespace {
         $application->setRelation('source', $source);
 
         $git = $application->generateGitImportCommands(deployment_uuid: 'test-deployment', exec_in_docker: false)['git'];
-        $tokenUrl = 'https://x-access-token:review%20token%2Fwith%2Bsymbols@github.com/coollabsio/private-submodule.git';
+        $tokenUrl = 'https://x-access-token:review%20token%2Fwith%2Bsymbols@github.com/60db-ai/private-submodule.git';
 
         // `ls-remote --get-url` prints the URL that git uses after the insteadOf rewrites, without a connection.
         foreach ([
-            'https://github.com/coollabsio/private-submodule.git',
-            'git@github.com:coollabsio/private-submodule.git',
-            'ssh://git@github.com/coollabsio/private-submodule.git',
+            'https://github.com/60db-ai/private-submodule.git',
+            'git@github.com:60db-ai/private-submodule.git',
+            'ssh://git@github.com/60db-ai/private-submodule.git',
         ] as $submoduleUrl) {
             $process = Process::fromShellCommandline("{$git} ls-remote --get-url ".escapeshellarg($submoduleUrl));
             $process->mustRun();
@@ -86,16 +86,16 @@ namespace {
             expect(trim($process->getOutput()))->toBe($tokenUrl);
         }
 
-        $otherHost = Process::fromShellCommandline("{$git} ls-remote --get-url git@gitlab.com:coollabsio/other.git");
+        $otherHost = Process::fromShellCommandline("{$git} ls-remote --get-url git@gitlab.com:60db-ai/other.git");
         $otherHost->mustRun();
-        expect(trim($otherHost->getOutput()))->toBe('git@gitlab.com:coollabsio/other.git');
+        expect(trim($otherHost->getOutput()))->toBe('git@gitlab.com:60db-ai/other.git');
     });
 
     test('the compose file submodule step uses the github app credentials of the clone', function () {
         $application = new Application;
         $application->forceFill([
             'uuid' => 'test-app-uuid',
-            'git_repository' => 'coollabsio/private-app',
+            'git_repository' => '60db-ai/private-app',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
             'base_directory' => '/',

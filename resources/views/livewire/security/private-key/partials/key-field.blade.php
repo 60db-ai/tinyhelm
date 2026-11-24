@@ -43,12 +43,12 @@
         @can('update', $private_key)
             <div class="flex items-center gap-3">
                 <button type="button"
-                    class="text-[11px] font-medium text-coollabs hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50 dark:text-brand-light"
+                    class="text-[11px] font-medium text-tinyhelm hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50 dark:text-brand-light"
                     x-on:click="revealed || askPassword ? hide() : reveal()"
                     x-bind:disabled="replacing"
                     x-text="revealed || askPassword ? 'Hide key' : 'Reveal key'"></button>
                 <button type="button"
-                    class="text-[11px] font-medium text-coollabs hover:underline dark:text-brand-light"
+                    class="text-[11px] font-medium text-tinyhelm hover:underline dark:text-brand-light"
                     x-on:click="replacing = !replacing; if (replacing) { hide() } else { $wire.set('newPrivateKey', '', false) }"
                     x-text="replacing ? 'Cancel replace' : 'Replace key'"></button>
             </div>

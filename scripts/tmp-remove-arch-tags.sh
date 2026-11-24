@@ -3,7 +3,7 @@ set -euo pipefail
 
 OPTION="$*"
 LIMIT="${2:-}"
-IMAGE=coollabsio/tinyhelm
+IMAGE=60db-ai/tinyhelm
 ARCH_TAG_PATTERN='-(amd64|aarch64|arm64)$'
 GHCR_TOKEN="${GHCR_TOKEN:-}"
 DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME:-}"

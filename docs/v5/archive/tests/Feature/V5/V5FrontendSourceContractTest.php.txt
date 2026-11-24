@@ -754,8 +754,8 @@ it('defines the v5 cluster management page and create cluster form', function ()
     expect(substr_count($clustersPage, 'variant="tinyhelm"'))->toBe(6)
         ->and($buttonComponent)
         ->toContain('tinyhelm:')
-        ->toContain('bg-coollabs-50')
-        ->toContain('hover:bg-coollabs')
+        ->toContain('bg-tinyhelm-50')
+        ->toContain('hover:bg-tinyhelm')
         ->toContain('delete:');
 
     expect($dialogComponent)

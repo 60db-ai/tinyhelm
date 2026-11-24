@@ -3,7 +3,7 @@ set -euo pipefail
 
 OPTION="$*"
 LIMIT="${2:-}"
-IMAGE=coollabsio/tinyhelm
+IMAGE=60db-ai/tinyhelm
 VARIANTS=""
 KEEP_TAG_PATTERN='^(latest|preview|main|nightly|v?[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?)$'
 KEEP_TAG_EXCEPTIONS=v3,4.0.0-beta.420.1,4.0.0-beta.420.2,4.0.0-beta.420.3,4.0.0-beta.420.4,4.0.0-beta.420.5,4.0.0-beta.420.6,4.0.0-beta.420.7,4.0.0-beta.420.8,4.0.0-beta.420.9,4.0.0-beta.420.10

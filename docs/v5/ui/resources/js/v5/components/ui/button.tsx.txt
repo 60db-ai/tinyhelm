@@ -11,7 +11,7 @@ const buttonVariants = cva(
             variant: {
                 default: 'bg-primary text-primary-foreground hover:bg-primary/80',
                 tinyhelm:
-                    'border-coollabs bg-coollabs-50 text-coollabs-200 hover:bg-coollabs hover:text-white focus-visible:border-coollabs-100 focus-visible:bg-coollabs focus-visible:text-white dark:border-coollabs-100 dark:bg-coollabs/20 dark:text-white dark:hover:bg-coollabs-100 dark:hover:text-white dark:focus-visible:border-coollabs-100 dark:focus-visible:bg-coollabs-100',
+                    'border-tinyhelm bg-tinyhelm-50 text-tinyhelm-200 hover:bg-tinyhelm hover:text-white focus-visible:border-tinyhelm-100 focus-visible:bg-tinyhelm focus-visible:text-white dark:border-tinyhelm-100 dark:bg-tinyhelm/20 dark:text-white dark:hover:bg-tinyhelm-100 dark:hover:text-white dark:focus-visible:border-tinyhelm-100 dark:focus-visible:bg-tinyhelm-100',
                 outline:
                     'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
                 secondary:

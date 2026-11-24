@@ -1,4 +1,4 @@
 ---
 type: fixed
 ---
-Rejected Docker Compose files that put a YAML anchor on its own line below its key, such as the Apache Airflow Compose file ([#2705](https://github.com/coollabsio/tinyhelm/issues/2705))
+Rejected Docker Compose files that put a YAML anchor on its own line below its key, such as the Apache Airflow Compose file ([#2705](https://github.com/60db-ai/tinyhelm/issues/2705))

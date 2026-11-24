@@ -10,7 +10,7 @@
                 :helper="$use_for_github_runners
                     ? 'GitHub Actions runners are registered at organization level. Your GitHub user must be an owner or a GitHub App manager of the organization.'
                     : 'If empty, your GitHub user will be used. For an organization, your GitHub user must be an owner or a GitHub App manager of it. GitHub Actions runners need an organization.'"
-                :placeholder="$use_for_github_runners ? 'GitHub organization, for example coollabsio' : 'Personal account when empty'" />
+                :placeholder="$use_for_github_runners ? 'GitHub organization, for example 60db-ai' : 'Personal account when empty'" />
         </div>
 
         @if (! isCloud() && auth()->user()->can('makeSystemWide', \App\Models\GithubApp::class))

@@ -1,7 +1,7 @@
 # Contributing to TinyHelm
 > "First, thanks for considering contributing to my project. It really means a lot!" - [@andrasbacsai](https://github.com/andrasbacsai)
 
-You can ask for guidance anytime on our [Discord server](https://coollabs.io/discord) in the `#contribute` channel.
+You can ask for guidance anytime on our [Discord server](https://tinyhelm.com/discord) in the `#contribute` channel.
 
 To understand the tech stack, please refer to the [Tech Stack](TECH_STACK.md) document.
 
@@ -75,7 +75,7 @@ After installing Docker (or Orbstack), verify the installation:
 
 
 ## 3. Fork and Setup Local Repository
-1. Fork the [TinyHelm](https://github.com/coollabsio/tinyhelm) repository to your GitHub account.
+1. Fork the [TinyHelm](https://github.com/60db-ai/tinyhelm) repository to your GitHub account.
 
 2. Install a code editor on your machine (choose one):
 

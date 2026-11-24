@@ -194,7 +194,7 @@ test('an unknown git host on a server without trust on first use tells the user 
 });
 
 test('git ls-remote over ssh without a deploy key uses the tinyhelm ssh config', function (bool $execInDocker) {
-    $this->application->update(['git_repository' => 'git@github.com:coollabsio/tinyhelm-examples.git']);
+    $this->application->update(['git_repository' => 'git@github.com:60db-ai/tinyhelm-examples.git']);
 
     ['commands' => $commands] = $this->application->fresh()->generateGitLsRemoteCommands('test-uuid', $execInDocker);
 

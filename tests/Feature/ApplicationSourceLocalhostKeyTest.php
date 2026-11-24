@@ -71,7 +71,7 @@ describe('Application Source with localhost key (id=0)', function () {
     test('dispatches configuration changed when source settings are saved', function () {
         $application = Application::factory()->create([
             'environment_id' => $this->environment->id,
-            'git_repository' => 'coollabsio/tinyhelm',
+            'git_repository' => '60db-ai/tinyhelm',
             'git_branch' => 'main',
             'git_commit_sha' => 'HEAD',
         ]);

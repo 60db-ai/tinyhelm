@@ -34,9 +34,9 @@ it('finds the registry of an image reference', function (string $image, string $
 })->with([
     ['nginx', 'docker.io'],
     ['library/nginx:latest', 'docker.io'],
-    ['coollabsio/tinyhelm', 'docker.io'],
-    ['docker.io/coollabsio/tinyhelm', 'docker.io'],
-    ['ghcr.io/coollabsio/tinyhelm:4', 'ghcr.io'],
+    ['60db-ai/tinyhelm', 'docker.io'],
+    ['docker.io/60db-ai/tinyhelm', 'docker.io'],
+    ['ghcr.io/60db-ai/tinyhelm:4', 'ghcr.io'],
     ['GHCR.IO/Owner/App', 'ghcr.io'],
     ['registry.example.com:5000/team/app', 'registry.example.com:5000'],
     ['localhost/app', 'localhost'],

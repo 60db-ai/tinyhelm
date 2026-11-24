@@ -39,7 +39,7 @@ function tinyhelmBranchVariables(string $buildPack, int $pullRequestId, string $
     $preview = $pullRequestId === 0 ? null : ApplicationPreview::create([
         'application_id' => $application->id,
         'pull_request_id' => $pullRequestId,
-        'pull_request_html_url' => 'https://github.com/coollabsio/example/pull/'.$pullRequestId,
+        'pull_request_html_url' => 'https://github.com/60db-ai/example/pull/'.$pullRequestId,
         'fqdn' => 'https://pr.example.com',
     ]);
 

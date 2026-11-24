@@ -1,4 +1,4 @@
 ---
 type: fixed
 ---
-Wrong response schema in the API docs of `List application deployments`, which showed a list of applications instead of `count` and `deployments` ([#5874](https://github.com/coollabsio/tinyhelm/issues/5874))
+Wrong response schema in the API docs of `List application deployments`, which showed a list of applications instead of `count` and `deployments` ([#5874](https://github.com/60db-ai/tinyhelm/issues/5874))

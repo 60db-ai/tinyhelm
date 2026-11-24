@@ -79,10 +79,10 @@ test('public github repositories are stored as owner and repository with the pub
     ]));
 
     $application = createPublicGitApplication([
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm-examples',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm-examples',
     ]);
 
-    expect($application->git_repository)->toBe('coollabsio/tinyhelm-examples')
+    expect($application->git_repository)->toBe('60db-ai/tinyhelm-examples')
         ->and($application->source_type)->toBe(GithubApp::class)
         ->and($application->source_id)->toBe(0);
 });

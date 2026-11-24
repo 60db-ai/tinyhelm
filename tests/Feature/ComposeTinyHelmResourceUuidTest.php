@@ -13,7 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 uses(RefreshDatabase::class);
 
 /**
- * Regression coverage for https://github.com/coollabsio/tinyhelm/issues/6401: a reference to
+ * Regression coverage for https://github.com/60db-ai/tinyhelm/issues/6401: a reference to
  * TINYHELM_RESOURCE_UUID in the compose file created a resource variable (with the network name
  * as its value), and that variable replaced the resource UUID in every container.
  */

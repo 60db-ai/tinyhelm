@@ -43,12 +43,12 @@
        values in .dark. */
     --color-severity-high: oklch(56% 0.135 50);
     --color-severity-medium: oklch(55% 0.1 235);
-    --color-coollabs-50: oklch(96.33% 0.0206 301.15);
-    --color-coollabs: oklch(49.65% 0.2709 289.33);
-    --color-coollabs-100: oklch(52.34% 0.287 289.16);
-    --color-coollabs-200: oklch(43.76% 0.2369 289.82);
-    --color-coollabs-300: oklch(38.04% 0.2031 290.47);
-    /* coolLabs brand purple. Primary actions, focus, and active navigation
+    --color-tinyhelm-50: oklch(96.33% 0.0206 301.15);
+    --color-tinyhelm: oklch(49.65% 0.2709 289.33);
+    --color-tinyhelm-100: oklch(52.34% 0.287 289.16);
+    --color-tinyhelm-200: oklch(43.76% 0.2369 289.82);
+    --color-tinyhelm-300: oklch(38.04% 0.2031 290.47);
+    /* TinyHelm brand purple. Primary actions, focus, and active navigation
        use these in both themes. Warning yellow is not an accent. */
     --color-brand: #6b16ed;
     --color-brand-hover: #7317ff;
@@ -114,7 +114,7 @@
 
 .button.button-highlighted:not(:disabled),
 .button[isHighlighted]:not(:disabled) {
-    --button-depth-color: var(--color-coollabs-300);
+    --button-depth-color: var(--color-tinyhelm-300);
 }
 
 .dark .button:not(.button-highlighted):not(.button-error):not([isHighlighted]):not(:disabled) {
@@ -442,7 +442,7 @@ select,
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        --coolbox-loading-color: var(--color-coollabs);
+        --coolbox-loading-color: var(--color-tinyhelm);
         background:
             linear-gradient(var(--coolbox-loading-color), var(--coolbox-loading-color)),
             linear-gradient(var(--coolbox-loading-color), var(--coolbox-loading-color)),
@@ -517,7 +517,7 @@ body {
     @apply min-w-0 w-full;
     overflow: hidden;
     border-radius: 10px;
-    border: 1px solid var(--coollabs-line, #e5e5e5);
+    border: 1px solid var(--tinyhelm-line, #e5e5e5);
 }
 
 .tinyhelm-monaco-editor .monaco-editor,
@@ -567,7 +567,7 @@ a {
 
 button:focus-visible,
 a:focus-visible {
-    @apply outline-none ring-2 ring-coollabs dark:ring-1 dark:ring-brand-light ring-offset-2 dark:ring-offset-coolgray-100;
+    @apply outline-none ring-2 ring-tinyhelm dark:ring-1 dark:ring-brand-light ring-offset-2 dark:ring-offset-coolgray-100;
 }
 
 label {
@@ -816,7 +816,7 @@ html.dark .terminal-fullscreen-shell[data-console-theme="system"] {
 html[data-theme="custom"] .application-console-shell[data-console-theme="system"],
 html[data-theme="custom"] .terminal-fullscreen-shell[data-console-theme="system"] {
     --console-theme-background: var(--color-log);
-    --console-theme-border: var(--coollabs-line);
+    --console-theme-border: var(--tinyhelm-line);
 }
 
 /* Docked System console only: the fill behind the terminal panel is the
@@ -825,19 +825,19 @@ html[data-theme="custom"] .terminal-fullscreen-shell[data-console-theme="system"
    surface over this fill, so only the notch shows it. The fullscreen shell has
    no panel, so it is intentionally excluded and keeps its plain terminal fill. */
 .application-console-shell[data-console-theme="system"] {
-    --console-theme-background: var(--coollabs-elevated);
+    --console-theme-background: var(--tinyhelm-elevated);
 }
 
 html.dark .application-console-shell[data-console-theme="system"] {
-    --console-theme-background: var(--coollabs-elevated);
+    --console-theme-background: var(--tinyhelm-elevated);
 }
 
 /* Dark mode: the docked System console uses the dark card colors (darker outer
    header, --color-card body, faint white ring), so it matches the cards around it. */
 html.dark .application-console-shell[data-console-theme="system"] {
-    --coollabs-elevated: color-mix(in srgb, var(--color-card) 66%, black);
-    --coollabs-base: var(--color-card);
-    --coollabs-hairline: rgb(255 255 255 / 8%);
+    --tinyhelm-elevated: color-mix(in srgb, var(--color-card) 66%, black);
+    --tinyhelm-base: var(--color-card);
+    --tinyhelm-hairline: rgb(255 255 255 / 8%);
 }
 
 .console-theme-selector {
@@ -1045,7 +1045,7 @@ body.terminal-is-fullscreen .terminal-fullscreen-shell [data-terminal-mobile-too
    its rounded top corners tuck under the header — the same merge the
    target-picker card uses (elevated header meeting a base body panel). */
 .application-console-shell[data-console-theme="system"] .terminal-session-toolbar {
-    --terminal-header-bg: var(--coollabs-elevated);
+    --terminal-header-bg: var(--tinyhelm-elevated);
     --terminal-header-border: transparent;
     /* Shell no longer clips (overflow: visible), so the header rounds its own
        top corners — matching the card header. */
@@ -1065,7 +1065,7 @@ body.terminal-is-fullscreen .terminal-fullscreen-shell [data-terminal-mobile-too
    behind it (::before) shows only through the rounded-corner notch, reading as
    the header colour — the card's figure/ground. */
 .application-console-shell[data-console-theme="system"] .terminal-session-panel {
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
     /* The body panel is a full rounded ring (like the card body). position:
        relative puts it (and its ring) above ::before AND, because it comes
        after the now-z:auto header in the DOM, above the header — so the ring's
@@ -1075,7 +1075,7 @@ body.terminal-is-fullscreen .terminal-fullscreen-shell [data-terminal-mobile-too
        cannot (square corners, or a disconnected transparent edge). */
     position: relative;
     border-radius: 8px;
-    box-shadow: 0 0 0 1px var(--coollabs-hairline);
+    box-shadow: 0 0 0 1px var(--tinyhelm-hairline);
 }
 
 /* Connected System console frame = the target-picker card recipe: a hairline
@@ -1086,7 +1086,7 @@ body.terminal-is-fullscreen .terminal-fullscreen-shell [data-terminal-mobile-too
 .application-console-shell[data-console-theme="system"] {
     overflow: visible;
     box-shadow:
-        0 0 0 1px var(--coollabs-hairline),
+        0 0 0 1px var(--tinyhelm-hairline),
         0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
@@ -1124,7 +1124,7 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
     max-height: min(70vh, 34rem);
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--coollabs-fill) transparent;
+    scrollbar-color: var(--tinyhelm-fill) transparent;
 }
 
 .terminal-target-card-list::-webkit-scrollbar {
@@ -1138,7 +1138,7 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
 .terminal-target-card-list::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 9999px;
-    background-color: var(--coollabs-fill);
+    background-color: var(--tinyhelm-fill);
     background-clip: padding-box;
 }
 
@@ -1151,16 +1151,16 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
     align-items: center;
     gap: 0.375rem;
     padding: 0.5rem 0.5rem 0.375rem;
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.01em;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .terminal-target-group-count {
     border-radius: 9999px;
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
     padding: 0 0.375rem;
     font-size: 0.625rem;
     line-height: 1rem;
@@ -1177,7 +1177,7 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
     white-space: nowrap;
     font-size: 0.6875rem;
     line-height: 1rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 @media (min-width: 640px) {
@@ -1194,7 +1194,7 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
 }
 
 html:not(.dark) .application-console-shell[data-console-theme="system"] .terminal-session-panel {
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
 }
 
 /* Console (attach) command box. Colours come from the active terminal theme's
@@ -1347,7 +1347,7 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
 }
 
 /*
-* Coollabs layer-card settings surfaces.
+* TinyHelm layer-card settings surfaces.
 * Anatomy: root shell = elevated bg + hairline ring; the header is a compact
 * strip on the shell; the body is a nested rounded panel with base bg + fill
 * ring. Depth comes from the neutral oklch surface ladder below.
@@ -1358,22 +1358,22 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
 :root {
     /* Page canvas is a faint off-white so white/elevated cards lift off it
        (shadcn pattern), instead of card and page reading as one flat color. */
-    --coollabs-canvas: oklch(97% 0 0);
-    --coollabs-elevated: oklch(98% 0 0);
-    --coollabs-recessed: oklch(96% 0 0);
-    --coollabs-base: oklch(100.0% 0 0);
-    --coollabs-fill: oklch(92.2% 0 0);
-    --coollabs-line: oklch(14.5% 0 0 / 0.1);
+    --tinyhelm-canvas: oklch(97% 0 0);
+    --tinyhelm-elevated: oklch(98% 0 0);
+    --tinyhelm-recessed: oklch(96% 0 0);
+    --tinyhelm-base: oklch(100.0% 0 0);
+    --tinyhelm-fill: oklch(92.2% 0 0);
+    --tinyhelm-line: oklch(14.5% 0 0 / 0.1);
     /* Card/table edge ring. Crisped from 93.5% (1.17:1 on canvas, invisible)
        to 85.5% (1.51:1) so surfaces read as bordered cards, not flat fills. */
-    --coollabs-hairline: oklch(85.5% 0 0);
+    --tinyhelm-hairline: oklch(85.5% 0 0);
     /* Row and section separators inside cards. Softer than the card edge.
        Translucent, so it stays visible on any card or theme surface. */
-    --coollabs-divider: oklch(0% 0 0 / 0.04);
+    --tinyhelm-divider: oklch(0% 0 0 / 0.04);
     /* Muted labels/titles. Darkened from 55.6% (failed WCAG AA on elevated
        4.46, recessed 4.24, fill 3.76) to 50% so muted text clears 4.5:1 on
        every light surface above white. Dark stays 70.8% (already passes). */
-    --coollabs-subtle: oklch(50% 0 0);
+    --tinyhelm-subtle: oklch(50% 0 0);
     /* Border of brand fills and the text on them. A custom theme overrides both. */
     --color-brand-ring: #8a4dff;
     --color-brand-foreground: #fff;
@@ -1395,21 +1395,21 @@ html:not(.dark) .application-console-shell[data-console-theme="system"] .termina
        ladder, so every panel shares one temperature (no blue cast). */
     --color-app: oklch(14.48% 0 0);
     --color-panel: oklch(19.13% 0 0);
-    --coollabs-canvas: var(--color-app);
-    --coollabs-elevated: oklch(20.02% 0 0);
-    --coollabs-recessed: oklch(25.2% 0 0);
-    --coollabs-base: oklch(22.64% 0 0);
-    --coollabs-fill: oklch(29.31% 0 0);
+    --tinyhelm-canvas: var(--color-app);
+    --tinyhelm-elevated: oklch(20.02% 0 0);
+    --tinyhelm-recessed: oklch(25.2% 0 0);
+    --tinyhelm-base: oklch(22.64% 0 0);
+    --tinyhelm-fill: oklch(29.31% 0 0);
     --color-surface: oklch(20.02% 0 0);
     --color-raised: oklch(22.64% 0 0);
     --color-selected: oklch(26.86% 0 0);
     --color-log: oklch(15.91% 0 0);
-    --coollabs-line: oklch(36% 0 0);
+    --tinyhelm-line: oklch(36% 0 0);
     /* Kept about 1.6:1 on the canvas so dark cards
        and tables show a visible edge instead of blending into the canvas. */
-    --coollabs-hairline: oklch(36% 0 0);
-    --coollabs-divider: oklch(100% 0 0 / 0.045);
-    --coollabs-subtle: oklch(70.8% 0 0);
+    --tinyhelm-hairline: oklch(36% 0 0);
+    --tinyhelm-divider: oklch(100% 0 0 / 0.045);
+    --tinyhelm-subtle: oklch(70.8% 0 0);
     /* Neutral (was #a8a8b0 / #7a7a84, both cool-tinted). Sidebar text now shares
        the same neutral temperature as the content text, so the sidebar no longer
        reads cooler than the panels/cards. */
@@ -1468,10 +1468,10 @@ html[data-theme="custom"] {
        text move toward it, so the text never has less contrast than on the fill. */
     --theme-accent-away: oklch(from var(--theme-accent-foreground) calc(1 - l) 0 0);
     --color-accent: var(--theme-bright-color);
-    --color-coollabs: var(--theme-bright-color);
-    --color-coollabs-100: var(--theme-bright-color);
-    --color-coollabs-200: color-mix(in oklab, var(--theme-bright-color) 88%, var(--theme-accent-away));
-    --color-coollabs-300: color-mix(in oklab, var(--theme-bright-color) 72%, oklch(0% 0 0));
+    --color-tinyhelm: var(--theme-bright-color);
+    --color-tinyhelm-100: var(--theme-bright-color);
+    --color-tinyhelm-200: color-mix(in oklab, var(--theme-bright-color) 88%, var(--theme-accent-away));
+    --color-tinyhelm-300: color-mix(in oklab, var(--theme-bright-color) 72%, oklch(0% 0 0));
     /* Legacy dark-theme accent utilities use warning as the brand color. */
     --color-warning: var(--theme-bright-color);
     /* Brand fills, tints, and accent text follow the picked color. Text on a
@@ -1514,20 +1514,20 @@ html[data-theme="custom"] :is(.app-sidebar, .app-topbar-brand, .mobile-sidebar-s
     --color-coolgray-300: var(--color-selected);
     --color-coolgray-400: color-mix(in oklab, var(--t-text) calc(9% + (1 - var(--t-light)) * 3%), var(--t-bg));
     --color-coolgray-500: color-mix(in oklab, var(--t-text) calc(12% + (1 - var(--t-light)) * 3%), var(--t-bg));
-    --coollabs-canvas: var(--color-app);
-    --coollabs-elevated: var(--color-surface);
-    --coollabs-recessed: var(--color-raised);
-    --coollabs-base: color-mix(in oklab, var(--t-text) calc((1 - var(--t-light)) * 5%), var(--t-bg));
-    --color-content-surface: var(--coollabs-base);
-    --coollabs-fill: color-mix(in oklab, var(--t-text) calc(8% + (1 - var(--t-light)) * 4%), var(--t-bg));
-    --coollabs-line: color-mix(in oklab, var(--t-text) calc(16% + (1 - var(--t-light)) * 6%), var(--t-bg));
-    --coollabs-hairline: color-mix(in oklab, var(--t-text) calc(11% + (1 - var(--t-light)) * 3%), var(--t-bg));
-    --coollabs-divider: color-mix(in oklab, var(--t-text) calc(5% + (1 - var(--t-light)) * 1%), transparent);
+    --tinyhelm-canvas: var(--color-app);
+    --tinyhelm-elevated: var(--color-surface);
+    --tinyhelm-recessed: var(--color-raised);
+    --tinyhelm-base: color-mix(in oklab, var(--t-text) calc((1 - var(--t-light)) * 5%), var(--t-bg));
+    --color-content-surface: var(--tinyhelm-base);
+    --tinyhelm-fill: color-mix(in oklab, var(--t-text) calc(8% + (1 - var(--t-light)) * 4%), var(--t-bg));
+    --tinyhelm-line: color-mix(in oklab, var(--t-text) calc(16% + (1 - var(--t-light)) * 6%), var(--t-bg));
+    --tinyhelm-hairline: color-mix(in oklab, var(--t-text) calc(11% + (1 - var(--t-light)) * 3%), var(--t-bg));
+    --tinyhelm-divider: color-mix(in oklab, var(--t-text) calc(5% + (1 - var(--t-light)) * 1%), transparent);
     --color-hairline: color-mix(in oklab, var(--t-text) 8%, transparent);
     --color-fg: var(--t-text);
     --color-fg-dim: color-mix(in oklab, var(--t-text) 74%, var(--t-bg));
     --color-fg-faint: color-mix(in oklab, var(--t-text) 60%, var(--t-bg));
-    --coollabs-subtle: var(--color-fg-faint);
+    --tinyhelm-subtle: var(--color-fg-faint);
     --theme-placeholder-color: color-mix(in oklab, var(--t-text) 50%, var(--t-bg));
     --color-nav-text: color-mix(in oklab, var(--t-text) 74%, var(--t-bg));
     --color-nav-muted: color-mix(in oklab, var(--t-text) 60%, var(--t-bg));
@@ -1584,11 +1584,11 @@ html[data-theme="custom"] [class*="dark:bg-white/[0.025]"] {
 
 .dark [class~="dark:border-white/[0.07]"],
 .dark [class~="dark:border-white/[0.08]"] {
-    border-color: var(--coollabs-line) !important;
+    border-color: var(--tinyhelm-line) !important;
 }
 
 .dark [class~="dark:border-white/[0.06]"] {
-    border-color: var(--coollabs-hairline) !important;
+    border-color: var(--tinyhelm-hairline) !important;
 }
 
 html[data-theme="custom"] input::placeholder,
@@ -1603,10 +1603,10 @@ html[data-theme="custom"] textarea::placeholder {
    brand color as foreground on dark surfaces. Route them to the clamped, always
    readable token; fills (bg-*) keep the brighter accent + its computed foreground. */
 html[data-theme="custom"] :is(
-    [class~="text-coollabs"],
+    [class~="text-tinyhelm"],
     [class~="text-warning"],
     [class~="text-accent"],
-    [class~="dark:text-coollabs"],
+    [class~="dark:text-tinyhelm"],
     [class~="dark:text-warning"],
     [class~="dark:text-brand-light"]
 ) {
@@ -1617,11 +1617,11 @@ html.dark[data-theme="custom"] [class~="dark:bg-brand"] {
     color: var(--theme-accent-foreground) !important;
 }
 
-html[data-theme="custom"] [class~="hover:text-coollabs"]:hover,
+html[data-theme="custom"] [class~="hover:text-tinyhelm"]:hover,
 html[data-theme="custom"] [class~="hover:text-warning"]:hover,
 html[data-theme="custom"] [class~="dark:hover:text-warning"]:hover,
 html[data-theme="custom"] [class~="dark:hover:text-brand-light"]:hover,
-html[data-theme="custom"] [class~="dark:hover:text-coollabs"]:hover {
+html[data-theme="custom"] [class~="dark:hover:text-tinyhelm"]:hover {
     color: var(--theme-fg-on-surface) !important;
 }
 
@@ -1633,29 +1633,29 @@ html[data-theme="custom"] [class~="dark:hover:text-coollabs"]:hover {
    whole UI, not just design-system classes. A light sidebar on a dark page
    gets the same remap. Checkbox boxes keep their own colors: the !important
    remap would hide their peer-checked fill. */
-html[data-theme="custom"]:not(.dark) :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-white/80"]):not([class~="peer-checked:bg-coollabs"]),
-html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-white/80"]):not([class~="peer-checked:bg-coollabs"]) {
-    background-color: var(--coollabs-elevated) !important;
+html[data-theme="custom"]:not(.dark) :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-white/80"]):not([class~="peer-checked:bg-tinyhelm"]),
+html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) :is([class~="bg-white"], [class~="bg-white/95"], [class~="bg-white/80"]):not([class~="peer-checked:bg-tinyhelm"]) {
+    background-color: var(--tinyhelm-elevated) !important;
 }
 
 html[data-theme="custom"]:not(.dark) [class~="bg-neutral-50"],
 html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) [class~="bg-neutral-50"] {
-    background-color: var(--coollabs-canvas) !important;
+    background-color: var(--tinyhelm-canvas) !important;
 }
 
 html[data-theme="custom"]:not(.dark) :is([class~="bg-neutral-100"], [class~="bg-neutral-200"]),
 html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) :is([class~="bg-neutral-100"], [class~="bg-neutral-200"]) {
-    background-color: var(--coollabs-fill) !important;
+    background-color: var(--tinyhelm-fill) !important;
 }
 
 html[data-theme="custom"]:not(.dark) [class~="border-neutral-200"],
 html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) [class~="border-neutral-200"] {
-    border-color: var(--coollabs-hairline) !important;
+    border-color: var(--tinyhelm-hairline) !important;
 }
 
-html[data-theme="custom"]:not(.dark) :is([class~="border-neutral-300"], [class~="border-neutral-100"]):not([class~="peer-checked:border-coollabs"]),
-html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) :is([class~="border-neutral-300"], [class~="border-neutral-100"]):not([class~="peer-checked:border-coollabs"]) {
-    border-color: var(--coollabs-line) !important;
+html[data-theme="custom"]:not(.dark) :is([class~="border-neutral-300"], [class~="border-neutral-100"]):not([class~="peer-checked:border-tinyhelm"]),
+html[data-sidebar-scheme="light"] :where(.app-sidebar, .app-topbar-brand, .mobile-sidebar-sheet [role="dialog"]) :is([class~="border-neutral-300"], [class~="border-neutral-100"]):not([class~="peer-checked:border-tinyhelm"]) {
+    border-color: var(--tinyhelm-line) !important;
 }
 
 /* Menu entries (the account menu) follow the sidebar text, not the page scheme. */
@@ -1670,7 +1670,7 @@ html:not(.dark) :is([class~="border-b"], [class~="border-t"], [class~="border-y"
 html:not(.dark) [class~="divide-neutral-200"] > :not(:last-child),
 .dark :is([class~="border-b"], [class~="border-t"], [class~="border-y"]):is([class~="dark:border-white/[0.06]"], [class~="dark:border-white/[0.07]"], [class~="dark:border-white/[0.08]"]),
 .dark :is([class~="dark:divide-white/[0.06]"], [class~="dark:divide-white/[0.07]"], [class~="dark:divide-white/[0.08]"]) > :not(:last-child) {
-    border-color: var(--coollabs-divider) !important;
+    border-color: var(--tinyhelm-divider) !important;
 }
 
 html[data-theme="custom"] input:read-only,
@@ -1685,8 +1685,8 @@ html[data-theme="custom"] textarea:disabled {
     min-height: 100dvh;
     display: flex;
     background:
-        radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--color-coollabs) 9%, transparent), transparent 34rem),
-        var(--coollabs-canvas);
+        radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--color-tinyhelm) 9%, transparent), transparent 34rem),
+        var(--tinyhelm-canvas);
     color: #171717;
 }
 
@@ -1707,8 +1707,8 @@ html[data-theme="custom"] textarea:disabled {
     width: min(100%, 27rem);
     overflow: hidden;
     border-radius: 10px;
-    background: var(--coollabs-elevated);
-    box-shadow: 0 0 0 1px var(--coollabs-hairline), 0 20px 60px rgb(0 0 0 / 0.14);
+    background: var(--tinyhelm-elevated);
+    box-shadow: 0 0 0 1px var(--tinyhelm-hairline), 0 20px 60px rgb(0 0 0 / 0.14);
 }
 
 .auth-card-heading {
@@ -1733,14 +1733,14 @@ html[data-theme="custom"] textarea:disabled {
     max-width: 38ch;
     font-size: 0.8125rem;
     line-height: 1.25rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .auth-card-body {
     border-radius: 10px;
     padding: 1.25rem;
-    background: var(--coollabs-base);
-    box-shadow: 0 0 0 1px var(--coollabs-fill);
+    background: var(--tinyhelm-base);
+    box-shadow: 0 0 0 1px var(--tinyhelm-fill);
 }
 
 .auth-card-footer {
@@ -1751,7 +1751,7 @@ html[data-theme="custom"] textarea:disabled {
     min-height: 3rem;
     padding: 0.75rem 1.25rem;
     font-size: 0.8125rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .auth-text-link {
@@ -1775,7 +1775,7 @@ html[data-theme="custom"] textarea:disabled {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     font-size: 0.75rem;
 }
 
@@ -1784,7 +1784,7 @@ html[data-theme="custom"] textarea:disabled {
     content: '';
     height: 1px;
     flex: 1;
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
 }
 
 .auth-guidance {
@@ -1793,8 +1793,8 @@ html[data-theme="custom"] textarea:disabled {
     gap: 0.5rem;
     border-radius: 8px;
     padding: 0.625rem 0.75rem;
-    background: var(--coollabs-recessed);
-    color: var(--coollabs-subtle);
+    background: var(--tinyhelm-recessed);
+    color: var(--tinyhelm-subtle);
     font-size: 0.75rem;
     line-height: 1rem;
 }
@@ -1814,8 +1814,8 @@ html[data-theme="custom"] textarea:disabled {
     width: 100%;
     padding: 2rem 1rem;
     background:
-        radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--color-coollabs) 9%, transparent), transparent 34rem),
-        var(--coollabs-canvas);
+        radial-gradient(circle at 50% 0%, color-mix(in oklab, var(--color-tinyhelm) 9%, transparent), transparent 34rem),
+        var(--tinyhelm-canvas);
     color: #171717;
 }
 
@@ -1834,7 +1834,7 @@ html[data-theme="custom"] textarea:disabled {
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.03em;
-    color: var(--color-coollabs);
+    color: var(--color-tinyhelm);
 }
 
 .dark .error-code {
@@ -1867,7 +1867,7 @@ html[data-theme="custom"] textarea:disabled {
     max-width: 42ch;
     font-size: 0.875rem;
     line-height: 1.375rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .error-extra {
@@ -1889,7 +1889,7 @@ html[data-theme="custom"] textarea:disabled {
     margin: 0;
     font-size: 0.8125rem;
     line-height: 1.25rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .error-extra details summary {
@@ -1926,7 +1926,7 @@ html[data-theme="custom"] textarea:disabled {
     font-size: 0.75rem;
     padding: 0.05rem 0.3rem;
     border-radius: 4px;
-    background: var(--coollabs-recessed);
+    background: var(--tinyhelm-recessed);
 }
 
 .error-actions {
@@ -1954,7 +1954,7 @@ html[data-theme="custom"] textarea:disabled {
     /* Light mode has no dim/faint fg tokens; these keep WCAG AA on the card. */
     --card-fg: oklch(14.5% 0 0);
     --card-fg-dim: oklch(40% 0 0);
-    --card-fg-faint: var(--coollabs-subtle);
+    --card-fg-faint: var(--tinyhelm-subtle);
 }
 
 /* Layout only for cards: wells set their own display (often a Tailwind grid). */
@@ -1989,8 +1989,8 @@ html[data-theme="custom"] textarea:disabled {
 
 /* The light well uses the theme surface, like the bg-white remap, instead of white. */
 html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .application-settings-section-body, .empty-state) {
-    --card-underlay: var(--coollabs-canvas);
-    --well-bg: var(--coollabs-elevated);
+    --card-underlay: var(--tinyhelm-canvas);
+    --well-bg: var(--tinyhelm-elevated);
 }
 
 /* Top-level cards and wells sit on the page: paint the translucent tint over
@@ -2067,7 +2067,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 /* Modals reuse the layer-card shell. The card tint is translucent, so paint it
    over the page canvas to keep the page behind the modal hidden. */
 .application-settings-section.application-settings-form {
-    background: linear-gradient(var(--card-bg), var(--card-bg)), var(--coollabs-canvas);
+    background: linear-gradient(var(--card-bg), var(--card-bg)), var(--tinyhelm-canvas);
 }
 
 /* Dark mode: the modal markup adds an inline hairline ring outside the card
@@ -2127,7 +2127,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 }
 
 .application-settings-section .settings-section-toggle:focus-visible {
-    outline: 2px solid var(--color-coollabs);
+    outline: 2px solid var(--color-tinyhelm);
     outline-offset: 2px;
 }
 
@@ -2181,8 +2181,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 /* The dark well is darker than the canvas, so controls inside it use a darker,
    translucent fill and border (like haruvo) instead of the global opaque ones. */
 .dark .application-settings-section-body {
-    --coollabs-recessed: rgb(255 255 255 / 3%);
-    --coollabs-line: rgb(255 255 255 / 8%);
+    --tinyhelm-recessed: rgb(255 255 255 / 3%);
+    --tinyhelm-line: rgb(255 255 255 / 8%);
 }
 
 /* A well without a card around it sits straight on the canvas. In dark mode it
@@ -2200,8 +2200,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 
 /* Floating panels in the well must stay opaque: restore the global dark values. */
 .dark .application-settings-section-body :is(.listbox-panel, .searchable-listbox-panel, [role="listbox"], [role="menu"]) {
-    --coollabs-recessed: oklch(25.2% 0 0);
-    --coollabs-line: oklch(36% 0 0);
+    --tinyhelm-recessed: oklch(25.2% 0 0);
+    --tinyhelm-line: oklch(36% 0 0);
 }
 
 .settings-mobile-header {
@@ -2228,7 +2228,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 }
 
 .dark .settings-mobile-description {
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 /* All settings sidebars share one alignment rule. Keep the sticky offset equal
@@ -2268,12 +2268,12 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
         overflow-y: auto;
         overscroll-behavior: contain;
         scrollbar-width: thin;
-        scrollbar-color: var(--coollabs-fill) transparent;
+        scrollbar-color: var(--tinyhelm-fill) transparent;
         scrollbar-gutter: stable;
-        --rail-fill: var(--coollabs-elevated);
+        --rail-fill: var(--tinyhelm-elevated);
         padding: 0.5rem;
         background: var(--rail-fill);
-        border-right: 1px solid var(--coollabs-hairline);
+        border-right: 1px solid var(--tinyhelm-hairline);
         transition: left 200ms ease;
     }
 
@@ -2282,7 +2282,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     }
 
     html:not(.dark) .application-settings-navigation {
-        --rail-fill: var(--coollabs-base);
+        --rail-fill: var(--tinyhelm-base);
     }
 
     .application-settings-navigation::-webkit-scrollbar {
@@ -2295,11 +2295,11 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 
     .application-settings-navigation::-webkit-scrollbar-thumb {
         border-radius: 9999px;
-        background: var(--coollabs-fill);
+        background: var(--tinyhelm-fill);
     }
 
     .application-settings-navigation::-webkit-scrollbar-thumb:hover {
-        background: var(--coollabs-line);
+        background: var(--tinyhelm-line);
     }
 
     /* Canvas pages with a rail (server canvas): the rail stays above the canvas,
@@ -2340,7 +2340,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     margin-bottom: 0.375rem;
     font-size: 13px;
     font-weight: 500;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 /*
@@ -2363,8 +2363,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 .application-settings-form .listbox-trigger {
     height: 2rem;
     border-radius: 8px;
-    border-color: var(--coollabs-line);
-    background-color: var(--coollabs-recessed);
+    border-color: var(--tinyhelm-line);
+    background-color: var(--tinyhelm-recessed);
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     font-size: 0.875rem;
@@ -2528,7 +2528,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     margin-inline: 0.25rem;
     border-radius: 9999px;
     color: #737373;
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
     box-shadow:
         0 1px 2px rgba(0, 0, 0, 0.06),
         0 0 0 1px rgba(0, 0, 0, 0.08);
@@ -2564,7 +2564,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 
 .resource-heading-tabs-control:focus-visible .resource-heading-tabs-control-icon {
     box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--color-coollabs, #6b16ed) 45%, transparent),
+        0 0 0 2px color-mix(in srgb, var(--color-tinyhelm, #6b16ed) 45%, transparent),
         0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
@@ -2629,15 +2629,15 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
  */
 .application-heading-actions .app-tab[aria-current='page'],
 .application-heading-actions .app-tab.app-tab-active {
-    background: color-mix(in srgb, var(--color-coollabs) 10%, transparent);
-    color: var(--color-coollabs);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-coollabs) 25%, transparent);
+    background: color-mix(in srgb, var(--color-tinyhelm) 10%, transparent);
+    color: var(--color-tinyhelm);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-tinyhelm) 25%, transparent);
 }
 
 .application-heading-actions .app-tab[aria-current='page']:hover,
 .application-heading-actions .app-tab.app-tab-active:hover {
-    background: color-mix(in srgb, var(--color-coollabs) 15%, transparent);
-    color: var(--color-coollabs);
+    background: color-mix(in srgb, var(--color-tinyhelm) 15%, transparent);
+    color: var(--color-tinyhelm);
 }
 
 .dark .application-heading-actions .app-tab[aria-current='page'],
@@ -2729,7 +2729,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 /* Same physical edge as highlighted .button: hover lifts, press sinks. */
 .split-action-main:not(:disabled),
 .split-action-caret:not(:disabled) {
-    --button-depth-color: var(--color-coollabs-300);
+    --button-depth-color: var(--color-tinyhelm-300);
     box-shadow: 0 2px 0 var(--button-depth-color);
 }
 
@@ -2764,8 +2764,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     padding: 0 0.625rem 0 0.75rem;
     overflow: hidden;
     border-radius: 8px;
-    border: 1px solid var(--coollabs-line);
-    background: var(--coollabs-recessed);
+    border: 1px solid var(--tinyhelm-line);
+    background: var(--tinyhelm-recessed);
     font-size: 0.875rem;
     color: #000000;
     text-align: left;
@@ -2824,8 +2824,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     overflow-y: auto;
     padding: 0.25rem;
     border-radius: 10px;
-    border: 1px solid var(--coollabs-line);
-    background: var(--coollabs-recessed);
+    border: 1px solid var(--tinyhelm-line);
+    background: var(--tinyhelm-recessed);
     box-shadow: var(--shadow-dropdown);
 }
 
@@ -2872,12 +2872,12 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 }
 
 .listbox-option:hover {
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
 }
 
 .data-table-row-active {
-    background: var(--coollabs-fill);
-    color: var(--coollabs-fg);
+    background: var(--tinyhelm-fill);
+    color: var(--tinyhelm-fg);
 }
 
 .listbox-option-disabled {
@@ -2906,7 +2906,7 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
 .searchable-listbox-search {
     position: relative;
     flex-shrink: 0;
-    border-bottom: 1px solid var(--coollabs-line);
+    border-bottom: 1px solid var(--tinyhelm-line);
     padding: 0.375rem;
 }
 
@@ -2914,8 +2914,8 @@ html[data-theme="custom"]:not(.dark) :is(.application-settings-section, .applica
     width: 100%;
     height: 2rem;
     border-radius: 6px;
-    border: 1px solid var(--coollabs-line);
-    background: var(--coollabs-recessed);
+    border: 1px solid var(--tinyhelm-line);
+    background: var(--tinyhelm-recessed);
     padding: 0 0.5rem 0 2rem;
     font-size: 0.8125rem;
     color: #000000;
@@ -3016,7 +3016,7 @@ input[type="search"]::-webkit-search-results-decoration {
     margin-top: 0.25rem;
     max-width: 28rem;
     line-height: 1.25rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 /* Inside a layer card or a well, that box is the frame: show only the centered text. */
@@ -3034,9 +3034,9 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .loading-state-card {
-    border: 1px dashed var(--coollabs-line);
+    border: 1px dashed var(--tinyhelm-line);
     border-radius: 12px;
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
 }
 
 .application-settings-section-body.is-flush .empty-state,
@@ -3089,7 +3089,7 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .validation-installation-logs {
-    border: 1px solid var(--coollabs-fill);
+    border: 1px solid var(--tinyhelm-fill);
 }
 
 @media (max-width: 639px) {
@@ -3098,7 +3098,7 @@ input[type="search"]::-webkit-search-results-decoration {
         min-height: 100dvh;
         max-height: 100dvh;
         border-radius: 0;
-        box-shadow: inset 0 0 0 1px var(--coollabs-hairline) !important;
+        box-shadow: inset 0 0 0 1px var(--tinyhelm-hairline) !important;
     }
 
     .process-dialog-mobile-fullscreen .process-dialog-body {
@@ -3122,9 +3122,9 @@ input[type="search"]::-webkit-search-results-decoration {
     height: 2.5rem;
     font-size: 13px;
     font-weight: 500;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     background: rgba(0, 0, 0, 0.02);
-    border-bottom: 1px solid var(--coollabs-fill);
+    border-bottom: 1px solid var(--tinyhelm-fill);
     border-radius: 8px 8px 0 0;
 }
 
@@ -3181,7 +3181,7 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 .data-table > .env-table-item {
-    border-bottom: 1px solid var(--coollabs-fill);
+    border-bottom: 1px solid var(--tinyhelm-fill);
 }
 
 .data-table > .env-table-item:last-child {
@@ -3271,7 +3271,7 @@ input[type="search"]::-webkit-search-results-decoration {
     min-height: 320px;
     overflow: hidden;
     border-radius: 8px;
-    box-shadow: inset 0 0 0 1px var(--coollabs-line);
+    box-shadow: inset 0 0 0 1px var(--tinyhelm-line);
 }
 
 .environment-table-scroll {
@@ -3556,7 +3556,7 @@ input[type="search"]::-webkit-search-results-decoration {
         font-size: 0.6875rem;
         font-weight: 500;
         line-height: 1rem;
-        color: var(--coollabs-subtle);
+        color: var(--tinyhelm-subtle);
     }
 
     .data-table-row.domains-table-grid .listbox-trigger,
@@ -3598,7 +3598,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Rows are reordered with CSS order, so dividers must not depend on DOM position. */
 .data-table-row.service-backup-table-grid {
-    border-top: 1px solid var(--coollabs-fill);
+    border-top: 1px solid var(--tinyhelm-fill);
 }
 
 /* Persistent storage volumes: Name | [Source] | Destination | [PR suffix] | Backup | [Actions] */
@@ -3644,7 +3644,7 @@ input[type="search"]::-webkit-search-results-decoration {
     font-size: 13px;
     font-weight: 500;
     line-height: 1rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 /* Compact inputs inside volume table rows (desktop) */
@@ -3705,7 +3705,7 @@ input[type="search"]::-webkit-search-results-decoration {
         font-size: 13px;
         font-weight: 500;
         line-height: 1rem;
-        color: var(--coollabs-subtle);
+        color: var(--tinyhelm-subtle);
     }
 
     .volumes-cell-name,
@@ -3999,7 +3999,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Search hides rows, so dividers must not depend on DOM position. */
 .data-table-row.database-backup-table-grid {
-    border-top: 1px solid var(--coollabs-fill);
+    border-top: 1px solid var(--tinyhelm-fill);
 }
 
 .backup-executions-table-grid {
@@ -4235,7 +4235,7 @@ input[type="search"]::-webkit-search-results-decoration {
 /* Same border as the application settings cards (--card-border). */
 .logs-viewer {
     border-color: rgb(0 0 0 / 9%);
-    background: var(--coollabs-base);
+    background: var(--tinyhelm-base);
     color: #262626;
 }
 
@@ -4258,7 +4258,7 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 html[data-theme="custom"] .logs-viewer-toolbar {
-    border-bottom-color: var(--coollabs-line);
+    border-bottom-color: var(--tinyhelm-line);
     background: var(--color-log-toolbar);
 }
 
@@ -4362,7 +4362,7 @@ html[data-theme="custom"] .logs-viewer-timestamp {
 }
 
 .runtime-log-lines-group:has(.logs-viewer-lines-input:focus) {
-    border-color: var(--color-coollabs);
+    border-color: var(--color-tinyhelm);
 }
 
 .runtime-log-lines-group .logs-viewer-lines-label {
@@ -4412,7 +4412,7 @@ html[data-theme="custom"] .logs-viewer-timestamp {
 
 .runtime-log-lines-all.runtime-log-lines-all-active,
 .dark .runtime-log-lines-all.runtime-log-lines-all-active {
-    background: var(--color-coollabs);
+    background: var(--color-tinyhelm);
     color: #fff;
 }
 
@@ -4603,7 +4603,7 @@ html[data-theme="custom"] .logs-viewer-timestamp {
 }
 
 .logs-viewer-btn-active {
-    background: var(--color-coollabs);
+    background: var(--color-tinyhelm);
     color: #fff;
 }
 
@@ -4733,8 +4733,8 @@ html[data-theme="custom"] .logs-viewer-timestamp {
 .runtime-log-shell {
     overflow: visible;
     border-radius: 8px;
-    background: var(--coollabs-elevated);
-    box-shadow: 0 0 0 1px var(--coollabs-hairline);
+    background: var(--tinyhelm-elevated);
+    box-shadow: 0 0 0 1px var(--tinyhelm-hairline);
 }
 
 .runtime-log-trigger {
@@ -4778,8 +4778,8 @@ html[data-theme="custom"] .logs-viewer-timestamp {
     flex-direction: column;
     overflow: visible;
     border-radius: 8px;
-    background: var(--coollabs-base);
-    box-shadow: 0 0 0 1px var(--coollabs-fill);
+    background: var(--tinyhelm-base);
+    box-shadow: 0 0 0 1px var(--tinyhelm-fill);
 }
 
 .settings-log-panel .runtime-log-panel {
@@ -4789,7 +4789,7 @@ html[data-theme="custom"] .logs-viewer-timestamp {
 .runtime-log-toolbar {
     position: relative;
     z-index: 20;
-    border-bottom-color: var(--coollabs-fill);
+    border-bottom-color: var(--tinyhelm-fill);
     background: transparent;
 }
 
@@ -4845,17 +4845,17 @@ html.dark:not([data-theme="custom"]) .runtime-log-panel .runtime-log-toolbar {
 }
 
 .runtime-log-icon-button-active {
-    background: var(--color-coollabs);
+    background: var(--color-tinyhelm);
     color: #fff;
 }
 
 .dark .runtime-log-icon-button-active {
-    background: var(--color-coollabs);
+    background: var(--color-tinyhelm);
     color: #fff;
 }
 
 .runtime-log-menu {
-    background: var(--coollabs-elevated) !important;
+    background: var(--tinyhelm-elevated) !important;
     opacity: 1 !important;
 }
 
@@ -4881,7 +4881,7 @@ html.dark:not([data-theme="custom"]) .runtime-log-panel .runtime-log-toolbar {
 .runtime-log-viewport {
     min-height: 12rem;
     border-radius: 0 0 8px 8px;
-    background: var(--coollabs-elevated);
+    background: var(--tinyhelm-elevated);
     color: #262626;
 }
 
@@ -4944,7 +4944,7 @@ html.dark:not([data-theme="custom"]) .runtime-log-panel .runtime-log-toolbar {
 }
 
 .dark .runtime-log-columns {
-    background: var(--coollabs-elevated);
+    background: var(--tinyhelm-elevated);
 }
 
 html[data-theme="custom"] .runtime-log-columns {
@@ -5223,7 +5223,7 @@ html[data-theme="custom"] .runtime-log-columns {
 }
 
 .deployment-badge-preview {
-    @apply bg-coollabs/10 text-coollabs ring-1 ring-coollabs/20 dark:bg-brand/15 dark:text-brand-light dark:ring-brand-light/25;
+    @apply bg-tinyhelm/10 text-tinyhelm ring-1 ring-tinyhelm/20 dark:bg-brand/15 dark:text-brand-light dark:ring-brand-light/25;
 }
 
 .runtime-logs-fill .runtime-log-viewport {
@@ -5303,7 +5303,7 @@ html[data-theme="custom"] .runtime-log-columns {
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
     color: #52525b;
 }
 
@@ -5362,8 +5362,8 @@ html[data-theme="custom"] .runtime-log-columns {
     /* 3px block padding: 24px chip row + 6px + 2px border = 32px, matching .input/.button */
     padding: 0.1875rem 0.375rem;
     border-radius: 8px;
-    border: 1px solid var(--coollabs-line);
-    background: var(--coollabs-recessed);
+    border: 1px solid var(--tinyhelm-line);
+    background: var(--tinyhelm-recessed);
     cursor: text;
 }
 
@@ -5399,7 +5399,7 @@ html[data-theme="custom"] .runtime-log-columns {
 }
 
 .chip-input input::placeholder {
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     opacity: 0.7;
 }
 
@@ -5412,7 +5412,7 @@ html[data-theme="custom"] .runtime-log-columns {
     padding: 0 0.375rem 0 0.625rem;
     border-radius: 6px;
     border: none;
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
     font-size: 0.8125rem;
     color: #000000;
     white-space: nowrap;
@@ -5434,7 +5434,7 @@ html[data-theme="custom"] .runtime-log-columns {
     width: 1rem;
     height: 1rem;
     border-radius: 3px;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     transition: color 0.15s;
 }
 
@@ -5597,8 +5597,8 @@ html[data-theme="custom"] .runtime-log-columns {
     flex-direction: column;
     overflow: hidden;
     border-radius: 10px;
-    background: var(--coollabs-elevated);
-    box-shadow: 0 0 0 1px var(--coollabs-hairline), var(--shadow-dropdown);
+    background: var(--tinyhelm-elevated);
+    box-shadow: 0 0 0 1px var(--tinyhelm-hairline), var(--shadow-dropdown);
 }
 
 .command-palette-header {
@@ -5607,7 +5607,7 @@ html[data-theme="custom"] .runtime-log-columns {
     gap: 0.625rem;
     min-height: 2.75rem;
     padding: 0 0.75rem 0 0.875rem;
-    background: var(--coollabs-elevated);
+    background: var(--tinyhelm-elevated);
 }
 
 .command-palette-header-icon {
@@ -5615,7 +5615,7 @@ html[data-theme="custom"] .runtime-log-columns {
     width: 1rem;
     height: 1rem;
     flex-shrink: 0;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .command-palette-header-icon.is-loading {
@@ -5640,7 +5640,7 @@ html[data-theme="custom"] .runtime-log-columns {
 }
 
 .command-palette-input::placeholder {
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .command-palette-input:focus,
@@ -5658,14 +5658,14 @@ html[data-theme="custom"] .runtime-log-columns {
     gap: 0.125rem;
     padding: 0.125rem;
     border-radius: 0.5rem;
-    border: 1px solid var(--coollabs-hairline);
+    border: 1px solid var(--tinyhelm-hairline);
 }
 
 .command-palette-scope-option {
     height: 1.375rem;
     padding: 0 0.5rem;
     border-radius: 0.375rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     font-size: 0.75rem;
     font-weight: 500;
     white-space: nowrap;
@@ -5679,7 +5679,7 @@ html[data-theme="custom"] .runtime-log-columns {
 
 .command-palette-scope-option[aria-pressed='true'] {
     color: #171717;
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
 }
 
 .dark .command-palette-scope-option:hover,
@@ -5695,10 +5695,10 @@ html[data-theme="custom"] .runtime-log-columns {
     max-height: min(60vh, 28rem);
     overflow-y: auto;
     border-radius: 8px;
-    background: var(--coollabs-base);
-    box-shadow: 0 0 0 1px var(--coollabs-fill);
+    background: var(--tinyhelm-base);
+    box-shadow: 0 0 0 1px var(--tinyhelm-fill);
     scrollbar-width: thin;
-    scrollbar-color: var(--coollabs-fill) transparent;
+    scrollbar-color: var(--tinyhelm-fill) transparent;
 }
 
 .command-palette-body::-webkit-scrollbar {
@@ -5713,7 +5713,7 @@ html[data-theme="custom"] .runtime-log-columns {
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: padding-box;
-    background-color: var(--coollabs-fill);
+    background-color: var(--tinyhelm-fill);
 }
 
 .command-palette-section {
@@ -5724,7 +5724,7 @@ html[data-theme="custom"] .runtime-log-columns {
 }
 
 .command-palette-section + .command-palette-section {
-    border-top: 1px solid var(--coollabs-fill);
+    border-top: 1px solid var(--tinyhelm-fill);
     margin-top: 0;
     padding-top: 0.25rem;
 }
@@ -5734,7 +5734,7 @@ html[data-theme="custom"] .runtime-log-columns {
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.01em;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 /* Result rows: inset listbox-style pills. Kill the global button/a
@@ -5768,7 +5768,7 @@ button.command-palette-item {
 }
 
 .command-palette-item:hover {
-    background: var(--coollabs-fill);
+    background: var(--tinyhelm-fill);
 }
 
 /* Keyboard / programmatic focus = active selection */
@@ -5843,7 +5843,7 @@ a.command-palette-item:focus-visible {
     white-space: nowrap;
     font-size: 0.6875rem;
     line-height: 1rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .command-palette-type-badge {
@@ -5853,8 +5853,8 @@ a.command-palette-item:focus-visible {
     height: 1.25rem;
     padding: 0 0.4375rem;
     border-radius: 9999px;
-    background: var(--coollabs-recessed);
-    color: var(--coollabs-subtle);
+    background: var(--tinyhelm-recessed);
+    color: var(--tinyhelm-subtle);
     font-size: 0.625rem;
     font-weight: 500;
     line-height: 1;
@@ -5874,8 +5874,8 @@ a.command-palette-item:focus-visible {
     height: 1.25rem;
     padding: 0 0.375rem;
     border-radius: 0.25rem;
-    background: var(--coollabs-recessed);
-    color: var(--coollabs-subtle);
+    background: var(--tinyhelm-recessed);
+    color: var(--tinyhelm-subtle);
     font-size: 0.625rem;
     font-weight: 500;
     line-height: 1;
@@ -5885,7 +5885,7 @@ a.command-palette-item:focus-visible {
 .command-palette-item:focus .command-palette-quickcommand,
 .command-palette-item:focus-visible .command-palette-quickcommand {
     background: color-mix(in oklab, var(--color-accent) 12%, transparent);
-    color: color-mix(in oklab, var(--color-accent) 85%, var(--coollabs-subtle));
+    color: color-mix(in oklab, var(--color-accent) 85%, var(--tinyhelm-subtle));
 }
 
 /* Leading icon tile — neutral by default; accent only when the row is active */
@@ -5898,9 +5898,9 @@ a.command-palette-item:focus-visible {
     justify-content: center;
     overflow: hidden;
     border-radius: 6px;
-    background: var(--coollabs-recessed);
-    box-shadow: inset 0 0 0 1px var(--coollabs-fill);
-    color: var(--coollabs-subtle);
+    background: var(--tinyhelm-recessed);
+    box-shadow: inset 0 0 0 1px var(--tinyhelm-fill);
+    color: var(--tinyhelm-subtle);
     transition: background 0.1s ease, color 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -5911,9 +5911,9 @@ a.command-palette-item:focus-visible {
 }
 
 .command-palette-item-icon.is-create {
-    background: var(--coollabs-recessed);
-    color: var(--coollabs-subtle);
-    box-shadow: inset 0 0 0 1px var(--coollabs-fill);
+    background: var(--tinyhelm-recessed);
+    color: var(--tinyhelm-subtle);
+    box-shadow: inset 0 0 0 1px var(--tinyhelm-fill);
 }
 
 .command-palette-item-icon.is-create svg {
@@ -5942,7 +5942,7 @@ a.command-palette-item:focus-visible {
     width: 0.875rem;
     height: 0.875rem;
     flex-shrink: 0;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     opacity: 0.4;
     transition: opacity 0.1s ease, color 0.1s ease;
 }
@@ -5973,12 +5973,12 @@ a.command-palette-item:focus-visible {
     align-items: center;
     justify-content: center;
     border-radius: 0.375rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
     transition: background 0.1s ease, color 0.1s ease;
 }
 
 .command-palette-step-back:hover {
-    background: var(--coollabs-recessed);
+    background: var(--tinyhelm-recessed);
     color: #171717;
 }
 
@@ -6000,7 +6000,7 @@ a.command-palette-item:focus-visible {
 .command-palette-step-subtitle {
     font-size: 0.6875rem;
     line-height: 1rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .command-palette-status {
@@ -6010,8 +6010,8 @@ a.command-palette-item:focus-visible {
     margin: 0.125rem 0;
     padding: 0.625rem 0.75rem;
     border-radius: 6px;
-    background: var(--coollabs-recessed);
-    color: var(--coollabs-subtle);
+    background: var(--tinyhelm-recessed);
+    color: var(--tinyhelm-subtle);
     font-size: 0.75rem;
     line-height: 1rem;
 }
@@ -6049,7 +6049,7 @@ a.command-palette-item:focus-visible {
     max-width: 28ch;
     font-size: 0.75rem;
     line-height: 1.125rem;
-    color: var(--coollabs-subtle);
+    color: var(--tinyhelm-subtle);
 }
 
 .command-palette-arch-badge {
@@ -6136,14 +6136,14 @@ a.command-palette-item:focus-visible {
         flex-wrap: wrap;
         align-items: center;
         gap: 0.375rem 0.75rem;
-        color: var(--coollabs-fg-dim);
+        color: var(--tinyhelm-fg-dim);
         font-size: 12px;
         line-height: 1.25rem;
     }
 
     .service-domain-mobile-summary > span:not(:last-child)::after {
         margin-left: 0.75rem;
-        color: var(--coollabs-line);
+        color: var(--tinyhelm-line);
         content: "·";
     }
 
@@ -6256,9 +6256,9 @@ html:where(:not([data-nav-items="flat"])) .menu-subitem {
 
 /* The current item's tile takes the accent, like the active tab pill. */
 html:where(:not([data-nav-items="flat"])) :is(.menu-item-active, .menu-subitem-active) .menu-item-icon {
-    color: var(--color-coollabs);
-    border-color: color-mix(in oklab, var(--color-coollabs) 45%, transparent) !important;
-    --button-depth-color: color-mix(in oklab, var(--color-coollabs) 45%, transparent) !important;
+    color: var(--color-tinyhelm);
+    border-color: color-mix(in oklab, var(--color-tinyhelm) 45%, transparent) !important;
+    --button-depth-color: color-mix(in oklab, var(--color-tinyhelm) 45%, transparent) !important;
 }
 
 html.dark:where(:not([data-nav-items="flat"])) :is(.menu-item-active, .menu-subitem-active) .menu-item-icon:not(.text-error) {
@@ -6842,7 +6842,7 @@ html.dark:not([data-theme="custom"]) :is(.app-sidebar, .mobile-sidebar-sheet) na
 
 /* Sidebar account menu: the purple tint of the sidebar it opens from. */
 html.dark:not([data-theme="custom"]) .listbox-panel.top-user-menu-panel-sidebar {
-    background: color-mix(in oklab, #6b16ed 10%, var(--coollabs-elevated));
+    background: color-mix(in oklab, #6b16ed 10%, var(--tinyhelm-elevated));
     border-color: rgb(163 145 255 / 0.22);
 }
 
@@ -7019,7 +7019,7 @@ html.dark .view-toggle > .is-selected svg {
     color: var(--color-brand-foreground);
 }
 
-html.dark .view-toggle .bg-coollabs {
+html.dark .view-toggle .bg-tinyhelm {
     background-color: color-mix(in srgb, var(--color-brand-light) 18%, transparent);
     color: oklch(from var(--color-brand-light) 87.5% 0.06 h);
 }
@@ -7038,7 +7038,7 @@ html.dark .toast-card {
 
 /* Command palette: the purple brand tint of the dark shell. */
 html.dark .command-palette {
-    background: color-mix(in oklab, var(--color-brand) 10%, var(--coollabs-elevated));
+    background: color-mix(in oklab, var(--color-brand) 10%, var(--tinyhelm-elevated));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-light) 22%, transparent), var(--shadow-dropdown);
 }
 
@@ -7055,7 +7055,7 @@ html.dark .command-palette-input::placeholder {
 }
 
 html.dark .command-palette-body {
-    background: color-mix(in oklab, var(--color-brand) 6%, var(--coollabs-base));
+    background: color-mix(in oklab, var(--color-brand) 6%, var(--tinyhelm-base));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-light) 12%, transparent);
 }
 

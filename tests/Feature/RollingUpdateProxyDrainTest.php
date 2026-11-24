@@ -127,7 +127,7 @@ it('does not add retry labels to preview deployments', function () {
     $preview = ApplicationPreview::forceCreate([
         'application_id' => $application->id,
         'pull_request_id' => 7,
-        'pull_request_html_url' => 'https://github.com/coollabsio/tinyhelm/pull/7',
+        'pull_request_html_url' => 'https://github.com/60db-ai/tinyhelm/pull/7',
         'fqdn' => 'https://pr-7.example.com',
     ]);
 

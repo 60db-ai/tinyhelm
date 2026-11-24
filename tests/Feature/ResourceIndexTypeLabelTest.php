@@ -34,7 +34,7 @@ beforeEach(function () {
 
     $this->project = Project::factory()->create([
         'team_id' => $this->team->id,
-        'name' => 'coolLabs',
+        'name' => 'TinyHelm',
     ]);
     $this->environment = $this->project->environments()->firstOrFail();
 });
@@ -77,7 +77,7 @@ test('resource index type labels use category names not engine names for databas
     Application::create([
         'name' => 'docker-image-test',
         'fqdn' => 'https://example.com',
-        'git_repository' => 'coollabsio/tinyhelm',
+        'git_repository' => '60db-ai/tinyhelm',
         'git_branch' => 'main',
         'build_pack' => 'dockerimage',
         'ports_exposes' => '80',

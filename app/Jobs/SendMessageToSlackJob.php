@@ -69,7 +69,7 @@ class SendMessageToSlackJob implements ShouldBeEncrypted, ShouldQueue
         /**
          * This works with Mattermost and as a fallback also with Slack, the notifications just look slightly different and advanced formatting for slack is not supported with Mattermost.
          *
-         * @see https://github.com/coollabsio/tinyhelm/pull/6139#issuecomment-3756777708
+         * @see https://github.com/60db-ai/tinyhelm/pull/6139#issuecomment-3756777708
          */
         $response = $this->sendNotificationRequest('Slack', $this->webhookUrl, fn () => $this->isSlackWebhook()
             ? $this->sendToSlack($httpOptions)

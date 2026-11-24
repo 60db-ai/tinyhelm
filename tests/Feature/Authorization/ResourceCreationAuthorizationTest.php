@@ -121,8 +121,8 @@ test('public git docker compose creates an application in local mode', function 
             'environment_uuid' => $this->environment->uuid,
         ])
         ->set('query', ['destination' => $this->destination->uuid])
-        ->set('repository_url', 'https://github.com/coollabsio/tinyhelm')
-        ->set('git_repository', 'https://github.com/coollabsio/tinyhelm')
+        ->set('repository_url', 'https://github.com/60db-ai/tinyhelm')
+        ->set('git_repository', 'https://github.com/60db-ai/tinyhelm')
         ->set('git_branch', 'main')
         ->set('build_pack', 'dockercompose')
         ->set('new_compose_services', true)

@@ -26,7 +26,7 @@ function createApplicationForGpuSettingsTest(): Application
 
     return Application::create([
         'name' => 'gpu-settings-test-app',
-        'git_repository' => 'https://github.com/coollabsio/tinyhelm',
+        'git_repository' => 'https://github.com/60db-ai/tinyhelm',
         'git_branch' => 'main',
         'build_pack' => 'nixpacks',
         'ports_exposes' => '3000',

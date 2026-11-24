@@ -2570,7 +2570,7 @@ class ApplicationsController extends Controller
             $application->destination_type = $destination->getMorphClass();
             $application->environment_id = $environment->id;
 
-            $application->git_repository = 'coollabsio/tinyhelm';
+            $application->git_repository = '60db-ai/tinyhelm';
             $application->git_branch = 'main';
             if ($imageNameValidation = $this->sharedImageNameValidationResponse($application)) {
                 return $imageNameValidation;
@@ -2709,7 +2709,7 @@ class ApplicationsController extends Controller
             $application->destination_type = $destination->getMorphClass();
             $application->environment_id = $environment->id;
 
-            $application->git_repository = 'coollabsio/tinyhelm';
+            $application->git_repository = '60db-ai/tinyhelm';
             $application->git_branch = 'main';
             $application->save();
             $this->applyApplicationSettings($application, $applicationSettings);

@@ -32,9 +32,9 @@ afterEach(function () {
     File::delete(base_path('changelogs/1999-01.json'));
 });
 
-test('releases_url config defaults to the Coollabs CDN', function () {
+test('releases_url config defaults to the TinyHelm CDN', function () {
     expect(config('constants.tinyhelm.releases_url'))
-        ->toBe('https://cdn.coollabs.io/tinyhelm/releases.json');
+        ->toBe('https://cdn.tinyhelm.com/tinyhelm/releases.json');
 });
 
 test('PullChangelog fetches from the configured releases_url and writes the changelog', function () {

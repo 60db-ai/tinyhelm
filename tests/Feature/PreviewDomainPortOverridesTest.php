@@ -91,7 +91,7 @@ function createPreviewForPortTests(Application $application, int $pullRequestId,
     return ApplicationPreview::create(array_merge([
         'application_id' => $application->id,
         'pull_request_id' => $pullRequestId,
-        'pull_request_html_url' => "https://github.com/coollabsio/tinyhelm/pull/{$pullRequestId}",
+        'pull_request_html_url' => "https://github.com/60db-ai/tinyhelm/pull/{$pullRequestId}",
     ], $attributes));
 }
 

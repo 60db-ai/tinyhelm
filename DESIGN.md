@@ -538,7 +538,7 @@ This part defines how TinyHelm applies the design language with its Livewire +
 Blade + Alpine + Tailwind v4 frontend. It covers the global shell, project and
 environment pages, application navigation, settings surfaces, tables, modals,
 toasts, terminals, and metrics. In TinyHelm, the tokens of Part 1 map to the
-`--coollabs-*`, `--color-*`, `--card-*`, and `--well-*` variables in
+`--tinyhelm-*`, `--color-*`, `--card-*`, and `--well-*` variables in
 `resources/css/app.css`.
 
 Use this file as the source of truth for frontend design work. Update it in the
@@ -594,7 +594,7 @@ and focus-visible controls retain the accent ring alongside the depth.
 Movement and depth-shadow changes transition over 80ms; color transitions keep
 the shared 120ms duration.
 Standard button labels use `capitalize`, giving each word an initial capital.
-Highlighted buttons use `--color-coollabs-300` for their bottom edge; the
+Highlighted buttons use `--color-tinyhelm-300` for their bottom edge; the
 custom theme derives it from its bright color mixed with black, so custom
 colors keep a matching edge. Dark mode matches the depth edge of neutral
 buttons to their regular border color (`rgb(255 255 255 / 0.08)`).
@@ -615,7 +615,7 @@ The settings and dense-surface CSS therefore lives as plain unlayered CSS near
 the end of `resources/css/app.css`, beginning at:
 
 ```css
-/* Coollabs layer-card settings surfaces */
+/* TinyHelm layer-card settings surfaces */
 ```
 
 Important consequences:
@@ -640,14 +640,14 @@ The surface ladder is defined in `resources/css/app.css`.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `--coollabs-canvas` | 97% off-white | 14.48% (= `--color-app`) | page canvas (kept below card fills so cards lift) |
+| `--tinyhelm-canvas` | 97% off-white | 14.48% (= `--color-app`) | page canvas (kept below card fills so cards lift) |
 | `--color-panel` | white | 19.13% | topbar, top-level card outer box, table header row |
-| `--coollabs-elevated` | 98% neutral | 20.02% | shells and modal headers |
-| `--coollabs-base` | white | 22.64% | nested modal bodies and legacy panels |
-| `--coollabs-recessed` | 96% neutral | 25.2% | inputs and listboxes (`rgb(255 255 255 / 3%)` inside the dark card well) |
-| `--coollabs-fill` | 92.2% neutral | 29.31% | dividers, passive fills, menu hover |
-| `--coollabs-line` | translucent dark | 36% | control borders (`rgb(255 255 255 / 8%)` inside the dark card well) |
-| `--coollabs-hairline` | 85.5% neutral | 36% | shell rings (crisp enough to read as a card edge, ~1.6:1) |
+| `--tinyhelm-elevated` | 98% neutral | 20.02% | shells and modal headers |
+| `--tinyhelm-base` | white | 22.64% | nested modal bodies and legacy panels |
+| `--tinyhelm-recessed` | 96% neutral | 25.2% | inputs and listboxes (`rgb(255 255 255 / 3%)` inside the dark card well) |
+| `--tinyhelm-fill` | 92.2% neutral | 29.31% | dividers, passive fills, menu hover |
+| `--tinyhelm-line` | translucent dark | 36% | control borders (`rgb(255 255 255 / 8%)` inside the dark card well) |
+| `--tinyhelm-hairline` | 85.5% neutral | 36% | shell rings (crisp enough to read as a card edge, ~1.6:1) |
 
 The dark level is fixed: canvas 14.48%, panel 19.13%. Also `--color-surface`
 20.02%, `--color-raised` 22.64%, `--color-selected` 26.86%, and `--color-log`
@@ -655,7 +655,7 @@ The dark level is fixed: canvas 14.48%, panel 19.13%. Also `--color-surface`
 by the same amount, including the opaque reset values for floating panels in
 the card well (`.dark .application-settings-section-body :is(.listbox-panel,
 ...)`).
-| `--coollabs-subtle` | 50% neutral | 70.8% neutral | labels and muted titles (light darkened for WCAG AA 4.5:1) |
+| `--tinyhelm-subtle` | 50% neutral | 70.8% neutral | labels and muted titles (light darkened for WCAG AA 4.5:1) |
 
 Accent behavior uses TinyHelm purple in both themes. Brand tokens live in
 `@theme` as `--color-brand` (`#6b16ed`), `--color-brand-hover` (`#7317ff`),
@@ -667,7 +667,7 @@ Do not hard-code blue focus rings, and do not use `dark:text-warning` as a
 stand-in for the accent. Selected chips follow:
 
 ```html
-bg-coollabs/10 text-coollabs ring-coollabs/25
+bg-tinyhelm/10 text-tinyhelm ring-tinyhelm/25
 dark:bg-brand/15 dark:text-brand-light dark:ring-brand-light/25
 ```
 
@@ -703,8 +703,8 @@ lift off the content:
 Dark surface tokens are exact oklch equivalents of chosen sRGB steps. oklch
 lightness compresses toward pure black below ~15%, so check the rendered sRGB
 value. The dark ladder is `--color-app` 10, `--color-panel` 20,
-`--coollabs-elevated` 22, `--coollabs-base` 28,
-`--coollabs-recessed` 34 (sRGB, r=g=b), which reads as distinct surfaces.
+`--tinyhelm-elevated` 22, `--tinyhelm-base` 28,
+`--tinyhelm-recessed` 34 (sRGB, r=g=b), which reads as distinct surfaces.
 
 Temperature: the page canvas, cards, menus, listboxes, modals, and logs stay
 **pure neutral gray** (r=g=b). Do not tint those. The exceptions are the
@@ -725,7 +725,7 @@ The only intentional color is the purple brand accent. Yellow is for warnings.
   `Canvas` link and the `List view` link on canvas pages keep their text.
 - **Tables and collection tiles** outside a layer card use the
   `rounded-xl border … dark:bg-white/[0.05]` shell plus the crisp
-  `--coollabs-hairline` ring; in light they are `bg-white` with the ring and
+  `--tinyhelm-hairline` ring; in light they are `bg-white` with the ring and
   the restrained card lift. In dark mode these shells are painted like layer
   cards. A tile, a separate pagination bar, or an empty box is a card without a
   well, so it is `--color-card` (`#121212`). A table (a shell whose first child is a
@@ -770,7 +770,7 @@ color. Row-hover states keep the lighter `dark:hover:bg-white/[0.025]`.
   Collapsed, it shows only `/tinyhelm-logo.svg` at `size-5` and adds
   `border-b`.
 - The update badge sits on the version row: an 18px fully rounded pill with
-  9.5px semibold text. It is `bg-coollabs/10 text-coollabs ring-coollabs/25` in
+  9.5px semibold text. It is `bg-tinyhelm/10 text-tinyhelm ring-tinyhelm/25` in
   light mode and the warning pill (`dark:bg-warning/15 dark:text-warning
   dark:ring-warning/25`) in dark mode, because an update is a real warning.
   While an upgrade runs it says "Updating". Both open the upgrade modal.
@@ -788,7 +788,7 @@ color. Row-hover states keep the lighter `dark:hover:bg-white/[0.025]`.
   button that toggles the drawer. Keep these in the same order as the desktop
   top bar.
 - Submenu chevrons (the right chevron on rows that open a submenu and the back
-  chevron) are `text-coollabs` in light mode and grey in dark mode
+  chevron) are `text-tinyhelm` in light mode and grey in dark mode
   (`dark:text-fg-faint` right, `dark:text-fg-dim` back).
 - Brand items use a one-color brand glyph in `<x-reicon>` instead of an outline
   icon when the brand mark is clearer (for example `cloudflare` for Cloudflare
@@ -1034,12 +1034,12 @@ table header row in it is the darker card outer color
 standalone well shows only its centered text, as it does inside a card.
 
 Inside the dark well, controls use a darker translucent fill and border
-(`--coollabs-recessed: rgb(255 255 255 / 3%)`, `--coollabs-line:
+(`--tinyhelm-recessed: rgb(255 255 255 / 3%)`, `--tinyhelm-line:
 rgb(255 255 255 / 8%)`), set on `.dark .application-settings-section-body`.
 The global opaque values look too light on the dark well. Floating panels in
 the well (`.listbox-panel`, `.searchable-listbox-panel`, `[role="listbox"]`,
 `[role="menu"]`) set the opaque values again, so they are not see-through. A
-new floating panel that uses `--coollabs-recessed` in a card needs the same
+new floating panel that uses `--tinyhelm-recessed` in a card needs the same
 reset.
 
 Do not split one collection into a summary card followed by a table or log

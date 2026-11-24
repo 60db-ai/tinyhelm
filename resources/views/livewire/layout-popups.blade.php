@@ -37,7 +37,7 @@
                         if (checkNumber > 5) {
                             this.popups.realtime = true;
                             console.error(
-                                'TinyHelm could not connect to its real-time service. This will cause unusual problems on the UI if not fixed! Please check the related documentation (https://tinyhelm.com/docs/knowledge-base/cloudflare/tunnels/overview) or get help on Discord (https://coollabs.io/discord).)'
+                                'TinyHelm could not connect to its real-time service. This will cause unusual problems on the UI if not fixed! Please check the related documentation (https://tinyhelm.com/docs/knowledge-base/cloudflare/tunnels/overview) or get help on Discord (https://tinyhelm.com/discord).)'
                             );
                         }
 
@@ -111,12 +111,12 @@
                                     </h2>
                                     <p class="mt-1 text-[12px] leading-5 text-neutral-500 dark:text-fg-dim">
                                         This will cause unusual problems on the UI. Open the
-                                        <a class="font-medium text-coollabs underline decoration-coollabs/30 underline-offset-2 transition-colors hover:text-coollabs-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90"
+                                        <a class="font-medium text-tinyhelm underline decoration-tinyhelm/30 underline-offset-2 transition-colors hover:text-tinyhelm-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90"
                                             href="https://tinyhelm.com/docs/knowledge-base/server/firewall"
                                             target="_blank" rel="noopener noreferrer">required ports</a>
                                         or get help on
-                                        <a class="font-medium text-coollabs underline decoration-coollabs/30 underline-offset-2 transition-colors hover:text-coollabs-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90"
-                                            href="https://coollabs.io/discord" target="_blank"
+                                        <a class="font-medium text-tinyhelm underline decoration-tinyhelm/30 underline-offset-2 transition-colors hover:text-tinyhelm-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90"
+                                            href="https://tinyhelm.com/discord" target="_blank"
                                             rel="noopener noreferrer">Discord</a>.
                                     </p>
                                 </div>
@@ -165,19 +165,19 @@
                                 <p x-show="!reminders.sponsorship.compact" x-transition.opacity
                                     class="mt-1 text-[12px] leading-5 text-neutral-500 dark:text-fg-dim">
                                     TinyHelm is profitable thanks to <span
-                                        class="font-semibold text-coollabs dark:text-brand-light">you</span>. Your support
+                                        class="font-semibold text-tinyhelm dark:text-brand-light">you</span>. Your support
                                     helps us build more features and keep improving the project.
                                 </p>
                             </div>
                         </div>
 
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <a target="_blank" href="https://github.com/sponsors/coollabsio"
+                            <a target="_blank" href="https://github.com/sponsors/60db-ai"
                                 class="button button-highlighted h-9 justify-center sm:flex-1">
                                 GitHub Sponsors
                             </a>
                             <a x-show="!reminders.sponsorship.compact" x-transition.opacity target="_blank"
-                                href="https://opencollective.com/coollabsio/donate?interval=month&amount=10&name=&legalName=&email="
+                                href="https://opencollective.com/60db-ai/donate?interval=month&amount=10&name=&legalName=&email="
                                 class="button h-9 justify-center sm:flex-1">
                                 Open Collective
                             </a>
@@ -266,7 +266,7 @@
                                     Enable at least one notification channel so you receive important alerts.
                                     Visit
                                     <a href="{{ route('notifications.email') }}" {{ wireNavigate() }}
-                                        class="font-medium text-coollabs underline decoration-coollabs/30 underline-offset-2 transition-colors hover:text-coollabs-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90">notifications</a>
+                                        class="font-medium text-tinyhelm underline decoration-tinyhelm/30 underline-offset-2 transition-colors hover:text-tinyhelm-100 dark:text-brand-light dark:decoration-brand-light/30 dark:hover:text-brand-light/90">notifications</a>
                                     to get started.
                                 </p>
                             </div>
