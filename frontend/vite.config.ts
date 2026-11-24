@@ -3,8 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
-// The Rust gateway (../rust-backend) serves the built SPA in production and
-// proxies /api to Laravel. In dev, Vite proxies /api straight to Laravel.
+// The Rust gateway (../rust-backend, :8080) serves native /api routes and proxies the rest
+// to Laravel (:8000). In dev, Vite proxies /api to the gateway so both paths work.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -12,7 +12,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": { target: "http://127.0.0.1:8000", changeOrigin: true },
+      "/api": { target: "http://127.0.0.1:8080", changeOrigin: true },
     },
   },
 });

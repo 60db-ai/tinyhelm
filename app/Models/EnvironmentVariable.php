@@ -413,7 +413,7 @@ class EnvironmentVariable extends BaseModel
         );
     }
 
-    protected function isTinyHelm(): Attribute
+    protected function isTinyhelm(): Attribute
     {
         return Attribute::make(
             get: function () {

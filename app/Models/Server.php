@@ -628,7 +628,7 @@ class Server extends BaseModel
         return $status;
     }
 
-    protected function isTinyHelmHost(): Attribute
+    protected function isTinyhelmHost(): Attribute
     {
         return Attribute::make(
             get: function () {
