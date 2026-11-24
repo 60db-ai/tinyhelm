@@ -16,7 +16,7 @@ use axum::{
     extract::{Request, State},
     http::{uri::Uri, StatusCode},
     response::{IntoResponse, Response},
-    routing::{get, patch},
+    routing::{delete, get, patch},
     Router,
 };
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -48,7 +48,7 @@ async fn main() {
     // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
     let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
     let want = |r: &str| native_routes.split(',').any(|x| x.trim() == r);
-    let any_native = want("servers") || want("projects") || want("applications") || want("services") || want("databases");
+    let any_native = want("servers") || want("projects") || want("applications") || want("services") || want("databases") || want("tags");
     let pool = if any_native { native::pool().await } else { None };
     if any_native && pool.is_none() {
         tracing::warn!("RUST_NATIVE_ROUTES set but no DB pool; falling back to proxy");
@@ -58,6 +58,7 @@ async fn main() {
     let native_applications = want("applications") && pool.is_some();
     let native_services = want("services") && pool.is_some();
     let native_databases = want("databases") && pool.is_some();
+    let native_tags = want("tags") && pool.is_some();
 
     let state = AppState {
         api_origin: api_origin.trim_end_matches('/').to_string(),
@@ -79,7 +80,7 @@ async fn main() {
         tracing::info!("native routes enabled: projects, environments, team");
         app = app
             .route("/api/v1/projects", get(native::list_projects).post(native::create_project))
-            .route("/api/v1/projects/:uuid", patch(native::update_project))
+            .route("/api/v1/projects/:uuid", patch(native::update_project).delete(native::delete_project))
             .route("/api/v1/projects/:uuid/environments", get(native::list_environments))
             .route("/api/v1/team", get(native::get_current_team));
     }
@@ -94,6 +95,12 @@ async fn main() {
         app = app
             .route("/api/v1/databases", get(native::list_databases))
             .route("/api/v1/databases/:uuid", get(native::get_database));
+    }
+    if native_tags {
+        tracing::info!("native routes enabled: tags CRUD");
+        app = app
+            .route("/api/v1/tags", get(native::list_tags).post(native::create_tag))
+            .route("/api/v1/tags/:uuid", delete(native::delete_tag));
     }
     if native_applications {
         tracing::info!("native routes enabled: GET /api/v1/applications[/:uuid]");
