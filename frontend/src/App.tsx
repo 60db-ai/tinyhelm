@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { MetricsChart, type MetricPoint } from "@/components/metrics-chart";
 import { api, getToken, setToken, clearToken, ApiError, type Server, type Project } from "@/lib/api";
 import { ServersPage } from "@/pages/servers";
+import { ProjectsPage } from "@/pages/projects";
 
 const NAV = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -71,6 +72,8 @@ function Shell({ onDisconnect }: { onDisconnect: () => void }) {
             <Dashboard />
           ) : active === "servers" ? (
             <ServersPage />
+          ) : active === "projects" ? (
+            <ProjectsPage />
           ) : (
             <Placeholder title={active} />
           )}
