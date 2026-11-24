@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Boxes, Layers, AppWindow, Database, Container } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { ApplicationDetail } from "@/pages/application";
+import { ResourceDetail } from "@/pages/resource";
+
+type Sel = { kind: "application" | "databases" | "services"; uuid: string };
 
 // Small state helpers (kept local; promote to a shared module when a 3rd page needs them).
 function ErrorBox({ message }: { message: string }) {
@@ -73,13 +76,24 @@ type EnvDetail = {
 export function ProjectsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [env, setEnv] = useState<Environment | null>(null);
-  const [appUuid, setAppUuid] = useState<string | null>(null);
+  const [sel, setSel] = useState<Sel | null>(null);
 
-  if (project && env && appUuid) {
-    return <ApplicationDetail uuid={appUuid} onBack={() => setAppUuid(null)} backLabel={env.name} />;
+  if (project && env && sel) {
+    return sel.kind === "application" ? (
+      <ApplicationDetail uuid={sel.uuid} onBack={() => setSel(null)} backLabel={env.name} />
+    ) : (
+      <ResourceDetail kind={sel.kind} uuid={sel.uuid} onBack={() => setSel(null)} backLabel={env.name} />
+    );
   }
   if (project && env) {
-    return <EnvironmentDetail project={project} env={env} onBack={() => setEnv(null)} onOpenApp={setAppUuid} />;
+    return (
+      <EnvironmentDetail
+        project={project}
+        env={env}
+        onBack={() => setEnv(null)}
+        onOpen={(kind, uuid) => setSel({ kind, uuid })}
+      />
+    );
   }
   if (project) {
     return <EnvironmentList project={project} onOpen={setEnv} onBack={() => setProject(null)} />;
@@ -159,12 +173,12 @@ function EnvironmentDetail({
   project,
   env,
   onBack,
-  onOpenApp,
+  onOpen,
 }: {
   project: Project;
   env: Environment;
   onBack: () => void;
-  onOpenApp: (uuid: string) => void;
+  onOpen: (kind: Sel["kind"], uuid: string) => void;
 }) {
   const [data, setData] = useState<EnvDetail | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -188,9 +202,9 @@ function EnvironmentDetail({
       {!err && data === null && <Skeleton />}
       {data && (
         <>
-          <Group icon={<AppWindow size={16} />} title="Applications" items={data.applications ?? []} onOpen={onOpenApp} />
-          <Group icon={<Database size={16} />} title="Databases" items={databases} />
-          <Group icon={<Container size={16} />} title="Services" items={data.services ?? []} />
+          <Group icon={<AppWindow size={16} />} title="Applications" items={data.applications ?? []} onOpen={(u) => onOpen("application", u)} />
+          <Group icon={<Database size={16} />} title="Databases" items={databases} onOpen={(u) => onOpen("databases", u)} />
+          <Group icon={<Container size={16} />} title="Services" items={data.services ?? []} onOpen={(u) => onOpen("services", u)} />
         </>
       )}
     </div>
