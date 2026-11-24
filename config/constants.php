@@ -13,7 +13,7 @@ return [
         'railpack_version' => '0.43.0',
         // Container runtime installed on managed servers: 'docker' or 'kiri'. Kiri speaks the Docker Engine API
         // and exposes the compat socket /var/run/docker.sock, so the command layer is unchanged either way.
-        'container_runtime' => env('SERVER_CONTAINER_RUNTIME', 'docker'),
+        'container_runtime' => env('SERVER_CONTAINER_RUNTIME', 'kiri'),
         'self_hosted' => env('SELF_HOSTED', true),
         'autoupdate' => env('AUTOUPDATE'),
         'base_config_path' => env('BASE_CONFIG_PATH', '/data/tinyhelm'),
