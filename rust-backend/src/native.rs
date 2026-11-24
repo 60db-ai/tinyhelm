@@ -26,6 +26,7 @@ pub async fn pool() -> Option<PgPool> {
 struct TokenAuth {
     team_id: String,
     abilities: String,
+    user_id: i64,
 }
 
 /// Validate a Sanctum bearer token: "<id>|<plaintext>" (column stores sha256(plaintext) hex).
@@ -36,7 +37,7 @@ async fn authenticate(pool: &PgPool, headers: &HeaderMap) -> Option<TokenAuth> {
     let hash = hex::encode(Sha256::digest(plaintext.as_bytes()));
 
     let row = sqlx::query(
-        "SELECT team_id, abilities, expires_at, paused_at FROM personal_access_tokens WHERE token = $1 LIMIT 1",
+        "SELECT team_id, abilities, tokenable_id, expires_at, paused_at FROM personal_access_tokens WHERE token = $1 LIMIT 1",
     )
     .bind(&hash)
     .fetch_optional(pool)
@@ -57,6 +58,7 @@ async fn authenticate(pool: &PgPool, headers: &HeaderMap) -> Option<TokenAuth> {
     Some(TokenAuth {
         team_id: row.try_get::<String, _>("team_id").ok()?,
         abilities: row.try_get::<Option<String>, _>("abilities").ok().flatten().unwrap_or_default(),
+        user_id: row.try_get::<i64, _>("tokenable_id").ok()?,
     })
 }
 
@@ -92,6 +94,21 @@ async fn authorize_read<'a>(state: &'a crate::AppState, headers: &HeaderMap) -> 
     let Ok(team_id) = auth.team_id.parse::<i64>() else {
         return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Invalid token team."}))).into_response());
     };
+
+    // Safety gate: native endpoints scope by team only (no access-grant filtering yet), so restrict
+    // them to full-team (admin/owner) tokens. Scoped members must use the Laravel path (flag off).
+    // Fail-closed: unknown/missing role -> denied.
+    let role: Option<String> = sqlx::query_scalar("SELECT role FROM team_user WHERE user_id = $1 AND team_id = $2 LIMIT 1")
+        .bind(auth.user_id)
+        .bind(team_id)
+        .fetch_optional(pool)
+        .await
+        .ok()
+        .flatten();
+    if !matches!(role.as_deref(), Some("admin") | Some("owner")) {
+        return Err((StatusCode::FORBIDDEN, Json(json!({"message": "Native routes require an admin/owner token (access-grant scoping not yet ported)."}))).into_response());
+    }
+
     Ok((pool, team_id))
 }
 
