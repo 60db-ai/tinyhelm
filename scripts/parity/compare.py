@@ -217,6 +217,26 @@ def paired_write_checks(laravel: str, rust: str, token: str) -> list[tuple[str, 
     return checks
 
 
+def plugin_modules() -> list:
+    """Per-domain case files: scripts/parity/cases/<domain>.py.
+
+    Each may define `read_cases(tokens, ids) -> list[Case]` and
+    `write_checks(laravel, rust, tokens, ids) -> list[tuple[str, list[str]]]` (use `call`/`compare` from here).
+    """
+    import importlib.util
+
+    # Case files do `from compare import ...`; with `python3 -I` the script directory is not on sys.path.
+    sys.modules.setdefault("compare", sys.modules[__name__])
+    mods = []
+    for path in sorted((Path(__file__).parent / "cases").glob("*.py")):
+        spec = importlib.util.spec_from_file_location(f"parity_cases_{path.stem}", path)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = mod
+        spec.loader.exec_module(mod)
+        mods.append(mod)
+    return mods
+
+
 def report(label: str, problems: list[str], verbose: bool) -> int:
     if not problems:
         if verbose:
@@ -243,8 +263,14 @@ def main() -> int:
     tokens = json.loads(TOKENS_FILE.read_text())
     ids = discover(args.laravel, tokens["owner_root"])
 
+    plugins = plugin_modules()
+    cases = read_cases(tokens, ids)
+    for mod in plugins:
+        if hasattr(mod, "read_cases"):
+            cases += mod.read_cases(tokens, ids)
+
     failures = total = 0
-    for case in read_cases(tokens, ids):
+    for case in cases:
         if args.only not in case.label:
             continue
         total += 1
@@ -255,6 +281,9 @@ def main() -> int:
     if not args.no_writes and (not args.only or "write" in args.only):
         writes = paired_write_checks(args.laravel, args.rust, tokens["owner_write"])
         writes += paired_env_checks(args.laravel, args.rust, tokens["owner_write"], ids)
+        for mod in plugins:
+            if hasattr(mod, "write_checks"):
+                writes += mod.write_checks(args.laravel, args.rust, tokens, ids)
         for label, problems in writes:
             total += 1
             failures += report(f"owner_write {label}", problems, args.verbose)
