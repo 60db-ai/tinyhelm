@@ -94,7 +94,12 @@ async fn main() {
         tracing::info!("native routes enabled: GET /api/v1/services[/:uuid]");
         app = app
             .route("/api/v1/services", get(native::list_services))
-            .route("/api/v1/services/:uuid", get(native::get_service));
+            .route("/api/v1/services/:uuid", get(native::get_service))
+            .route(
+                "/api/v1/services/:uuid/envs",
+                get(native::list_service_envs).post(native::create_service_env).patch(native::update_service_env),
+            )
+            .route("/api/v1/services/:uuid/envs/:env_uuid", delete(native::delete_service_env));
     }
     if native_databases {
         tracing::info!("native routes enabled: GET /api/v1/databases[/:uuid]");

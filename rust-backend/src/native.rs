@@ -752,3 +752,123 @@ pub async fn delete_app_env(State(state): State<crate::AppState>, headers: Heade
         Err(e) => query_err("delete_app_env", e),
     }
 }
+
+// ---- service environment variables (same shape; different resourceable) ----
+const SERVICE_RESOURCEABLE: &str = r"App\Models\Service";
+
+async fn service_id_for(pool: &PgPool, team_id: i64, uuid: &str) -> Option<i64> {
+    sqlx::query_scalar(
+        "SELECT s.id FROM services s JOIN environments e ON e.id = s.environment_id \
+         JOIN projects p ON p.id = e.project_id WHERE p.team_id = $1 AND s.uuid = $2",
+    )
+    .bind(team_id)
+    .bind(uuid)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten()
+}
+
+/// GET /api/v1/services/:uuid/envs
+pub async fn list_service_envs(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+    let rows = sqlx::query_as::<_, EnvDbRow>(
+        "SELECT uuid, key, value, is_buildtime FROM environment_variables \
+         WHERE resourceable_type = $1 AND resourceable_id = $2 ORDER BY key",
+    )
+    .bind(SERVICE_RESOURCEABLE)
+    .bind(sid)
+    .fetch_all(pool)
+    .await;
+    match rows {
+        Ok(rs) => {
+            let out: Vec<_> = rs
+                .into_iter()
+                .map(|r| {
+                    let plain = match (r.value.as_deref(), state.app_key.as_ref()) {
+                        (Some(v), Some(k)) => crate::crypto::decrypt(v, k),
+                        _ => None,
+                    };
+                    json!({ "uuid": r.uuid, "key": r.key, "value": plain, "is_build_time": r.is_buildtime })
+                })
+                .collect();
+            ok_json(out)
+        }
+        Err(e) => query_err("list_service_envs", e),
+    }
+}
+
+/// POST /api/v1/services/:uuid/envs
+pub async fn create_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+    let key = body.key.trim();
+    if key.is_empty() {
+        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Key is required."}))).into_response();
+    }
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let env_uuid = cuid2::create_id();
+    match sqlx::query(
+        "INSERT INTO environment_variables (key, value, uuid, resourceable_type, resourceable_id, is_buildtime, is_runtime, created_at, updated_at) \
+         VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())",
+    )
+    .bind(key)
+    .bind(&enc)
+    .bind(&env_uuid)
+    .bind(SERVICE_RESOURCEABLE)
+    .bind(sid)
+    .bind(body.is_build_time)
+    .bind(!body.is_build_time)
+    .execute(pool)
+    .await
+    {
+        Ok(_) => (StatusCode::CREATED, Json(json!({ "uuid": env_uuid, "key": key, "is_build_time": body.is_build_time }))).into_response(),
+        Err(e) => query_err("create_service_env", e),
+    }
+}
+
+/// PATCH /api/v1/services/:uuid/envs
+pub async fn update_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    match sqlx::query(
+        "UPDATE environment_variables SET value = $1, updated_at = now() \
+         WHERE resourceable_type = $2 AND resourceable_id = $3 AND key = $4",
+    )
+    .bind(&enc)
+    .bind(SERVICE_RESOURCEABLE)
+    .bind(sid)
+    .bind(body.key.trim())
+    .execute(pool)
+    .await
+    {
+        Ok(r) if r.rows_affected() == 0 => not_found("Variable not found."),
+        Ok(_) => (StatusCode::OK, Json(json!({ "key": body.key.trim(), "is_build_time": body.is_build_time }))).into_response(),
+        Err(e) => query_err("update_service_env", e),
+    }
+}
+
+/// DELETE /api/v1/services/:uuid/envs/:env_uuid
+pub async fn delete_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path((uuid, env_uuid)): Path<(String, String)>) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+    match sqlx::query("DELETE FROM environment_variables WHERE uuid = $1 AND resourceable_type = $2 AND resourceable_id = $3")
+        .bind(&env_uuid)
+        .bind(SERVICE_RESOURCEABLE)
+        .bind(sid)
+        .execute(pool)
+        .await
+    {
+        Ok(r) if r.rows_affected() == 0 => not_found("Variable not found."),
+        Ok(_) => (StatusCode::OK, Json(json!({"message": "Variable deleted."}))).into_response(),
+        Err(e) => query_err("delete_service_env", e),
+    }
+}
