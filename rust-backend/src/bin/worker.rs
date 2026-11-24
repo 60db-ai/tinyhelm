@@ -62,9 +62,10 @@ async fn claim_and_run(pool: &PgPool, app_key: Option<&[u8; 32]>) -> Result<bool
     let id: i64 = row.get("id");
     let deployment_uuid: String = row.get("deployment_uuid");
     let server_id: Option<i32> = row.get("server_id");
+    let application_id: String = row.get("application_id");
     tracing::info!("claimed deployment {deployment_uuid} (id {id})");
 
-    let (status, log) = match run_deployment(pool, app_key, server_id).await {
+    let (status, log) = match run_deployment(pool, app_key, &application_id, server_id).await {
         Ok(l) => ("finished", l),
         Err(e) => ("failed", format!("[tinyhelm-worker] error: {e}")),
     };
@@ -82,8 +83,8 @@ async fn claim_and_run(pool: &PgPool, app_key: Option<&[u8; 32]>) -> Result<bool
     Ok(true)
 }
 
-/// Resolve the server + key and run a probe over SSH. Placeholder for the real build/deploy steps.
-async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, server_id: Option<i32>) -> Result<String, String> {
+/// Resolve server + app, then dispatch to a deploy strategy. Only the dockerimage path is ported.
+async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_id: &str, server_id: Option<i32>) -> Result<String, String> {
     let sid = server_id.ok_or("deployment has no server_id")?;
     let srow = sqlx::query(r#"SELECT ip, port, "user", private_key_id FROM servers WHERE id=$1"#)
         .bind(sid as i64)
@@ -94,8 +95,7 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, server_id: Op
     let ip: String = srow.get("ip");
     let port: i32 = srow.get("port");
     let user: String = srow.get("user");
-    let pkid: Option<i64> = srow.get("private_key_id");
-    let pkid = pkid.ok_or("server has no private key")?;
+    let pkid: i64 = srow.try_get::<Option<i64>, _>("private_key_id").ok().flatten().ok_or("server has no private key")?;
 
     let enc_key: String = sqlx::query_scalar("SELECT private_key FROM private_keys WHERE id=$1")
         .bind(pkid)
@@ -106,16 +106,95 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, server_id: Op
     let app_key = app_key.ok_or("APP_KEY not configured (cannot decrypt key)")?;
     let private_key = crypto::decrypt(&enc_key, app_key).ok_or("private key decrypt failed")?;
 
-    let probe = ssh_run(
-        &private_key,
-        &user,
-        &ip,
-        port,
-        "docker version --format '{{.Server.Version}}' 2>/dev/null || docker --version",
+    let arow = sqlx::query(
+        r#"SELECT id, uuid, docker_registry_image_name, docker_registry_image_tag, ports_mappings,
+                  custom_docker_run_options, destination_id, build_pack FROM applications WHERE uuid=$1"#,
     )
-    .await?;
-    // TODO: real steps — clone/pull, generate compose, build image, push, rolling update, health check.
-    Ok(format!("[tinyhelm-worker] connected {user}@{ip}:{port}; container runtime: {probe}"))
+    .bind(application_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| e.to_string())?
+    .ok_or("application not found")?;
+
+    let app_db_id: i64 = arow.get("id");
+    let app_uuid: String = arow.get("uuid");
+    let image_name: Option<String> = arow.try_get::<Option<String>, _>("docker_registry_image_name").ok().flatten();
+    let Some(image_name) = image_name.filter(|s| !s.is_empty()) else {
+        let bp: Option<String> = arow.try_get("build_pack").ok().flatten();
+        return Err(format!("only the dockerimage strategy is ported; build_pack={bp:?} / no image set — not yet supported"));
+    };
+    let tag: Option<String> = arow.try_get::<Option<String>, _>("docker_registry_image_tag").ok().flatten();
+    let image = format!("{}:{}", image_name, tag.filter(|s| !s.is_empty()).unwrap_or_else(|| "latest".into()));
+    let ports_mappings: Option<String> = arow.try_get::<Option<String>, _>("ports_mappings").ok().flatten();
+    let custom_opts: Option<String> = arow.try_get::<Option<String>, _>("custom_docker_run_options").ok().flatten();
+    let dest_id: Option<i64> = arow.try_get::<Option<i64>, _>("destination_id").ok().flatten();
+
+    let network = match dest_id {
+        Some(d) => sqlx::query_scalar::<_, String>("SELECT network FROM standalone_dockers WHERE id=$1")
+            .bind(d)
+            .fetch_optional(pool)
+            .await
+            .ok()
+            .flatten(),
+        None => None,
+    }
+    .filter(|s| !s.is_empty())
+    .unwrap_or_else(|| "coolify".into());
+
+    // Decrypted runtime env vars -> -e flags.
+    let envs = fetch_app_envs(pool, app_key, app_db_id).await;
+    let mut flags = String::new();
+    for (k, v) in &envs {
+        flags.push_str(&format!(" -e {}", shell_escape(&format!("{k}={v}"))));
+    }
+    if let Some(pm) = ports_mappings.filter(|s| !s.is_empty()) {
+        for p in pm.split(',').map(str::trim).filter(|p| !p.is_empty()) {
+            flags.push_str(&format!(" -p {p}"));
+        }
+    }
+    let custom = custom_opts.filter(|s| !s.is_empty()).map(|s| format!(" {s}")).unwrap_or_default();
+
+    // Simplified dockerimage deploy: ensure network, pull, replace container, run, report status.
+    // TODO: Traefik/Caddy labels for domains, full compose generation, rolling update, health gating.
+    let script = format!(
+        "set -e\n\
+         docker network create {net} >/dev/null 2>&1 || true\n\
+         echo '[pull] {img}'; docker pull {img}\n\
+         echo '[replace]'; docker rm -f {name} >/dev/null 2>&1 || true\n\
+         echo '[run]'; docker run -d --name {name} --network {net} --restart unless-stopped{flags}{custom} {img}\n\
+         echo '[status]'; docker inspect -f '{{{{.State.Status}}}}' {name}",
+        net = network,
+        img = image,
+        name = app_uuid,
+        flags = flags,
+        custom = custom,
+    );
+    let out = ssh_run(&private_key, &user, &ip, port, &script).await?;
+    Ok(format!("[tinyhelm-worker] dockerimage deploy of {app_uuid} ({image}) on {user}@{ip}:{port}\n{out}"))
+}
+
+/// Fetch an application's env vars, decrypted to plaintext.
+async fn fetch_app_envs(pool: &PgPool, app_key: &[u8; 32], app_db_id: i64) -> Vec<(String, String)> {
+    let rows = sqlx::query(
+        r"SELECT key, value FROM environment_variables WHERE resourceable_type='App\Models\Application' AND resourceable_id=$1",
+    )
+    .bind(app_db_id)
+    .fetch_all(pool)
+    .await
+    .unwrap_or_default();
+    rows.into_iter()
+        .map(|r| {
+            let k: String = r.get("key");
+            let v: Option<String> = r.try_get("value").ok().flatten();
+            let plain = v.and_then(|e| crypto::decrypt(&e, app_key)).unwrap_or_default();
+            (k, plain)
+        })
+        .collect()
+}
+
+/// Single-quote a value for safe use in a POSIX shell command.
+fn shell_escape(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\\''"))
 }
 
 /// Shell out to the system `ssh` (matches Coolify's approach) with a temp key file.
