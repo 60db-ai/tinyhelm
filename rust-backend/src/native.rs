@@ -4,7 +4,13 @@
 //! migration pattern (read endpoint ported to Rust behind the gateway), NOT production-trusted:
 //! enable only after diffing responses against Laravel and a security review of the auth path.
 
-use axum::{extract::{Path, State}, http::HeaderMap, http::StatusCode, response::{IntoResponse, Response}, Json};
+use axum::{
+    extract::{Path, State},
+    http::HeaderMap,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -32,7 +38,10 @@ struct TokenAuth {
 /// Validate a Sanctum bearer token: "<id>|<plaintext>" (column stores sha256(plaintext) hex).
 async fn authenticate(pool: &PgPool, headers: &HeaderMap) -> Option<TokenAuth> {
     let header = headers.get("authorization")?.to_str().ok()?;
-    let raw = header.strip_prefix("Bearer ").or_else(|| header.strip_prefix("bearer "))?.trim();
+    let raw = header
+        .strip_prefix("Bearer ")
+        .or_else(|| header.strip_prefix("bearer "))?
+        .trim();
     let plaintext = raw.split_once('|').map(|(_, t)| t).unwrap_or(raw);
     let hash = hex::encode(Sha256::digest(plaintext.as_bytes()));
 
@@ -57,7 +66,11 @@ async fn authenticate(pool: &PgPool, headers: &HeaderMap) -> Option<TokenAuth> {
 
     Some(TokenAuth {
         team_id: row.try_get::<String, _>("team_id").ok()?,
-        abilities: row.try_get::<Option<String>, _>("abilities").ok().flatten().unwrap_or_default(),
+        abilities: row
+            .try_get::<Option<String>, _>("abilities")
+            .ok()
+            .flatten()
+            .unwrap_or_default(),
         user_id: row.try_get::<i64, _>("tokenable_id").ok()?,
     })
 }
@@ -78,38 +91,69 @@ struct ServerRow {
     port: i32,
     #[sqlx(rename = "user")]
     user: String,
+    is_reachable: Option<bool>,
+    is_usable: Option<bool>,
 }
 
+const SERVER_SELECT: &str = r#"SELECT s.uuid, s.name, s.description, s.ip, s.port, s."user",
+    ss.is_reachable, ss.is_usable
+    FROM servers s LEFT JOIN server_settings ss ON ss.server_id = s.id"#;
+
 /// Validate token + read ability; return pool + team id (or an error response).
-async fn authorize_read<'a>(state: &'a crate::AppState, headers: &HeaderMap) -> Result<(&'a PgPool, i64), Response> {
+async fn authorize_read<'a>(
+    state: &'a crate::AppState,
+    headers: &HeaderMap,
+) -> Result<(&'a PgPool, i64), Response> {
     authorize_with(state, headers, "read").await
 }
 
 /// Validate token + the required ability + admin/owner role; return pool + team id (or an error response).
-async fn authorize_with<'a>(state: &'a crate::AppState, headers: &HeaderMap, ability: &str) -> Result<(&'a PgPool, i64), Response> {
+async fn authorize_with<'a>(
+    state: &'a crate::AppState,
+    headers: &HeaderMap,
+    ability: &str,
+) -> Result<(&'a PgPool, i64), Response> {
     let Some(pool) = state.pool.as_ref() else {
-        return Err((StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Native DB not configured."}))).into_response());
+        return Err((
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Native DB not configured."})),
+        )
+            .into_response());
     };
     let Some(auth) = authenticate(pool, headers).await else {
-        return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Unauthenticated."}))).into_response());
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"message": "Unauthenticated."})),
+        )
+            .into_response());
     };
     if !has_ability(&auth.abilities, ability) {
-        return Err((StatusCode::FORBIDDEN, Json(json!({ "message": format!("Missing {ability} ability.") }))).into_response());
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(json!({ "message": format!("Missing {ability} ability.") })),
+        )
+            .into_response());
     }
     let Ok(team_id) = auth.team_id.parse::<i64>() else {
-        return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Invalid token team."}))).into_response());
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"message": "Invalid token team."})),
+        )
+            .into_response());
     };
 
     // Safety gate: native endpoints scope by team only (no access-grant filtering yet), so restrict
     // them to full-team (admin/owner) tokens. Scoped members must use the Laravel path (flag off).
     // Fail-closed: unknown/missing role -> denied.
-    let role: Option<String> = sqlx::query_scalar("SELECT role FROM team_user WHERE user_id = $1 AND team_id = $2 LIMIT 1")
-        .bind(auth.user_id)
-        .bind(team_id)
-        .fetch_optional(pool)
-        .await
-        .ok()
-        .flatten();
+    let role: Option<String> = sqlx::query_scalar(
+        "SELECT role FROM team_user WHERE user_id = $1 AND team_id = $2 LIMIT 1",
+    )
+    .bind(auth.user_id)
+    .bind(team_id)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten();
     if !matches!(role.as_deref(), Some("admin") | Some("owner")) {
         return Err((StatusCode::FORBIDDEN, Json(json!({"message": "Native routes require an admin/owner token (access-grant scoping not yet ported)."}))).into_response());
     }
@@ -123,40 +167,58 @@ pub async fn list_servers(State(state): State<crate::AppState>, headers: HeaderM
         Ok(v) => v,
         Err(resp) => return resp,
     };
-    match sqlx::query_as::<_, ServerRow>(
-        r#"SELECT uuid, name, description, ip, port, "user" FROM servers WHERE team_id = $1 ORDER BY id"#,
-    )
-    .bind(team_id)
-    .fetch_all(pool)
-    .await
+    let sql = format!("{SERVER_SELECT} WHERE s.team_id = $1 ORDER BY s.id");
+    match sqlx::query_as::<_, ServerRow>(&sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await
     {
-        Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
+        Ok(r) => (
+            StatusCode::OK,
+            Json(serde_json::to_value(r).unwrap_or(json!([]))),
+        )
+            .into_response(),
         Err(e) => {
             tracing::error!("list_servers query failed: {e}");
-            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"message": "Query failed."})),
+            )
+                .into_response()
         }
     }
 }
 
 /// GET /api/v1/servers/:uuid — single server, team-scoped.
-pub async fn get_server(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+pub async fn get_server(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
     let (pool, team_id) = match authorize_read(&state, &headers).await {
         Ok(v) => v,
         Err(resp) => return resp,
     };
-    match sqlx::query_as::<_, ServerRow>(
-        r#"SELECT uuid, name, description, ip, port, "user" FROM servers WHERE team_id = $1 AND uuid = $2 LIMIT 1"#,
-    )
-    .bind(team_id)
-    .bind(&uuid)
-    .fetch_optional(pool)
-    .await
+    let sql = format!("{SERVER_SELECT} WHERE s.team_id = $1 AND s.uuid = $2 LIMIT 1");
+    match sqlx::query_as::<_, ServerRow>(&sql)
+        .bind(team_id)
+        .bind(&uuid)
+        .fetch_optional(pool)
+        .await
     {
         Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
-        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"message": "Server not found."}))).into_response(),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({"message": "Server not found."})),
+        )
+            .into_response(),
         Err(e) => {
             tracing::error!("get_server query failed: {e}");
-            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"message": "Query failed."})),
+            )
+                .into_response()
         }
     }
 }
@@ -181,10 +243,18 @@ pub async fn list_projects(State(state): State<crate::AppState>, headers: Header
     .fetch_all(pool)
     .await
     {
-        Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
+        Ok(r) => (
+            StatusCode::OK,
+            Json(serde_json::to_value(r).unwrap_or(json!([]))),
+        )
+            .into_response(),
         Err(e) => {
             tracing::error!("list_projects query failed: {e}");
-            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"message": "Query failed."})),
+            )
+                .into_response()
         }
     }
 }
@@ -206,7 +276,10 @@ struct ApplicationRow {
 /// SECURITY: this does NOT yet replicate Laravel's access-grant filtering (ScopedByAccessGrants),
 /// so a project-scoped member's token would see ALL of the team's applications. Must port the
 /// access-grant scope before enabling this route for anyone but full-team (admin/owner) tokens.
-pub async fn list_applications(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+pub async fn list_applications(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+) -> Response {
     let (pool, team_id) = match authorize_read(&state, &headers).await {
         Ok(v) => v,
         Err(resp) => return resp,
@@ -224,16 +297,28 @@ pub async fn list_applications(State(state): State<crate::AppState>, headers: He
     .fetch_all(pool)
     .await
     {
-        Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
+        Ok(r) => (
+            StatusCode::OK,
+            Json(serde_json::to_value(r).unwrap_or(json!([]))),
+        )
+            .into_response(),
         Err(e) => {
             tracing::error!("list_applications query failed: {e}");
-            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"message": "Query failed."})),
+            )
+                .into_response()
         }
     }
 }
 
 /// GET /api/v1/applications/:uuid — single application, team-scoped via environment -> project.
-pub async fn get_application(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+pub async fn get_application(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
     let (pool, team_id) = match authorize_read(&state, &headers).await {
         Ok(v) => v,
         Err(resp) => return resp,
@@ -252,24 +337,40 @@ pub async fn get_application(State(state): State<crate::AppState>, headers: Head
     .await
     {
         Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
-        Ok(None) => (StatusCode::NOT_FOUND, Json(json!({"message": "Application not found."}))).into_response(),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({"message": "Application not found."})),
+        )
+            .into_response(),
         Err(e) => {
             tracing::error!("get_application query failed: {e}");
-            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({"message": "Query failed."})),
+            )
+                .into_response()
         }
     }
 }
 
 // ---- shared response helpers ----
 fn ok_json<T: Serialize>(rows: T) -> Response {
-    (StatusCode::OK, Json(serde_json::to_value(rows).unwrap_or(json!([])))).into_response()
+    (
+        StatusCode::OK,
+        Json(serde_json::to_value(rows).unwrap_or(json!([]))),
+    )
+        .into_response()
 }
 fn not_found(msg: &str) -> Response {
     (StatusCode::NOT_FOUND, Json(json!({ "message": msg }))).into_response()
 }
 fn query_err(what: &str, e: sqlx::Error) -> Response {
     tracing::error!("{what} query failed: {e}");
-    (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+    (
+        StatusCode::BAD_GATEWAY,
+        Json(json!({"message": "Query failed."})),
+    )
+        .into_response()
 }
 
 // ---- services ----
@@ -287,19 +388,38 @@ const SERVICE_SELECT: &str = r#"SELECT s.uuid, s.name, s.description
 
 /// GET /api/v1/services
 pub async fn list_services(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let sql = format!("{SERVICE_SELECT} WHERE p.team_id = $1 ORDER BY s.id");
-    match sqlx::query_as::<_, ServiceRow>(&sql).bind(team_id).fetch_all(pool).await {
+    match sqlx::query_as::<_, ServiceRow>(&sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await
+    {
         Ok(r) => ok_json(r),
         Err(e) => query_err("list_services", e),
     }
 }
 
 /// GET /api/v1/services/:uuid
-pub async fn get_service(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+pub async fn get_service(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let sql = format!("{SERVICE_SELECT} WHERE p.team_id = $1 AND s.uuid = $2 LIMIT 1");
-    match sqlx::query_as::<_, ServiceRow>(&sql).bind(team_id).bind(&uuid).fetch_optional(pool).await {
+    match sqlx::query_as::<_, ServiceRow>(&sql)
+        .bind(team_id)
+        .bind(&uuid)
+        .fetch_optional(pool)
+        .await
+    {
         Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
         Ok(None) => not_found("Service not found."),
         Err(e) => query_err("get_service", e),
@@ -331,27 +451,46 @@ const DATABASE_UNION: &str = r#"
 
 /// GET /api/v1/databases
 pub async fn list_databases(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let sql = format!(
         "SELECT d.uuid, d.name, d.description, d.status, d.type FROM ({DATABASE_UNION}) d \
          JOIN environments e ON e.id = d.environment_id JOIN projects p ON p.id = e.project_id \
          WHERE p.team_id = $1 ORDER BY d.name"
     );
-    match sqlx::query_as::<_, DatabaseRow>(&sql).bind(team_id).fetch_all(pool).await {
+    match sqlx::query_as::<_, DatabaseRow>(&sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await
+    {
         Ok(r) => ok_json(r),
         Err(e) => query_err("list_databases", e),
     }
 }
 
 /// GET /api/v1/databases/:uuid
-pub async fn get_database(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+pub async fn get_database(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let sql = format!(
         "SELECT d.uuid, d.name, d.description, d.status, d.type FROM ({DATABASE_UNION}) d \
          JOIN environments e ON e.id = d.environment_id JOIN projects p ON p.id = e.project_id \
          WHERE p.team_id = $1 AND d.uuid = $2 LIMIT 1"
     );
-    match sqlx::query_as::<_, DatabaseRow>(&sql).bind(team_id).bind(&uuid).fetch_optional(pool).await {
+    match sqlx::query_as::<_, DatabaseRow>(&sql)
+        .bind(team_id)
+        .bind(&uuid)
+        .fetch_optional(pool)
+        .await
+    {
         Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
         Ok(None) => not_found("Database not found."),
         Err(e) => query_err("get_database", e),
@@ -366,8 +505,15 @@ struct EnvironmentRow {
 }
 
 /// GET /api/v1/projects/:uuid/environments
-pub async fn list_environments(State(state): State<crate::AppState>, headers: HeaderMap, Path(project_uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+pub async fn list_environments(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(project_uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     match sqlx::query_as::<_, EnvironmentRow>(
         r#"SELECT e.uuid, e.name FROM environments e JOIN projects p ON p.id = e.project_id
            WHERE p.uuid = $1 AND p.team_id = $2 ORDER BY e.id"#,
@@ -390,8 +536,14 @@ struct TeamRow {
 }
 
 /// GET /api/v1/team — the token's team.
-pub async fn get_current_team(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+pub async fn get_current_team(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     match sqlx::query_as::<_, TeamRow>("SELECT id, name FROM teams WHERE id = $1 LIMIT 1")
         .bind(team_id)
         .fetch_optional(pool)
@@ -410,20 +562,37 @@ pub struct CreateProject {
     description: Option<String>,
 }
 
-async fn fetch_project(pool: &PgPool, team_id: i64, uuid: &str) -> Result<Option<ProjectRow>, sqlx::Error> {
-    sqlx::query_as::<_, ProjectRow>("SELECT uuid, name, description FROM projects WHERE team_id = $1 AND uuid = $2 LIMIT 1")
-        .bind(team_id)
-        .bind(uuid)
-        .fetch_optional(pool)
-        .await
+async fn fetch_project(
+    pool: &PgPool,
+    team_id: i64,
+    uuid: &str,
+) -> Result<Option<ProjectRow>, sqlx::Error> {
+    sqlx::query_as::<_, ProjectRow>(
+        "SELECT uuid, name, description FROM projects WHERE team_id = $1 AND uuid = $2 LIMIT 1",
+    )
+    .bind(team_id)
+    .bind(uuid)
+    .fetch_optional(pool)
+    .await
 }
 
 /// POST /api/v1/projects — create a project and its default `production` environment (matches Laravel).
-pub async fn create_project(State(state): State<crate::AppState>, headers: HeaderMap, Json(body): Json<CreateProject>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+pub async fn create_project(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Json(body): Json<CreateProject>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let name = body.name.trim();
     if name.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Name is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Name is required."})),
+        )
+            .into_response();
     }
     let project_uuid = cuid2::create_id();
     let env_uuid = cuid2::create_id();
@@ -477,8 +646,16 @@ pub struct UpdateProject {
 }
 
 /// PATCH /api/v1/projects/:uuid — update name/description.
-pub async fn update_project(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<UpdateProject>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+pub async fn update_project(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<UpdateProject>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let res = sqlx::query(
         "UPDATE projects SET name = COALESCE($1, name), description = COALESCE($2, description), updated_at = now() WHERE uuid = $3 AND team_id = $4",
     )
@@ -514,34 +691,60 @@ const PROJECT_RESOURCE_COUNT: &str = "SELECT \
 +(SELECT count(*) FROM standalone_sqlites WHERE environment_id IN (SELECT id FROM environments WHERE project_id=$1)) AS total";
 
 /// DELETE /api/v1/projects/:uuid — refuses if the project still has resources (data-loss guard).
-pub async fn delete_project(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    let pid: Option<i64> = sqlx::query_scalar("SELECT id FROM projects WHERE uuid = $1 AND team_id = $2")
-        .bind(&uuid)
-        .bind(team_id)
-        .fetch_optional(pool)
-        .await
-        .ok()
-        .flatten();
-    let Some(pid) = pid else { return not_found("Project not found.") };
+pub async fn delete_project(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let pid: Option<i64> =
+        sqlx::query_scalar("SELECT id FROM projects WHERE uuid = $1 AND team_id = $2")
+            .bind(&uuid)
+            .bind(team_id)
+            .fetch_optional(pool)
+            .await
+            .ok()
+            .flatten();
+    let Some(pid) = pid else {
+        return not_found("Project not found.");
+    };
 
-    let total: i64 = match sqlx::query_scalar(PROJECT_RESOURCE_COUNT).bind(pid).fetch_one(pool).await {
+    let total: i64 = match sqlx::query_scalar(PROJECT_RESOURCE_COUNT)
+        .bind(pid)
+        .fetch_one(pool)
+        .await
+    {
         Ok(n) => n,
         Err(e) => return query_err("delete_project.count", e),
     };
     if total > 0 {
-        return (StatusCode::CONFLICT, Json(json!({"message": "Project has resources; delete them first."}))).into_response();
+        return (
+            StatusCode::CONFLICT,
+            Json(json!({"message": "Project has resources; delete them first."})),
+        )
+            .into_response();
     }
 
     let mut tx = match pool.begin().await {
         Ok(t) => t,
         Err(e) => return query_err("delete_project.begin", e),
     };
-    if let Err(e) = sqlx::query("DELETE FROM environments WHERE project_id = $1").bind(pid).execute(&mut *tx).await {
+    if let Err(e) = sqlx::query("DELETE FROM environments WHERE project_id = $1")
+        .bind(pid)
+        .execute(&mut *tx)
+        .await
+    {
         let _ = tx.rollback().await;
         return query_err("delete_project.environments", e);
     }
-    if let Err(e) = sqlx::query("DELETE FROM projects WHERE id = $1").bind(pid).execute(&mut *tx).await {
+    if let Err(e) = sqlx::query("DELETE FROM projects WHERE id = $1")
+        .bind(pid)
+        .execute(&mut *tx)
+        .await
+    {
         let _ = tx.rollback().await;
         return query_err("delete_project", e);
     }
@@ -560,11 +763,16 @@ struct TagRow {
 
 /// GET /api/v1/tags
 pub async fn list_tags(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
-    match sqlx::query_as::<_, TagRow>("SELECT uuid, name FROM tags WHERE team_id = $1 ORDER BY name")
-        .bind(team_id)
-        .fetch_all(pool)
-        .await
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    match sqlx::query_as::<_, TagRow>(
+        "SELECT uuid, name FROM tags WHERE team_id = $1 ORDER BY name",
+    )
+    .bind(team_id)
+    .fetch_all(pool)
+    .await
     {
         Ok(r) => ok_json(r),
         Err(e) => query_err("list_tags", e),
@@ -577,11 +785,22 @@ pub struct CreateTag {
 }
 
 /// POST /api/v1/tags
-pub async fn create_tag(State(state): State<crate::AppState>, headers: HeaderMap, Json(body): Json<CreateTag>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+pub async fn create_tag(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Json(body): Json<CreateTag>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let name = body.name.trim();
     if name.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Name is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Name is required."})),
+        )
+            .into_response();
     }
     let uuid = cuid2::create_id();
     match sqlx::query("INSERT INTO tags (uuid, name, team_id, created_at, updated_at) VALUES ($1,$2,$3,now(),now())")
@@ -597,9 +816,21 @@ pub async fn create_tag(State(state): State<crate::AppState>, headers: HeaderMap
 }
 
 /// DELETE /api/v1/tags/:uuid
-pub async fn delete_tag(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    match sqlx::query("DELETE FROM tags WHERE uuid = $1 AND team_id = $2").bind(&uuid).bind(team_id).execute(pool).await {
+pub async fn delete_tag(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    match sqlx::query("DELETE FROM tags WHERE uuid = $1 AND team_id = $2")
+        .bind(&uuid)
+        .bind(team_id)
+        .execute(pool)
+        .await
+    {
         Ok(r) if r.rows_affected() == 0 => not_found("Tag not found."),
         Ok(_) => (StatusCode::OK, Json(json!({"message": "Tag deleted."}))).into_response(),
         Err(e) => query_err("delete_tag", e),
@@ -632,9 +863,18 @@ struct EnvDbRow {
 }
 
 /// GET /api/v1/applications/:uuid/envs — values decrypted to plaintext.
-pub async fn list_app_envs(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
-    let Some(aid) = app_id_for(pool, team_id, &uuid).await else { return not_found("Application not found.") };
+pub async fn list_app_envs(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some(aid) = app_id_for(pool, team_id, &uuid).await else {
+        return not_found("Application not found.");
+    };
     let rows = sqlx::query_as::<_, EnvDbRow>(
         "SELECT uuid, key, value, is_buildtime FROM environment_variables \
          WHERE resourceable_type = $1 AND resourceable_id = $2 ORDER BY key",
@@ -673,24 +913,49 @@ fn encrypt_opt(value: Option<&str>, key: &[u8; 32]) -> Result<Option<String>, Re
     match value {
         Some(v) => match crate::crypto::encrypt(v, key) {
             Some(e) => Ok(Some(e)),
-            None => Err((StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"message": "Encryption failed."}))).into_response()),
+            None => Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"message": "Encryption failed."})),
+            )
+                .into_response()),
         },
         None => Ok(None),
     }
 }
 
 /// POST /api/v1/applications/:uuid/envs
-pub async fn create_app_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn create_app_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some(aid) = app_id_for(pool, team_id, &uuid).await else { return not_found("Application not found.") };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some(aid) = app_id_for(pool, team_id, &uuid).await else {
+        return not_found("Application not found.");
+    };
     let key = body.key.trim();
     if key.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Key is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Key is required."})),
+        )
+            .into_response();
     }
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let env_uuid = cuid2::create_id();
     match sqlx::query(
         "INSERT INTO environment_variables (key, value, uuid, resourceable_type, resourceable_id, is_buildtime, is_runtime, created_at, updated_at) \
@@ -712,13 +977,30 @@ pub async fn create_app_env(State(state): State<crate::AppState>, headers: Heade
 }
 
 /// PATCH /api/v1/applications/:uuid/envs — update a variable's value by key.
-pub async fn update_app_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn update_app_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some(aid) = app_id_for(pool, team_id, &uuid).await else { return not_found("Application not found.") };
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some(aid) = app_id_for(pool, team_id, &uuid).await else {
+        return not_found("Application not found.");
+    };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     match sqlx::query(
         "UPDATE environment_variables SET value = $1, updated_at = now() \
          WHERE resourceable_type = $2 AND resourceable_id = $3 AND key = $4",
@@ -731,15 +1013,28 @@ pub async fn update_app_env(State(state): State<crate::AppState>, headers: Heade
     .await
     {
         Ok(r) if r.rows_affected() == 0 => not_found("Variable not found."),
-        Ok(_) => (StatusCode::OK, Json(json!({ "key": body.key.trim(), "is_build_time": body.is_build_time }))).into_response(),
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({ "key": body.key.trim(), "is_build_time": body.is_build_time })),
+        )
+            .into_response(),
         Err(e) => query_err("update_app_env", e),
     }
 }
 
 /// DELETE /api/v1/applications/:uuid/envs/:env_uuid
-pub async fn delete_app_env(State(state): State<crate::AppState>, headers: HeaderMap, Path((uuid, env_uuid)): Path<(String, String)>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    let Some(aid) = app_id_for(pool, team_id, &uuid).await else { return not_found("Application not found.") };
+pub async fn delete_app_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path((uuid, env_uuid)): Path<(String, String)>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some(aid) = app_id_for(pool, team_id, &uuid).await else {
+        return not_found("Application not found.");
+    };
     match sqlx::query("DELETE FROM environment_variables WHERE uuid = $1 AND resourceable_type = $2 AND resourceable_id = $3")
         .bind(&env_uuid)
         .bind(APP_RESOURCEABLE)
@@ -770,9 +1065,18 @@ async fn service_id_for(pool: &PgPool, team_id: i64, uuid: &str) -> Option<i64> 
 }
 
 /// GET /api/v1/services/:uuid/envs
-pub async fn list_service_envs(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
-    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+pub async fn list_service_envs(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else {
+        return not_found("Service not found.");
+    };
     let rows = sqlx::query_as::<_, EnvDbRow>(
         "SELECT uuid, key, value, is_buildtime FROM environment_variables \
          WHERE resourceable_type = $1 AND resourceable_id = $2 ORDER BY key",
@@ -800,17 +1104,38 @@ pub async fn list_service_envs(State(state): State<crate::AppState>, headers: He
 }
 
 /// POST /api/v1/services/:uuid/envs
-pub async fn create_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn create_service_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else {
+        return not_found("Service not found.");
+    };
     let key = body.key.trim();
     if key.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Key is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Key is required."})),
+        )
+            .into_response();
     }
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let env_uuid = cuid2::create_id();
     match sqlx::query(
         "INSERT INTO environment_variables (key, value, uuid, resourceable_type, resourceable_id, is_buildtime, is_runtime, created_at, updated_at) \
@@ -832,13 +1157,30 @@ pub async fn create_service_env(State(state): State<crate::AppState>, headers: H
 }
 
 /// PATCH /api/v1/services/:uuid/envs
-pub async fn update_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn update_service_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else {
+        return not_found("Service not found.");
+    };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     match sqlx::query(
         "UPDATE environment_variables SET value = $1, updated_at = now() \
          WHERE resourceable_type = $2 AND resourceable_id = $3 AND key = $4",
@@ -851,15 +1193,28 @@ pub async fn update_service_env(State(state): State<crate::AppState>, headers: H
     .await
     {
         Ok(r) if r.rows_affected() == 0 => not_found("Variable not found."),
-        Ok(_) => (StatusCode::OK, Json(json!({ "key": body.key.trim(), "is_build_time": body.is_build_time }))).into_response(),
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({ "key": body.key.trim(), "is_build_time": body.is_build_time })),
+        )
+            .into_response(),
         Err(e) => query_err("update_service_env", e),
     }
 }
 
 /// DELETE /api/v1/services/:uuid/envs/:env_uuid
-pub async fn delete_service_env(State(state): State<crate::AppState>, headers: HeaderMap, Path((uuid, env_uuid)): Path<(String, String)>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    let Some(sid) = service_id_for(pool, team_id, &uuid).await else { return not_found("Service not found.") };
+pub async fn delete_service_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path((uuid, env_uuid)): Path<(String, String)>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some(sid) = service_id_for(pool, team_id, &uuid).await else {
+        return not_found("Service not found.");
+    };
     match sqlx::query("DELETE FROM environment_variables WHERE uuid = $1 AND resourceable_type = $2 AND resourceable_id = $3")
         .bind(&env_uuid)
         .bind(SERVICE_RESOURCEABLE)
@@ -889,14 +1244,31 @@ const DB_RESOURCEABLE_SQL: &str = r#"SELECT d.id, d.rtype FROM (
 WHERE p.team_id = $2 LIMIT 1"#;
 
 async fn database_resourceable(pool: &PgPool, team_id: i64, uuid: &str) -> Option<(String, i64)> {
-    let row = sqlx::query(DB_RESOURCEABLE_SQL).bind(uuid).bind(team_id).fetch_optional(pool).await.ok()??;
-    Some((row.try_get::<String, _>("rtype").ok()?, row.try_get::<i64, _>("id").ok()?))
+    let row = sqlx::query(DB_RESOURCEABLE_SQL)
+        .bind(uuid)
+        .bind(team_id)
+        .fetch_optional(pool)
+        .await
+        .ok()??;
+    Some((
+        row.try_get::<String, _>("rtype").ok()?,
+        row.try_get::<i64, _>("id").ok()?,
+    ))
 }
 
 /// GET /api/v1/databases/:uuid/envs
-pub async fn list_database_envs(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
-    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else { return not_found("Database not found.") };
+pub async fn list_database_envs(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else {
+        return not_found("Database not found.");
+    };
     let rows = sqlx::query_as::<_, EnvDbRow>(
         "SELECT uuid, key, value, is_buildtime FROM environment_variables WHERE resourceable_type = $1 AND resourceable_id = $2 ORDER BY key",
     )
@@ -923,17 +1295,38 @@ pub async fn list_database_envs(State(state): State<crate::AppState>, headers: H
 }
 
 /// POST /api/v1/databases/:uuid/envs
-pub async fn create_database_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn create_database_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else { return not_found("Database not found.") };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else {
+        return not_found("Database not found.");
+    };
     let key = body.key.trim();
     if key.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Key is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Key is required."})),
+        )
+            .into_response();
     }
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let env_uuid = cuid2::create_id();
     match sqlx::query(
         "INSERT INTO environment_variables (key, value, uuid, resourceable_type, resourceable_id, is_buildtime, is_runtime, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,now(),now())",
@@ -954,13 +1347,30 @@ pub async fn create_database_env(State(state): State<crate::AppState>, headers: 
 }
 
 /// PATCH /api/v1/databases/:uuid/envs
-pub async fn update_database_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
-    let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+pub async fn update_database_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(uuid): Path<String>,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
     };
-    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else { return not_found("Database not found.") };
-    let enc = match encrypt_opt(body.value.as_deref(), app_key) { Ok(v) => v, Err(r) => return r };
+    let Some(app_key) = state.app_key.as_ref() else {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
+    };
+    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else {
+        return not_found("Database not found.");
+    };
+    let enc = match encrypt_opt(body.value.as_deref(), app_key) {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     match sqlx::query(
         "UPDATE environment_variables SET value = $1, updated_at = now() WHERE resourceable_type = $2 AND resourceable_id = $3 AND key = $4",
     )
@@ -978,9 +1388,18 @@ pub async fn update_database_env(State(state): State<crate::AppState>, headers: 
 }
 
 /// DELETE /api/v1/databases/:uuid/envs/:env_uuid
-pub async fn delete_database_env(State(state): State<crate::AppState>, headers: HeaderMap, Path((uuid, env_uuid)): Path<(String, String)>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else { return not_found("Database not found.") };
+pub async fn delete_database_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path((uuid, env_uuid)): Path<(String, String)>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    let Some((rtype, rid)) = database_resourceable(pool, team_id, &uuid).await else {
+        return not_found("Database not found.");
+    };
     match sqlx::query("DELETE FROM environment_variables WHERE uuid = $1 AND resourceable_type = $2 AND resourceable_id = $3")
         .bind(&env_uuid)
         .bind(&rtype)
@@ -1004,7 +1423,10 @@ struct SharedEnvRow {
 
 /// GET /api/v1/team/envs
 pub async fn list_team_envs(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
-    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let rows = sqlx::query_as::<_, SharedEnvRow>(
         "SELECT id, key, value FROM shared_environment_variables WHERE type = 'team' AND team_id = $1 ORDER BY key",
     )
@@ -1016,7 +1438,10 @@ pub async fn list_team_envs(State(state): State<crate::AppState>, headers: Heade
             let out: Vec<_> = rs
                 .into_iter()
                 .map(|r| {
-                    let plain = state.app_key.as_ref().and_then(|k| crate::crypto::decrypt(&r.value, k));
+                    let plain = state
+                        .app_key
+                        .as_ref()
+                        .and_then(|k| crate::crypto::decrypt(&r.value, k));
                     json!({ "id": r.id, "key": r.key, "value": plain })
                 })
                 .collect();
@@ -1027,17 +1452,36 @@ pub async fn list_team_envs(State(state): State<crate::AppState>, headers: Heade
 }
 
 /// POST /api/v1/team/envs
-pub async fn create_team_env(State(state): State<crate::AppState>, headers: HeaderMap, Json(body): Json<EnvInput>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+pub async fn create_team_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Json(body): Json<EnvInput>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
     };
     let key = body.key.trim();
     if key.is_empty() {
-        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Key is required."}))).into_response();
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"message": "Key is required."})),
+        )
+            .into_response();
     }
     let Some(enc) = crate::crypto::encrypt(body.value.as_deref().unwrap_or(""), app_key) else {
-        return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"message": "Encryption failed."}))).into_response();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({"message": "Encryption failed."})),
+        )
+            .into_response();
     };
     match sqlx::query_scalar::<_, i64>(
         "INSERT INTO shared_environment_variables (key, value, type, team_id, created_at, updated_at) VALUES ($1,$2,'team',$3,now(),now()) RETURNING id",
@@ -1060,16 +1504,34 @@ pub struct SharedEnvUpdate {
 }
 
 /// PATCH /api/v1/team/envs/:id
-pub async fn update_team_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(id): Path<i64>, Json(body): Json<SharedEnvUpdate>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+pub async fn update_team_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(id): Path<i64>,
+    Json(body): Json<SharedEnvUpdate>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
     let Some(app_key) = state.app_key.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Encryption key not configured."}))).into_response();
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(json!({"message": "Encryption key not configured."})),
+        )
+            .into_response();
     };
     // value is NOT NULL; only update it when provided.
     let enc = match body.value.as_deref() {
         Some(v) => match crate::crypto::encrypt(v, app_key) {
             Some(e) => Some(e),
-            None => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"message": "Encryption failed."}))).into_response(),
+            None => {
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({"message": "Encryption failed."})),
+                )
+                    .into_response()
+            }
         },
         None => None,
     };
@@ -1091,16 +1553,111 @@ pub async fn update_team_env(State(state): State<crate::AppState>, headers: Head
 }
 
 /// DELETE /api/v1/team/envs/:id
-pub async fn delete_team_env(State(state): State<crate::AppState>, headers: HeaderMap, Path(id): Path<i64>) -> Response {
-    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await { Ok(v) => v, Err(r) => return r };
-    match sqlx::query("DELETE FROM shared_environment_variables WHERE id = $1 AND team_id = $2 AND type = 'team'")
-        .bind(id)
-        .bind(team_id)
-        .execute(pool)
-        .await
+pub async fn delete_team_env(
+    State(state): State<crate::AppState>,
+    headers: HeaderMap,
+    Path(id): Path<i64>,
+) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "delete").await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+    match sqlx::query(
+        "DELETE FROM shared_environment_variables WHERE id = $1 AND team_id = $2 AND type = 'team'",
+    )
+    .bind(id)
+    .bind(team_id)
+    .execute(pool)
+    .await
     {
         Ok(r) if r.rows_affected() == 0 => not_found("Shared variable not found."),
-        Ok(_) => (StatusCode::OK, Json(json!({"message": "Shared variable deleted."}))).into_response(),
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({"message": "Shared variable deleted."})),
+        )
+            .into_response(),
         Err(e) => query_err("delete_team_env", e),
+    }
+}
+
+// ---- dashboard (one call: projects w/ counts, servers w/ status, recent deployments) ----
+const RESOURCE_TABLES: [&str; 11] = [
+    "applications",
+    "services",
+    "standalone_postgresqls",
+    "standalone_mysqls",
+    "standalone_mariadbs",
+    "standalone_mongodbs",
+    "standalone_redis",
+    "standalone_keydbs",
+    "standalone_dragonflies",
+    "standalone_clickhouses",
+    "standalone_sqlites",
+];
+
+#[derive(Serialize, sqlx::FromRow)]
+struct DashProject {
+    uuid: String,
+    name: String,
+    description: Option<String>,
+    environments: i64,
+    resources: i64,
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+struct DashDeployment {
+    deployment_uuid: String,
+    status: String,
+    application_name: Option<String>,
+    application_uuid: String,
+    project: String,
+    environment: String,
+    created_at: Option<chrono::NaiveDateTime>,
+}
+
+/// GET /api/v1/dashboard
+pub async fn dashboard(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(r) => return r,
+    };
+
+    let resources_expr = RESOURCE_TABLES
+        .iter()
+        .map(|t| format!("(SELECT count(*) FROM {t} WHERE environment_id IN (SELECT id FROM environments WHERE project_id = p.id))"))
+        .collect::<Vec<_>>()
+        .join(" + ");
+    let projects_sql = format!(
+        "SELECT p.uuid, p.name, p.description, \
+         (SELECT count(*) FROM environments e WHERE e.project_id = p.id) AS environments, \
+         ({resources_expr}) AS resources \
+         FROM projects p WHERE p.team_id = $1 ORDER BY p.name"
+    );
+    let servers_sql = format!("{SERVER_SELECT} WHERE s.team_id = $1 ORDER BY s.name");
+    let deployments_sql =
+        "SELECT d.deployment_uuid, d.status, d.application_name, a.uuid AS application_uuid, \
+         p.name AS project, e.name AS environment, d.created_at \
+         FROM application_deployment_queues d \
+         JOIN applications a ON (a.id::text = d.application_id OR a.uuid = d.application_id) \
+         JOIN environments e ON e.id = a.environment_id \
+         JOIN projects p ON p.id = e.project_id \
+         WHERE p.team_id = $1 ORDER BY d.id DESC LIMIT 10";
+
+    let projects = sqlx::query_as::<_, DashProject>(&projects_sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await;
+    let servers = sqlx::query_as::<_, ServerRow>(&servers_sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await;
+    let deployments = sqlx::query_as::<_, DashDeployment>(deployments_sql)
+        .bind(team_id)
+        .fetch_all(pool)
+        .await;
+
+    match (projects, servers, deployments) {
+        (Ok(p), Ok(s), Ok(d)) => ok_json(json!({ "projects": p, "servers": s, "deployments": d })),
+        (Err(e), _, _) | (_, Err(e), _) | (_, _, Err(e)) => query_err("dashboard", e),
     }
 }

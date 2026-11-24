@@ -76,7 +76,12 @@ pub fn encrypt(plaintext: &str, key: &[u8; 32]) -> Option<String> {
     mac.update(iv_b64.as_bytes());
     mac.update(value_b64.as_bytes());
     let mac_hex = hex::encode(mac.finalize().into_bytes());
-    let payload = Payload { iv: iv_b64, value: value_b64, mac: mac_hex, tag: String::new() };
+    let payload = Payload {
+        iv: iv_b64,
+        value: value_b64,
+        mac: mac_hex,
+        tag: String::new(),
+    };
     Some(B64.encode(serde_json::to_vec(&payload).ok()?))
 }
 
@@ -113,7 +118,9 @@ mod tests {
 
     #[test]
     fn roundtrip_and_laravel_vector() {
-        let Ok(k) = std::env::var("TEST_APP_KEY") else { return };
+        let Ok(k) = std::env::var("TEST_APP_KEY") else {
+            return;
+        };
         let key = parse_key(&k).expect("key");
         // Rust encrypt -> Rust decrypt
         let enc = encrypt("hello-world", &key).unwrap();

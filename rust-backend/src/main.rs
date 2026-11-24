@@ -50,8 +50,17 @@ async fn main() {
     // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
     let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
     let want = |r: &str| native_routes.split(',').any(|x| x.trim() == r);
-    let any_native = want("servers") || want("projects") || want("applications") || want("services") || want("databases") || want("tags");
-    let pool = if any_native { native::pool().await } else { None };
+    let any_native = want("servers")
+        || want("projects")
+        || want("applications")
+        || want("services")
+        || want("databases")
+        || want("tags");
+    let pool = if any_native {
+        native::pool().await
+    } else {
+        None
+    };
     if any_native && pool.is_none() {
         tracing::warn!("RUST_NATIVE_ROUTES set but no DB pool; falling back to proxy");
     }
@@ -63,7 +72,9 @@ async fn main() {
     let native_tags = want("tags") && pool.is_some();
 
     // APP_KEY (Laravel) lets native endpoints decrypt/encrypt env-var values compatibly.
-    let app_key = std::env::var("APP_KEY").ok().and_then(|k| crypto::parse_key(&k));
+    let app_key = std::env::var("APP_KEY")
+        .ok()
+        .and_then(|k| crypto::parse_key(&k));
 
     let state = AppState {
         api_origin: api_origin.trim_end_matches('/').to_string(),
@@ -85,12 +96,28 @@ async fn main() {
     if native_projects {
         tracing::info!("native routes enabled: projects, environments, team");
         app = app
-            .route("/api/v1/projects", get(native::list_projects).post(native::create_project))
-            .route("/api/v1/projects/:uuid", patch(native::update_project).delete(native::delete_project))
-            .route("/api/v1/projects/:uuid/environments", get(native::list_environments))
+            .route(
+                "/api/v1/projects",
+                get(native::list_projects).post(native::create_project),
+            )
+            .route(
+                "/api/v1/projects/:uuid",
+                patch(native::update_project).delete(native::delete_project),
+            )
+            .route(
+                "/api/v1/projects/:uuid/environments",
+                get(native::list_environments),
+            )
             .route("/api/v1/team", get(native::get_current_team))
-            .route("/api/v1/team/envs", get(native::list_team_envs).post(native::create_team_env))
-            .route("/api/v1/team/envs/:id", patch(native::update_team_env).delete(native::delete_team_env));
+            .route("/api/v1/dashboard", get(native::dashboard))
+            .route(
+                "/api/v1/team/envs",
+                get(native::list_team_envs).post(native::create_team_env),
+            )
+            .route(
+                "/api/v1/team/envs/:id",
+                patch(native::update_team_env).delete(native::delete_team_env),
+            );
     }
     if native_services {
         tracing::info!("native routes enabled: GET /api/v1/services[/:uuid]");
@@ -99,9 +126,14 @@ async fn main() {
             .route("/api/v1/services/:uuid", get(native::get_service))
             .route(
                 "/api/v1/services/:uuid/envs",
-                get(native::list_service_envs).post(native::create_service_env).patch(native::update_service_env),
+                get(native::list_service_envs)
+                    .post(native::create_service_env)
+                    .patch(native::update_service_env),
             )
-            .route("/api/v1/services/:uuid/envs/:env_uuid", delete(native::delete_service_env));
+            .route(
+                "/api/v1/services/:uuid/envs/:env_uuid",
+                delete(native::delete_service_env),
+            );
     }
     if native_databases {
         tracing::info!("native routes enabled: GET /api/v1/databases[/:uuid]");
@@ -110,14 +142,22 @@ async fn main() {
             .route("/api/v1/databases/:uuid", get(native::get_database))
             .route(
                 "/api/v1/databases/:uuid/envs",
-                get(native::list_database_envs).post(native::create_database_env).patch(native::update_database_env),
+                get(native::list_database_envs)
+                    .post(native::create_database_env)
+                    .patch(native::update_database_env),
             )
-            .route("/api/v1/databases/:uuid/envs/:env_uuid", delete(native::delete_database_env));
+            .route(
+                "/api/v1/databases/:uuid/envs/:env_uuid",
+                delete(native::delete_database_env),
+            );
     }
     if native_tags {
         tracing::info!("native routes enabled: tags CRUD");
         app = app
-            .route("/api/v1/tags", get(native::list_tags).post(native::create_tag))
+            .route(
+                "/api/v1/tags",
+                get(native::list_tags).post(native::create_tag),
+            )
             .route("/api/v1/tags/:uuid", delete(native::delete_tag));
     }
     if native_applications {
@@ -127,13 +167,21 @@ async fn main() {
             .route("/api/v1/applications/:uuid", get(native::get_application))
             .route(
                 "/api/v1/applications/:uuid/envs",
-                get(native::list_app_envs).post(native::create_app_env).patch(native::update_app_env),
+                get(native::list_app_envs)
+                    .post(native::create_app_env)
+                    .patch(native::update_app_env),
             )
-            .route("/api/v1/applications/:uuid/envs/:env_uuid", delete(native::delete_app_env));
+            .route(
+                "/api/v1/applications/:uuid/envs/:env_uuid",
+                delete(native::delete_app_env),
+            );
     }
     let app = app
         // Everything else under /api and /webhooks still goes to Laravel until ported.
-        .route("/api/*path", get(proxy).post(proxy).patch(proxy).put(proxy).delete(proxy))
+        .route(
+            "/api/*path",
+            get(proxy).post(proxy).patch(proxy).put(proxy).delete(proxy),
+        )
         .route("/webhooks/*path", get(proxy).post(proxy))
         .with_state(state)
         .fallback_service(spa)

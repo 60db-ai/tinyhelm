@@ -29,11 +29,20 @@ async fn main() {
         .init();
 
     let url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
-    let app_key = std::env::var("APP_KEY").ok().and_then(|k| crypto::parse_key(&k));
+    let app_key = std::env::var("APP_KEY")
+        .ok()
+        .and_then(|k| crypto::parse_key(&k));
     let poll = Duration::from_secs(
-        std::env::var("WORKER_POLL_SECS").ok().and_then(|s| s.parse().ok()).unwrap_or(5),
+        std::env::var("WORKER_POLL_SECS")
+            .ok()
+            .and_then(|s| s.parse().ok())
+            .unwrap_or(5),
     );
-    let pool = PgPoolOptions::new().max_connections(5).connect(&url).await.expect("db connect");
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&url)
+        .await
+        .expect("db connect");
 
     tracing::info!("TinyHelm deploy worker started (poll {}s)", poll.as_secs());
     loop {
@@ -84,7 +93,12 @@ async fn claim_and_run(pool: &PgPool, app_key: Option<&[u8; 32]>) -> Result<bool
 }
 
 /// Resolve server + app, then dispatch to a deploy strategy. Only the dockerimage path is ported.
-async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_id: &str, server_id: Option<i32>) -> Result<String, String> {
+async fn run_deployment(
+    pool: &PgPool,
+    app_key: Option<&[u8; 32]>,
+    application_id: &str,
+    server_id: Option<i32>,
+) -> Result<String, String> {
     let sid = server_id.ok_or("deployment has no server_id")?;
     let srow = sqlx::query(r#"SELECT ip, port, "user", private_key_id FROM servers WHERE id=$1"#)
         .bind(sid as i64)
@@ -95,7 +109,11 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
     let ip: String = srow.get("ip");
     let port: i32 = srow.get("port");
     let user: String = srow.get("user");
-    let pkid: i64 = srow.try_get::<Option<i64>, _>("private_key_id").ok().flatten().ok_or("server has no private key")?;
+    let pkid: i64 = srow
+        .try_get::<Option<i64>, _>("private_key_id")
+        .ok()
+        .flatten()
+        .ok_or("server has no private key")?;
 
     let enc_key: String = sqlx::query_scalar("SELECT private_key FROM private_keys WHERE id=$1")
         .bind(pkid)
@@ -108,7 +126,8 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
 
     let arow = sqlx::query(
         r#"SELECT id, uuid, docker_registry_image_name, docker_registry_image_tag, ports_mappings,
-                  custom_docker_run_options, destination_id, build_pack FROM applications WHERE uuid=$1"#,
+                  custom_docker_run_options, destination_id, build_pack FROM applications
+           WHERE id::text = $1 OR uuid = $1 LIMIT 1"#,
     )
     .bind(application_id)
     .fetch_optional(pool)
@@ -118,24 +137,46 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
 
     let app_db_id: i64 = arow.get("id");
     let app_uuid: String = arow.get("uuid");
-    let image_name: Option<String> = arow.try_get::<Option<String>, _>("docker_registry_image_name").ok().flatten();
+    let image_name: Option<String> = arow
+        .try_get::<Option<String>, _>("docker_registry_image_name")
+        .ok()
+        .flatten();
     let Some(image_name) = image_name.filter(|s| !s.is_empty()) else {
         let bp: Option<String> = arow.try_get("build_pack").ok().flatten();
         return Err(format!("only the dockerimage strategy is ported; build_pack={bp:?} / no image set — not yet supported"));
     };
-    let tag: Option<String> = arow.try_get::<Option<String>, _>("docker_registry_image_tag").ok().flatten();
-    let image = format!("{}:{}", image_name, tag.filter(|s| !s.is_empty()).unwrap_or_else(|| "latest".into()));
-    let ports_mappings: Option<String> = arow.try_get::<Option<String>, _>("ports_mappings").ok().flatten();
-    let custom_opts: Option<String> = arow.try_get::<Option<String>, _>("custom_docker_run_options").ok().flatten();
-    let dest_id: Option<i64> = arow.try_get::<Option<i64>, _>("destination_id").ok().flatten();
+    let tag: Option<String> = arow
+        .try_get::<Option<String>, _>("docker_registry_image_tag")
+        .ok()
+        .flatten();
+    let image = format!(
+        "{}:{}",
+        image_name,
+        tag.filter(|s| !s.is_empty())
+            .unwrap_or_else(|| "latest".into())
+    );
+    let ports_mappings: Option<String> = arow
+        .try_get::<Option<String>, _>("ports_mappings")
+        .ok()
+        .flatten();
+    let custom_opts: Option<String> = arow
+        .try_get::<Option<String>, _>("custom_docker_run_options")
+        .ok()
+        .flatten();
+    let dest_id: Option<i64> = arow
+        .try_get::<Option<i64>, _>("destination_id")
+        .ok()
+        .flatten();
 
     let network = match dest_id {
-        Some(d) => sqlx::query_scalar::<_, String>("SELECT network FROM standalone_dockers WHERE id=$1")
-            .bind(d)
-            .fetch_optional(pool)
-            .await
-            .ok()
-            .flatten(),
+        Some(d) => {
+            sqlx::query_scalar::<_, String>("SELECT network FROM standalone_dockers WHERE id=$1")
+                .bind(d)
+                .fetch_optional(pool)
+                .await
+                .ok()
+                .flatten()
+        }
         None => None,
     }
     .filter(|s| !s.is_empty())
@@ -152,7 +193,10 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
             flags.push_str(&format!(" -p {p}"));
         }
     }
-    let custom = custom_opts.filter(|s| !s.is_empty()).map(|s| format!(" {s}")).unwrap_or_default();
+    let custom = custom_opts
+        .filter(|s| !s.is_empty())
+        .map(|s| format!(" {s}"))
+        .unwrap_or_default();
 
     // Simplified dockerimage deploy: ensure network, pull, replace container, run, report status.
     // TODO: Traefik/Caddy labels for domains, full compose generation, rolling update, health gating.
@@ -171,11 +215,17 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
         custom = custom,
     );
     let out = ssh_run(&private_key, &user, &ip, port, &script).await?;
-    Ok(format!("[tinyhelm-worker] dockerimage deploy of {app_uuid} ({image}) on {user}@{ip}:{port}\n{out}"))
+    Ok(format!(
+        "[tinyhelm-worker] dockerimage deploy of {app_uuid} ({image}) on {user}@{ip}:{port}\n{out}"
+    ))
 }
 
 /// Fetch an application's env vars, decrypted to plaintext.
-async fn fetch_app_envs(pool: &PgPool, app_key: &[u8; 32], app_db_id: i64) -> Vec<(String, String)> {
+async fn fetch_app_envs(
+    pool: &PgPool,
+    app_key: &[u8; 32],
+    app_db_id: i64,
+) -> Vec<(String, String)> {
     let rows = sqlx::query(
         r"SELECT key, value FROM environment_variables WHERE resourceable_type='App\Models\Application' AND resourceable_id=$1",
     )
@@ -187,7 +237,9 @@ async fn fetch_app_envs(pool: &PgPool, app_key: &[u8; 32], app_db_id: i64) -> Ve
         .map(|r| {
             let k: String = r.get("key");
             let v: Option<String> = r.try_get("value").ok().flatten();
-            let plain = v.and_then(|e| crypto::decrypt(&e, app_key)).unwrap_or_default();
+            let plain = v
+                .and_then(|e| crypto::decrypt(&e, app_key))
+                .unwrap_or_default();
             (k, plain)
         })
         .collect()
@@ -199,11 +251,18 @@ fn shell_escape(s: &str) -> String {
 }
 
 /// Shell out to the system `ssh` (matches Coolify's approach) with a temp key file.
-async fn ssh_run(private_key: &str, user: &str, ip: &str, port: i32, cmd: &str) -> Result<String, String> {
+async fn ssh_run(
+    private_key: &str,
+    user: &str,
+    ip: &str,
+    port: i32,
+    cmd: &str,
+) -> Result<String, String> {
     let path = std::env::temp_dir().join(format!("th-worker-key-{}", std::process::id()));
     {
         let mut f = std::fs::File::create(&path).map_err(|e| e.to_string())?;
-        f.write_all(private_key.as_bytes()).map_err(|e| e.to_string())?;
+        f.write_all(private_key.as_bytes())
+            .map_err(|e| e.to_string())?;
         if !private_key.ends_with('\n') {
             let _ = f.write_all(b"\n");
         }
@@ -233,6 +292,9 @@ async fn ssh_run(private_key: &str, user: &str, ip: &str, port: i32, cmd: &str) 
     if out.status.success() {
         Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
     } else {
-        Err(format!("ssh failed: {}", String::from_utf8_lossy(&out.stderr).trim()))
+        Err(format!(
+            "ssh failed: {}",
+            String::from_utf8_lossy(&out.stderr).trim()
+        ))
     }
 }

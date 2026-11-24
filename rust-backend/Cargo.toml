@@ -2,6 +2,7 @@
 name = "tinyhelm-gateway"
 version = "0.1.0"
 edition = "2021"
+default-run = "tinyhelm-gateway"
 description = "TinyHelm Rust front-door: serves the SPA and proxies /api to the Laravel backend (strangler step toward an all-Rust backend)."
 
 [dependencies]

@@ -80,8 +80,8 @@ export interface Server {
   name: string;
   description?: string | null;
   ip: string;
-  reachable?: boolean;
-  usable?: boolean;
+  is_reachable?: boolean | null;
+  is_usable?: boolean | null;
 }
 
 export interface Project {
