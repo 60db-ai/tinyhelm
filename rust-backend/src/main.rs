@@ -105,7 +105,12 @@ async fn main() {
         tracing::info!("native routes enabled: GET /api/v1/databases[/:uuid]");
         app = app
             .route("/api/v1/databases", get(native::list_databases))
-            .route("/api/v1/databases/:uuid", get(native::get_database));
+            .route("/api/v1/databases/:uuid", get(native::get_database))
+            .route(
+                "/api/v1/databases/:uuid/envs",
+                get(native::list_database_envs).post(native::create_database_env).patch(native::update_database_env),
+            )
+            .route("/api/v1/databases/:uuid/envs/:env_uuid", delete(native::delete_database_env));
     }
     if native_tags {
         tracing::info!("native routes enabled: tags CRUD");
