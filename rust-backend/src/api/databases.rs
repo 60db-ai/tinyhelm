@@ -581,7 +581,7 @@ pub(crate) fn remove_server_proxy_secrets(value: &mut Value) {
 }
 
 /// Team databases of one engine as `(project_id, row)` (soft-deleted rows excluded, like the model scope).
-async fn engine_rows(
+pub(crate) async fn engine_rows(
     pool: &PgPool,
     engine: &Engine,
     team_id: i64,

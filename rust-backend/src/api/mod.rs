@@ -12,8 +12,10 @@ pub mod databases;
 pub mod envs;
 pub mod model;
 pub mod projects;
+pub mod resource_writes;
 pub mod respond;
 pub mod servers;
+pub mod service_parts;
 pub mod services;
 pub mod support;
 pub mod tags;
@@ -40,7 +42,7 @@ pub(crate) mod prelude {
     pub(crate) use super::model::{to_laravel, ModelSpec};
     pub(crate) use super::{
         applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
-        services::*, support::*, tags::*, team::*,
+        resource_writes::*, service_parts::*, services::*, support::*, tags::*, team::*,
     };
 }
 
@@ -123,7 +125,7 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     if on("applications") {
         r = r
             .route("/api/v1/applications", get(list_applications))
-            .route("/api/v1/applications/:uuid", get(get_application))
+            .route("/api/v1/applications/:uuid", get(get_application).patch(update_application))
             .route(
                 "/api/v1/applications/:uuid/envs",
                 get(list_app_envs)
@@ -139,6 +141,10 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
         r = r
             .route("/api/v1/services", get(list_services))
             .route("/api/v1/services/:uuid", get(get_service))
+            .route("/api/v1/services/:uuid/applications", get(list_service_applications))
+            .route("/api/v1/services/:uuid/applications/:app_uuid", get(get_service_application))
+            .route("/api/v1/services/:uuid/databases", get(list_service_databases))
+            .route("/api/v1/services/:uuid/databases/:database_uuid", get(get_service_database))
             .route(
                 "/api/v1/services/:uuid/envs",
                 get(list_service_envs)
@@ -153,7 +159,7 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     if on("databases") {
         r = r
             .route("/api/v1/databases", get(list_databases))
-            .route("/api/v1/databases/:uuid", get(get_database))
+            .route("/api/v1/databases/:uuid", get(get_database).patch(update_database))
             .route(
                 "/api/v1/databases/:uuid/envs",
                 get(list_database_envs)
