@@ -143,3 +143,46 @@ pub async fn list_projects(State(state): State<crate::AppState>, headers: Header
         }
     }
 }
+
+#[derive(Serialize, sqlx::FromRow)]
+struct ApplicationRow {
+    uuid: String,
+    name: String,
+    description: Option<String>,
+    fqdn: Option<String>,
+    status: String,
+    git_repository: Option<String>,
+    git_branch: Option<String>,
+    build_pack: Option<String>,
+}
+
+/// GET /api/v1/applications — team-scoped via environment -> project.
+///
+/// SECURITY: this does NOT yet replicate Laravel's access-grant filtering (ScopedByAccessGrants),
+/// so a project-scoped member's token would see ALL of the team's applications. Must port the
+/// access-grant scope before enabling this route for anyone but full-team (admin/owner) tokens.
+pub async fn list_applications(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    match sqlx::query_as::<_, ApplicationRow>(
+        r#"SELECT a.uuid, a.name, a.description, a.fqdn, a.status,
+                  a.git_repository, a.git_branch, a.build_pack
+           FROM applications a
+           JOIN environments e ON e.id = a.environment_id
+           JOIN projects p ON p.id = e.project_id
+           WHERE p.team_id = $1
+           ORDER BY a.id"#,
+    )
+    .bind(team_id)
+    .fetch_all(pool)
+    .await
+    {
+        Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
+        Err(e) => {
+            tracing::error!("list_applications query failed: {e}");
+            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+        }
+    }
+}
