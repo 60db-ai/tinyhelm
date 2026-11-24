@@ -5,7 +5,7 @@
 //! enable only after diffing responses against Laravel and a security review of the auth path.
 
 use axum::{extract::{Path, State}, http::HeaderMap, http::StatusCode, response::{IntoResponse, Response}, Json};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::postgres::PgPoolOptions;
@@ -80,16 +80,21 @@ struct ServerRow {
     user: String,
 }
 
-/// Validate token + read ability, returning the pool and the token's team id (or an error response).
+/// Validate token + read ability; return pool + team id (or an error response).
 async fn authorize_read<'a>(state: &'a crate::AppState, headers: &HeaderMap) -> Result<(&'a PgPool, i64), Response> {
+    authorize_with(state, headers, "read").await
+}
+
+/// Validate token + the required ability + admin/owner role; return pool + team id (or an error response).
+async fn authorize_with<'a>(state: &'a crate::AppState, headers: &HeaderMap, ability: &str) -> Result<(&'a PgPool, i64), Response> {
     let Some(pool) = state.pool.as_ref() else {
         return Err((StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Native DB not configured."}))).into_response());
     };
     let Some(auth) = authenticate(pool, headers).await else {
         return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Unauthenticated."}))).into_response());
     };
-    if !has_ability(&auth.abilities, "read") {
-        return Err((StatusCode::FORBIDDEN, Json(json!({"message": "Missing read ability."}))).into_response());
+    if !has_ability(&auth.abilities, ability) {
+        return Err((StatusCode::FORBIDDEN, Json(json!({ "message": format!("Missing {ability} ability.") }))).into_response());
     }
     let Ok(team_id) = auth.team_id.parse::<i64>() else {
         return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Invalid token team."}))).into_response());
@@ -395,5 +400,101 @@ pub async fn get_current_team(State(state): State<crate::AppState>, headers: Hea
         Ok(Some(t)) => (StatusCode::OK, Json(t)).into_response(),
         Ok(None) => not_found("Team not found."),
         Err(e) => query_err("get_current_team", e),
+    }
+}
+
+// ---- project writes (pure DB; no deploy engine needed) ----
+#[derive(Deserialize)]
+pub struct CreateProject {
+    name: String,
+    description: Option<String>,
+}
+
+async fn fetch_project(pool: &PgPool, team_id: i64, uuid: &str) -> Result<Option<ProjectRow>, sqlx::Error> {
+    sqlx::query_as::<_, ProjectRow>("SELECT uuid, name, description FROM projects WHERE team_id = $1 AND uuid = $2 LIMIT 1")
+        .bind(team_id)
+        .bind(uuid)
+        .fetch_optional(pool)
+        .await
+}
+
+/// POST /api/v1/projects — create a project and its default `production` environment (matches Laravel).
+pub async fn create_project(State(state): State<crate::AppState>, headers: HeaderMap, Json(body): Json<CreateProject>) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+    let name = body.name.trim();
+    if name.is_empty() {
+        return (StatusCode::UNPROCESSABLE_ENTITY, Json(json!({"message": "Name is required."}))).into_response();
+    }
+    let project_uuid = cuid2::create_id();
+    let env_uuid = cuid2::create_id();
+
+    let mut tx = match pool.begin().await {
+        Ok(t) => t,
+        Err(e) => return query_err("create_project.begin", e),
+    };
+    let project_id: i64 = match sqlx::query_scalar(
+        "INSERT INTO projects (uuid, name, description, team_id, created_at, updated_at) VALUES ($1,$2,$3,$4,now(),now()) RETURNING id",
+    )
+    .bind(&project_uuid)
+    .bind(name)
+    .bind(&body.description)
+    .bind(team_id)
+    .fetch_one(&mut *tx)
+    .await
+    {
+        Ok(id) => id,
+        Err(e) => {
+            let _ = tx.rollback().await;
+            return query_err("create_project", e);
+        }
+    };
+    if let Err(e) = sqlx::query(
+        "INSERT INTO environments (uuid, name, project_id, created_at, updated_at) VALUES ($1,'production',$2,now(),now())",
+    )
+    .bind(&env_uuid)
+    .bind(project_id)
+    .execute(&mut *tx)
+    .await
+    {
+        let _ = tx.rollback().await;
+        return query_err("create_project.environment", e);
+    }
+    if let Err(e) = tx.commit().await {
+        return query_err("create_project.commit", e);
+    }
+
+    (
+        StatusCode::CREATED,
+        Json(json!({ "uuid": project_uuid, "name": name, "description": body.description })),
+    )
+        .into_response()
+}
+
+#[derive(Deserialize)]
+pub struct UpdateProject {
+    name: Option<String>,
+    description: Option<String>,
+}
+
+/// PATCH /api/v1/projects/:uuid — update name/description.
+pub async fn update_project(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>, Json(body): Json<UpdateProject>) -> Response {
+    let (pool, team_id) = match authorize_with(&state, &headers, "write").await { Ok(v) => v, Err(r) => return r };
+    let res = sqlx::query(
+        "UPDATE projects SET name = COALESCE($1, name), description = COALESCE($2, description), updated_at = now() WHERE uuid = $3 AND team_id = $4",
+    )
+    .bind(body.name.as_deref().map(str::trim).filter(|s| !s.is_empty()))
+    .bind(&body.description)
+    .bind(&uuid)
+    .bind(team_id)
+    .execute(pool)
+    .await;
+    match res {
+        Ok(r) if r.rows_affected() == 0 => not_found("Project not found."),
+        Ok(_) => match fetch_project(pool, team_id, &uuid).await {
+            Ok(Some(p)) => (StatusCode::OK, Json(p)).into_response(),
+            Ok(None) => not_found("Project not found."),
+            Err(e) => query_err("update_project.fetch", e),
+        },
+        Err(e) => query_err("update_project", e),
     }
 }

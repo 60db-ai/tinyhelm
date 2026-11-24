@@ -16,7 +16,7 @@ use axum::{
     extract::{Request, State},
     http::{uri::Uri, StatusCode},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, patch},
     Router,
 };
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -78,7 +78,8 @@ async fn main() {
     if native_projects {
         tracing::info!("native routes enabled: projects, environments, team");
         app = app
-            .route("/api/v1/projects", get(native::list_projects))
+            .route("/api/v1/projects", get(native::list_projects).post(native::create_project))
+            .route("/api/v1/projects/:uuid", patch(native::update_project))
             .route("/api/v1/projects/:uuid/environments", get(native::list_environments))
             .route("/api/v1/team", get(native::get_current_team));
     }
