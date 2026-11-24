@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Boxes, Layers, AppWindow, Database, Container } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
+import { ApplicationDetail } from "@/pages/application";
 
 // Small state helpers (kept local; promote to a shared module when a 3rd page needs them).
 function ErrorBox({ message }: { message: string }) {
@@ -72,9 +73,13 @@ type EnvDetail = {
 export function ProjectsPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [env, setEnv] = useState<Environment | null>(null);
+  const [appUuid, setAppUuid] = useState<string | null>(null);
 
+  if (project && env && appUuid) {
+    return <ApplicationDetail uuid={appUuid} onBack={() => setAppUuid(null)} backLabel={env.name} />;
+  }
   if (project && env) {
-    return <EnvironmentDetail project={project} env={env} onBack={() => setEnv(null)} />;
+    return <EnvironmentDetail project={project} env={env} onBack={() => setEnv(null)} onOpenApp={setAppUuid} />;
   }
   if (project) {
     return <EnvironmentList project={project} onOpen={setEnv} onBack={() => setProject(null)} />;
@@ -154,10 +159,12 @@ function EnvironmentDetail({
   project,
   env,
   onBack,
+  onOpenApp,
 }: {
   project: Project;
   env: Environment;
   onBack: () => void;
+  onOpenApp: (uuid: string) => void;
 }) {
   const [data, setData] = useState<EnvDetail | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -181,7 +188,7 @@ function EnvironmentDetail({
       {!err && data === null && <Skeleton />}
       {data && (
         <>
-          <Group icon={<AppWindow size={16} />} title="Applications" items={data.applications ?? []} />
+          <Group icon={<AppWindow size={16} />} title="Applications" items={data.applications ?? []} onOpen={onOpenApp} />
           <Group icon={<Database size={16} />} title="Databases" items={databases} />
           <Group icon={<Container size={16} />} title="Services" items={data.services ?? []} />
         </>
@@ -190,7 +197,17 @@ function EnvironmentDetail({
   );
 }
 
-function Group({ icon, title, items }: { icon: React.ReactNode; title: string; items: Resource[] }) {
+function Group({
+  icon,
+  title,
+  items,
+  onOpen,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  items: Resource[];
+  onOpen?: (uuid: string) => void;
+}) {
   return (
     <section className="space-y-2">
       <h2 className="flex items-center gap-2 text-sm font-medium text-[var(--color-muted-foreground)]">
@@ -198,13 +215,28 @@ function Group({ icon, title, items }: { icon: React.ReactNode; title: string; i
       </h2>
       {items.length ? (
         <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
-          {items.map((r) => (
-            <div key={r.uuid} className="flex items-center gap-4 px-5 py-3">
-              <Dot status={r.status} />
-              <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
-              <span className="hidden text-sm text-[var(--color-muted-foreground)] sm:block">{r.status ?? "—"}</span>
-            </div>
-          ))}
+          {items.map((r) => {
+            const inner = (
+              <>
+                <Dot status={r.status} />
+                <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
+                <span className="hidden text-sm text-[var(--color-muted-foreground)] sm:block">{r.status ?? "—"}</span>
+              </>
+            );
+            return onOpen ? (
+              <button
+                key={r.uuid}
+                onClick={() => onOpen(r.uuid)}
+                className="flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-[var(--color-elevated)]"
+              >
+                {inner}
+              </button>
+            ) : (
+              <div key={r.uuid} className="flex items-center gap-4 px-5 py-3">
+                {inner}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <EmptyBox message={`No ${title.toLowerCase()}.`} />
