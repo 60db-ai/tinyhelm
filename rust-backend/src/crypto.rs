@@ -64,8 +64,14 @@ pub fn decrypt(payload_b64: &str, key: &[u8; 32]) -> Option<String> {
     Some(php_unserialize_string(&serialized).unwrap_or(serialized))
 }
 
+/// Laravel `Crypt::encrypt($value)` (PHP-serialized string payload).
 pub fn encrypt(plaintext: &str, key: &[u8; 32]) -> Option<String> {
-    let serialized = php_serialize_string(plaintext);
+    encrypt_string(&php_serialize_string(plaintext), key)
+}
+
+/// Laravel `Crypt::encryptString($value)`: no serialization. Used by the `encrypted` and
+/// `encrypted:array` Eloquent casts.
+pub fn encrypt_string(serialized: &str, key: &[u8; 32]) -> Option<String> {
     let mut iv = [0u8; 16];
     rand::thread_rng().fill_bytes(&mut iv);
     let enc = Aes256CbcEnc::new_from_slices(key, &iv).ok()?;
