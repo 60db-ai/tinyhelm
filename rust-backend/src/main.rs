@@ -111,6 +111,10 @@ async fn main() {
     .unwrap();
 }
 
+/// Response-extension marker: this response came from Laravel (it already applied its own counters).
+#[derive(Clone, Copy)]
+pub struct Proxied;
+
 /// Transparent reverse proxy to the Laravel backend.
 pub async fn proxy(State(state): State<AppState>, req: Request) -> Response {
     let path_query = req
@@ -149,9 +153,11 @@ pub async fn proxy(State(state): State<AppState>, req: Request) -> Response {
             for (name, value) in headers.iter() {
                 builder = builder.header(name, value);
             }
-            builder
+            let mut response = builder
                 .body(Body::from_stream(stream))
-                .unwrap_or_else(|_| StatusCode::BAD_GATEWAY.into_response())
+                .unwrap_or_else(|_| StatusCode::BAD_GATEWAY.into_response());
+            response.extensions_mut().insert(Proxied);
+            response
         }
         Err(err) => {
             tracing::error!("proxy error: {err}");

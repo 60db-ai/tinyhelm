@@ -19,7 +19,7 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 
-use super::{audit, throttle};
+use super::{audit, failed_throttle, throttle};
 use crate::AppState;
 
 /// The authenticated caller of a native API request.
@@ -95,8 +95,39 @@ enum Resolution {
     ApiDisabled,
 }
 
-/// Middleware for every native API route.
-pub async fn native_guard(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
+/// Middleware for every native API route: `ThrottleFailedApiRequests`, then the auth chain.
+pub async fn native_guard(State(state): State<AppState>, req: Request, next: Next) -> Response {
+    let path = req.uri().path();
+    let exempt = path == "/api/health" || path == "/api/v1/health";
+    let ip = req
+        .extensions()
+        .get::<ConnectInfo<SocketAddr>>()
+        .map(|ConnectInfo(addr)| addr.ip().to_string());
+    let failed_key = if exempt {
+        None
+    } else {
+        failed_throttle::key(req.headers(), ip.as_deref())
+    };
+    if let Some(blocked) = failed_key
+        .as_deref()
+        .and_then(failed_throttle::blocked_response)
+    {
+        return blocked;
+    }
+    let had_bearer = failed_throttle::bearer_token(req.headers()).is_some();
+
+    let res = authenticated(State(state), req, next).await;
+
+    // Laravel counts the requests it answered itself.
+    if let Some(key) = failed_key {
+        if res.extensions().get::<crate::Proxied>().is_none() {
+            failed_throttle::record(&key, res.status(), had_bearer);
+        }
+    }
+    res
+}
+
+async fn authenticated(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
     let Some(pool) = state.pool.clone() else {
         return crate::proxy(State(state), req).await;
     };
