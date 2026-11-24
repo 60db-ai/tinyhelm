@@ -10,7 +10,9 @@ pub mod auth;
 pub mod dashboard;
 pub mod databases;
 pub mod envs;
+pub mod instance;
 pub mod model;
+pub mod notifications;
 pub mod projects;
 pub mod respond;
 pub mod servers;
@@ -39,8 +41,8 @@ pub(crate) mod prelude {
     pub(crate) use super::auth::Ctx;
     pub(crate) use super::model::{to_laravel, ModelSpec};
     pub(crate) use super::{
-        applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
-        services::*, support::*, tags::*, team::*,
+        applications::*, dashboard::*, databases::*, envs::*, instance::*, notifications::*,
+        projects::*, respond::*, servers::*, services::*, support::*, tags::*, team::*,
     };
 }
 
@@ -83,6 +85,8 @@ pub const GROUPS: &[&str] = &[
     "databases",
     "tags",
     "team",
+    "notifications",
+    "instance",
 ];
 
 /// Native routes for the enabled groups, all behind [`auth::native_guard`].
@@ -110,7 +114,10 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     }
     if on("team") {
         r = r
-            .route("/api/v1/team", get(get_current_team))
+            .route(
+                "/api/v1/team",
+                get(get_current_team).patch(update_current_team),
+            )
             .route(
                 "/api/v1/team/envs",
                 get(list_team_envs).post(create_team_env),
@@ -118,7 +125,51 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
             .route(
                 "/api/v1/team/envs/:id",
                 patch(update_team_env).delete(delete_team_env),
+            )
+            .route("/api/v1/team/members", get(list_current_team_members))
+            .route("/api/v1/teams", get(list_teams))
+            .route("/api/v1/teams/current", get(get_current_team))
+            .route(
+                "/api/v1/teams/current/members",
+                get(list_current_team_members),
+            )
+            .route("/api/v1/teams/:id", get(get_team_by_id))
+            .route("/api/v1/teams/:id/members", get(list_team_members_by_id));
+    }
+    if on("notifications") {
+        r = r
+            .route(
+                "/api/v1/notifications/email",
+                get(get_email_notifications).patch(update_email_notifications),
+            )
+            .route(
+                "/api/v1/notifications/discord",
+                get(get_discord_notifications).patch(update_discord_notifications),
+            )
+            .route(
+                "/api/v1/notifications/slack",
+                get(get_slack_notifications).patch(update_slack_notifications),
+            )
+            .route(
+                "/api/v1/notifications/telegram",
+                get(get_telegram_notifications).patch(update_telegram_notifications),
+            )
+            .route(
+                "/api/v1/notifications/pushover",
+                get(get_pushover_notifications).patch(update_pushover_notifications),
+            )
+            .route(
+                "/api/v1/notifications/webhook",
+                get(get_webhook_notifications).patch(update_webhook_notifications),
             );
+    }
+    if on("instance") {
+        r = r
+            .route("/api/v1/version", get(get_version))
+            .route("/api/v1/realtime/config", get(get_realtime_config))
+            .route("/api/v1/disable", get(post_required).post(disable_api))
+            .route("/api/v1/mcp/enable", axum::routing::post(enable_mcp))
+            .route("/api/v1/mcp/disable", axum::routing::post(disable_mcp));
     }
     if on("applications") {
         r = r
@@ -172,6 +223,17 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     }
     // A path served natively for some methods must still reach Laravel for the others
     // (e.g. PATCH /applications/{uuid}/envs/bulk matches the DELETE-only {env_uuid} route).
-    r.route_layer(middleware::from_fn_with_state(state, auth::native_guard))
-        .method_not_allowed_fallback(crate::proxy)
+    let guarded = r
+        .route_layer(middleware::from_fn_with_state(state, auth::native_guard))
+        .method_not_allowed_fallback(crate::proxy);
+    if !on("instance") {
+        return guarded;
+    }
+    // Outside the auth group in routes/api.php (only `throttle:api`, applied by the handler).
+    guarded.merge(
+        Router::new()
+            .route("/api/health", get(health))
+            .route("/api/v1/health", get(health))
+            .method_not_allowed_fallback(crate::proxy),
+    )
 }

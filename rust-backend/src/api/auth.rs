@@ -109,6 +109,14 @@ pub async fn native_guard(State(state): State<AppState>, mut req: Request, next:
         Resolution::Delegate => crate::proxy(State(state), req).await,
         Resolution::Unauthenticated => message(StatusCode::UNAUTHORIZED, "Unauthenticated."),
         Resolution::InvalidToken => message(StatusCode::UNAUTHORIZED, "Invalid token."),
+        // The /disable and /mcp/* group has no ApiAllowed middleware: it still answers while the API
+        // is disabled, so Laravel handles that case.
+        Resolution::ApiDisabled
+            if req.uri().path() == "/api/v1/disable"
+                || req.uri().path().starts_with("/api/v1/mcp/") =>
+        {
+            crate::proxy(State(state), req).await
+        }
         Resolution::ApiDisabled => (
             StatusCode::FORBIDDEN,
             Json(json!({"success": false, "message": "API is disabled."})),

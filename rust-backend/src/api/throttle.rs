@@ -40,6 +40,11 @@ pub fn check(key: &str) -> Limit {
     check_with(key, max_per_minute(), Instant::now())
 }
 
+/// Same window with a route-specific limit (Laravel's `api` limiter gives `api/health` 1000/min).
+pub fn check_max(key: &str, max: u32) -> Limit {
+    check_with(key, max, Instant::now())
+}
+
 fn check_with(key: &str, max: u32, now: Instant) -> Limit {
     let mut guard = HITS.lock().unwrap_or_else(|e| e.into_inner());
     let hits = guard.get_or_insert_with(HashMap::new);
