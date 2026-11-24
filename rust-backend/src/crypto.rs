@@ -85,7 +85,7 @@ pub fn encrypt(plaintext: &str, key: &[u8; 32]) -> Option<String> {
     Some(B64.encode(serde_json::to_vec(&payload).ok()?))
 }
 
-fn constant_eq(a: &[u8], b: &[u8]) -> bool {
+pub fn constant_eq(a: &[u8], b: &[u8]) -> bool {
     if a.len() != b.len() {
         return false;
     }

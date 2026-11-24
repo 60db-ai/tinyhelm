@@ -16,13 +16,13 @@ use axum::{
     extract::{Request, State},
     http::{uri::Uri, StatusCode},
     response::{IntoResponse, Response},
-    routing::{delete, get, patch},
+    routing::get,
     Router,
 };
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+mod api;
 mod crypto;
-mod native;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -49,27 +49,20 @@ async fn main() {
     // Phase 3: opt-in native Rust endpoints (comma-separated, e.g. RUST_NATIVE_ROUTES=servers).
     // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
     let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
-    let want = |r: &str| native_routes.split(',').any(|x| x.trim() == r);
-    let any_native = want("servers")
-        || want("projects")
-        || want("applications")
-        || want("services")
-        || want("databases")
-        || want("tags");
-    let pool = if any_native {
-        native::pool().await
-    } else {
+    let enabled: Vec<&str> = native_routes
+        .split(',')
+        .map(str::trim)
+        .filter(|g| api::GROUPS.contains(g))
+        .collect();
+    let pool = if enabled.is_empty() {
         None
+    } else {
+        api::pool().await
     };
-    if any_native && pool.is_none() {
-        tracing::warn!("RUST_NATIVE_ROUTES set but no DB pool; falling back to proxy");
+    if !enabled.is_empty() && pool.is_none() {
+        tracing::warn!("RUST_NATIVE_ROUTES set but no DB pool; every route proxies to Laravel");
     }
-    let native_servers = want("servers") && pool.is_some();
-    let native_projects = want("projects") && pool.is_some();
-    let native_applications = want("applications") && pool.is_some();
-    let native_services = want("services") && pool.is_some();
-    let native_databases = want("databases") && pool.is_some();
-    let native_tags = want("tags") && pool.is_some();
+    let enabled: Vec<&str> = if pool.is_some() { enabled } else { Vec::new() };
 
     // APP_KEY (Laravel) lets native endpoints decrypt/encrypt env-var values compatibly.
     let app_key = std::env::var("APP_KEY")
@@ -86,96 +79,10 @@ async fn main() {
     // SPA static files with index.html fallback for client-side routing.
     let spa = ServeDir::new(&spa_dir).append_index_html_on_directories(true);
 
-    let mut app = Router::new().route("/healthz", get(|| async { "ok" }));
-    if native_servers {
-        tracing::info!("native routes enabled: GET /api/v1/servers[/:uuid]");
-        app = app
-            .route("/api/v1/servers", get(native::list_servers))
-            .route("/api/v1/servers/:uuid", get(native::get_server));
-    }
-    if native_projects {
-        tracing::info!("native routes enabled: projects, environments, team");
-        app = app
-            .route(
-                "/api/v1/projects",
-                get(native::list_projects).post(native::create_project),
-            )
-            .route(
-                "/api/v1/projects/:uuid",
-                patch(native::update_project).delete(native::delete_project),
-            )
-            .route(
-                "/api/v1/projects/:uuid/environments",
-                get(native::list_environments),
-            )
-            .route("/api/v1/team", get(native::get_current_team))
-            .route("/api/v1/dashboard", get(native::dashboard))
-            .route(
-                "/api/v1/team/envs",
-                get(native::list_team_envs).post(native::create_team_env),
-            )
-            .route(
-                "/api/v1/team/envs/:id",
-                patch(native::update_team_env).delete(native::delete_team_env),
-            );
-    }
-    if native_services {
-        tracing::info!("native routes enabled: GET /api/v1/services[/:uuid]");
-        app = app
-            .route("/api/v1/services", get(native::list_services))
-            .route("/api/v1/services/:uuid", get(native::get_service))
-            .route(
-                "/api/v1/services/:uuid/envs",
-                get(native::list_service_envs)
-                    .post(native::create_service_env)
-                    .patch(native::update_service_env),
-            )
-            .route(
-                "/api/v1/services/:uuid/envs/:env_uuid",
-                delete(native::delete_service_env),
-            );
-    }
-    if native_databases {
-        tracing::info!("native routes enabled: GET /api/v1/databases[/:uuid]");
-        app = app
-            .route("/api/v1/databases", get(native::list_databases))
-            .route("/api/v1/databases/:uuid", get(native::get_database))
-            .route(
-                "/api/v1/databases/:uuid/envs",
-                get(native::list_database_envs)
-                    .post(native::create_database_env)
-                    .patch(native::update_database_env),
-            )
-            .route(
-                "/api/v1/databases/:uuid/envs/:env_uuid",
-                delete(native::delete_database_env),
-            );
-    }
-    if native_tags {
-        tracing::info!("native routes enabled: tags CRUD");
-        app = app
-            .route(
-                "/api/v1/tags",
-                get(native::list_tags).post(native::create_tag),
-            )
-            .route("/api/v1/tags/:uuid", delete(native::delete_tag));
-    }
-    if native_applications {
-        tracing::info!("native routes enabled: GET /api/v1/applications[/:uuid]");
-        app = app
-            .route("/api/v1/applications", get(native::list_applications))
-            .route("/api/v1/applications/:uuid", get(native::get_application))
-            .route(
-                "/api/v1/applications/:uuid/envs",
-                get(native::list_app_envs)
-                    .post(native::create_app_env)
-                    .patch(native::update_app_env),
-            )
-            .route(
-                "/api/v1/applications/:uuid/envs/:env_uuid",
-                delete(native::delete_app_env),
-            );
-    }
+    tracing::info!("native route groups: {:?}", enabled);
+    let app = Router::new()
+        .route("/healthz", get(|| async { "ok" }))
+        .merge(api::router(state.clone(), &enabled));
     let app = app
         // Everything else under /api and /webhooks still goes to Laravel until ported.
         .route(
@@ -190,11 +97,16 @@ async fn main() {
     let addr: SocketAddr = listen.parse().expect("invalid TINYHELM_LISTEN");
     tracing::info!("TinyHelm gateway on http://{addr} -> api {}", api_origin);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }
 
 /// Transparent reverse proxy to the Laravel backend.
-async fn proxy(State(state): State<AppState>, req: Request) -> Response {
+pub async fn proxy(State(state): State<AppState>, req: Request) -> Response {
     let path_query = req
         .uri()
         .path_and_query()

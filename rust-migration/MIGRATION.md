@@ -1,7 +1,7 @@
 # TinyHelm → all-Rust + shadcn migration
 
 Goal: replace the Laravel/Livewire/Blade stack with a **Rust backend (axum)** + **TypeScript/React SPA (shadcn/ui)**,
-incrementally, without breaking the running product. UI quality bar: **ElevenLabs-grade** — neutral near-black
+incrementally, without breaking the running product. UI quality bar: **ElevenLabs-grade** — light-first
 surfaces, high-contrast type, generous spacing, thin borders, rounded cards, one restrained accent (TinyHelm
 purple/orange), subtle motion.
 
@@ -20,39 +20,39 @@ page has a shadcn replacement, stop linking to the Blade one. Blade is deleted o
 - Motion: 150–250ms ease-out on hover/enter; no gratuitous animation.
 - Charts: evilcharts/Recharts, gradient fills, minimal gridlines.
 
-## TODO (ordered)
+## Port plan (step by step)
 
-### Phase 0 — foundation  (done / in progress)
-- [x] Rust axum gateway serving SPA + proxying `/api`.
-- [x] Vite + React + TS + Tailwind v4 + shadcn Button + chart scaffold.
-- [ ] ElevenLabs-grade design tokens + app shell (sidebar + topbar).
-- [ ] Typed API client (`src/lib/api.ts`) using a Sanctum token.
-- [ ] Auth: login page → Sanctum token, stored + attached to API calls.
+Scale at the start of the port: 349 API routes (434 route+method pairs, see [API-LEDGER.md](API-LEDGER.md)),
+84 jobs, 110 actions, 291 Livewire components. Responses stay Laravel-compatible (same paths, fields, status
+codes) so existing API clients, the CLI and MCP keep working.
 
-### Phase 1 — read-only pages (SPA on top of existing API)
-- [ ] Dashboard (servers/resources/deployments counts + metrics).
-- [ ] Servers list + server detail (status, resources).
-- [ ] Projects → environments → resources browser.
-- [ ] Application/Database/Service detail (read: config, env, logs, deployments).
-- [ ] Deploy canvas parity (later).
+Each step: port, run `scripts/parity/compare.py` until every role matches, push to `main`.
 
-### Phase 2 — actions (port write endpoints to Rust gateway)
-- [ ] Deploy / start / stop / restart (wire to existing `/api/v1` first, then port the endpoint to Rust).
-- [ ] Env var CRUD, domains, scheduled tasks, backups.
-- [ ] Real-time status via WebSocket (replace Livewire/Reverb consumption with a Rust WS or proxy Reverb).
+1. [x] **Foundations.** `rust-backend/src/api/` split by domain; `native_guard` replicates the API middleware
+   (Sanctum token lookup, `api.token.team`, API enabled, abilities with root bypass, `read:sensitive`,
+   throttle, audit events). Requests it cannot replicate yet (members with access grants, scoped tokens,
+   IP allow-lists) are forwarded to Laravel. Parity fixtures (`scripts/parity/fixtures.php`) and harness.
+2. [ ] **Full parity for the 33 native routes** (payload shapes, sensitive masking, audit events on writes).
+3. [ ] **DB-only controllers**: tags/projects/environments (rest), team, notifications, security keys,
+   cloud tokens, S3 storages, cloud-init scripts, integration tokens, destinations, audit events, resources,
+   deployments list, scheduled tasks (CRUD), shared env (project/environment/server).
+4. [ ] **SSH module** (key handling, mux, non-root `parseCommandsByLineForSudo` rewrite) and the actions
+   on it: start/stop/restart, logs, server validate, proxy, docker cleanup, registries.
+5. [ ] **Status jobs and scheduler** (ServerCheck, container status, backups, scheduled tasks, cleanup);
+   Postgres-backed queue replaces Horizon.
+6. [ ] **Deploy engine**: all build packs, compose parser (oracle: `tests/Fixtures/parser/expected/`),
+   proxy labels, previews, rollback.
+7. [ ] **Git webhooks and provider APIs** (GitHub/GitLab/Gitea/Bitbucket, Hetzner/DigitalOcean/Vultr/Hostinger, DNS).
+8. [ ] **Access grants** (`AccessResolver`) so members and scoped tokens stop delegating to Laravel.
+9. [ ] **Web auth**: login, sessions, 2FA, OAuth, password reset, invitations, API token management.
+10. [ ] **Realtime** (Pusher protocol server replacing Reverb), terminal WebSocket, MCP server.
+11. [ ] **Schema ownership** (sqlx migrations from the current schema), then remove Laravel.
 
-### Phase 3 — port backend to Rust, retire Laravel
-- [ ] Port read endpoints into axum (sqlx against the same Postgres) behind the gateway, one resource at a time.
-- [ ] Port the deploy/SSH worker to Rust (russh + bollard) — highest-value, most Rust-fit.
-- [ ] Port auth (Sanctum-compatible tokens), policies/access grants, queues.
-- [ ] Port webhooks (git + stripe), MCP.
-- [ ] Delete Livewire/Blade once no route serves them; drop PHP.
-
-### Phase 4 — polish
-- [ ] Accessibility, responsive, dark/light, loading/empty/error states.
-- [ ] E2E (Playwright), visual regression.
+### Livewire-only features (no REST route; must be ported as new API + SPA)
+- API token create/revoke/pause, team rename, invitations and member roles, integration setup flows
+  (GitHub App, GitLab, S3, cloud providers), instance settings, onboarding, subscription/billing.
 
 ## Rules
 - Never remove a Blade page until its SPA replacement is live and linked.
-- Every ported endpoint: diff behavior against the Laravel one (rust-anything `record`/`diff` where it fits).
+- Every ported endpoint: `python3 -I scripts/parity/compare.py` must show every role matching.
 - Keep the app shippable at every step.
