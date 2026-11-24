@@ -19,4 +19,10 @@ sqlx = { version = "0.8.3", features = ["runtime-tokio", "tls-rustls", "postgres
 sha2 = "0.10.8"
 hex = "0.4.3"
 cuid2 = "0.1.4"
+# Laravel-compatible encryption (AES-256-CBC + HMAC-SHA256) for environment variable values.
+aes = "0.8.4"
+cbc = { version = "0.1.2", features = ["alloc"] }
+hmac = "0.12.1"
+base64 = "0.22.1"
+rand = "0.8.5"
 chrono = { version = "0.4.39", features = ["serde"] }

@@ -21,6 +21,7 @@ use axum::{
 };
 use tower_http::{services::ServeDir, trace::TraceLayer};
 
+mod crypto;
 mod native;
 
 #[derive(Clone)]
@@ -28,6 +29,7 @@ pub struct AppState {
     pub api_origin: String,
     pub http: reqwest::Client,
     pub pool: Option<sqlx::PgPool>,
+    pub app_key: Option<[u8; 32]>,
 }
 
 #[tokio::main]
@@ -60,10 +62,14 @@ async fn main() {
     let native_databases = want("databases") && pool.is_some();
     let native_tags = want("tags") && pool.is_some();
 
+    // APP_KEY (Laravel) lets native endpoints decrypt/encrypt env-var values compatibly.
+    let app_key = std::env::var("APP_KEY").ok().and_then(|k| crypto::parse_key(&k));
+
     let state = AppState {
         api_origin: api_origin.trim_end_matches('/').to_string(),
         http: reqwest::Client::new(),
         pool,
+        app_key,
     };
 
     // SPA static files with index.html fallback for client-side routing.
@@ -106,7 +112,12 @@ async fn main() {
         tracing::info!("native routes enabled: GET /api/v1/applications[/:uuid]");
         app = app
             .route("/api/v1/applications", get(native::list_applications))
-            .route("/api/v1/applications/:uuid", get(native::get_application));
+            .route("/api/v1/applications/:uuid", get(native::get_application))
+            .route(
+                "/api/v1/applications/:uuid/envs",
+                get(native::list_app_envs).post(native::create_app_env).patch(native::update_app_env),
+            )
+            .route("/api/v1/applications/:uuid/envs/:env_uuid", delete(native::delete_app_env));
     }
     let app = app
         // Everything else under /api and /webhooks still goes to Laravel until ported.
