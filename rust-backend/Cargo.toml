@@ -29,3 +29,4 @@ hmac = "0.12.1"
 base64 = "0.22.1"
 rand = "0.8.5"
 chrono = { version = "0.4.39", features = ["serde"] }
+yaml-rust2 = "=0.9.0"
