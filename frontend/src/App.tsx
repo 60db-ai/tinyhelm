@@ -3,9 +3,15 @@ import {
   LayoutDashboard,
   Server as ServerIcon,
   Boxes,
-  Rocket,
   Settings,
   Activity,
+  SquareTerminal,
+  Plug,
+  Variable,
+  Users,
+  Bell,
+  KeyRound,
+  Tag,
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,14 +22,36 @@ import { connectRealtime } from "@/lib/realtime";
 import { ServersPage } from "@/pages/servers";
 import { ProjectsPage } from "@/pages/projects";
 
-const NAV = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "servers", label: "Servers", icon: ServerIcon },
-  { id: "projects", label: "Projects", icon: Boxes },
-  { id: "deployments", label: "Deployments", icon: Rocket },
-  { id: "settings", label: "Settings", icon: Settings },
+const NAV_GROUPS = [
+  {
+    label: null,
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { id: "projects", label: "Projects", icon: Boxes },
+      { id: "monitoring", label: "Monitoring", icon: Activity },
+      { id: "terminal", label: "Terminal", icon: SquareTerminal },
+    ],
+  },
+  {
+    label: "Infrastructure",
+    items: [
+      { id: "servers", label: "Servers", icon: ServerIcon },
+      { id: "integrations", label: "Integrations", icon: Plug },
+      { id: "shared-variables", label: "Shared Variables", icon: Variable },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [
+      { id: "team", label: "Team", icon: Users },
+      { id: "notifications", label: "Notifications", icon: Bell },
+      { id: "keys", label: "Keys & Tokens", icon: KeyRound },
+      { id: "tags", label: "Tags", icon: Tag },
+      { id: "settings", label: "Settings", icon: Settings },
+    ],
+  },
 ] as const;
-type NavId = (typeof NAV)[number]["id"];
+type NavId = (typeof NAV_GROUPS)[number]["items"][number]["id"];
 
 export default function App() {
   const [token, setTok] = useState<string | null>(getToken());
@@ -52,21 +80,30 @@ function Shell({ onDisconnect }: { onDisconnect: () => void }) {
         <div className="flex h-16 items-center px-5">
           <img src="/tinyhelm-logo.png" alt="TinyHelm" className="h-7 w-auto" />
         </div>
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          {NAV.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActive(id)}
-              className={
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors " +
-                (active === id
-                  ? "bg-[var(--color-elevated)] text-[var(--color-foreground)]"
-                  : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]")
-              }
-            >
-              <Icon size={17} />
-              {label}
-            </button>
+        <nav className="flex-1 space-y-3 overflow-y-auto px-3 py-2">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi} className="space-y-1">
+              {group.label && (
+                <div className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
+                  {group.label}
+                </div>
+              )}
+              {group.items.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActive(id)}
+                  className={
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors " +
+                    (active === id
+                      ? "bg-[var(--color-elevated)] text-[var(--color-foreground)]"
+                      : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-muted)] hover:text-[var(--color-foreground)]")
+                  }
+                >
+                  <Icon size={17} />
+                  {label}
+                </button>
+              ))}
+            </div>
           ))}
         </nav>
         <button
