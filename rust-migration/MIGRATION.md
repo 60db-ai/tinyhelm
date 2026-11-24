@@ -26,7 +26,8 @@ Scale at the start of the port: 349 API routes (434 route+method pairs, see [API
 84 jobs, 110 actions, 291 Livewire components. Responses stay Laravel-compatible (same paths, fields, status
 codes) so existing API clients, the CLI and MCP keep working.
 
-Each step: port, run `scripts/parity/compare.py` until every role matches, push to `main`.
+Each step: port, run `scripts/parity/compare.py` until every role matches, regenerate the ledger with
+`scripts/parity/ledger.py`, push to `main`.
 
 1. [x] **Foundations.** `rust-backend/src/api/` split by domain; `native_guard` replicates the API middleware
    (Sanctum token lookup, `api.token.team`, API enabled, abilities with root bypass, `read:sensitive`,
@@ -34,9 +35,12 @@ Each step: port, run `scripts/parity/compare.py` until every role matches, push 
    IP allow-lists) are forwarded to Laravel. Parity fixtures (`scripts/parity/fixtures.php`) and harness.
 2. [x] **Full parity for the 33 native routes** (payload shapes, sensitive masking, validation, audit events on
    writes): `compare.py` 119/119 across 8 roles. Rare cases are delegated to Laravel and marked `ponytail:`.
-3. [ ] **DB-only controllers**: tags/projects/environments (rest), team, notifications, security keys,
-   cloud tokens, S3 storages, cloud-init scripts, integration tokens, destinations, audit events, resources,
-   deployments list, scheduled tasks (CRUD), shared env (project/environment/server).
+3. [x] **DB-only controllers**: notifications, team, instance (version/health/realtime/disable/MCP),
+   security keys, cloud-init scripts, cloud tokens, integration tokens, S3 storages, git apps, project
+   environments, project/environment/server shared variables, tag update and resource tags, resources,
+   scheduled tasks (application), audit events, deployments, destinations, storages, resource name/description
+   updates, service parts reads. Requests needing external calls, SSH, or unported serializers are forwarded
+   to Laravel (marked `ponytail:`). Parity 633/633 across all case files; failed-request limiter ported.
 4. [ ] **SSH module** (key handling, mux, non-root `parseCommandsByLineForSudo` rewrite) and the actions
    on it: start/stop/restart, logs, server validate, proxy, docker cleanup, registries.
 5. [ ] **Status jobs and scheduler** (ServerCheck, container status, backups, scheduled tasks, cleanup);
