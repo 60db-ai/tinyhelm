@@ -38,8 +38,12 @@ pub fn to_laravel(row: Value, spec: &ModelSpec) -> Value {
                     Value::String(carbon(&format!("{}T00:00:00", &s[..s.len().min(10)])))
                 }
                 // Uncast timestamp columns come back from PDO as "Y-m-d H:i:s".
-                Value::String(s) if looks_like_pg_timestamp(&s) => Value::String(s.replacen('T', " ", 1)),
-                v @ (Value::Object(_) | Value::Array(_)) if spec.json_strings.contains(&k.as_str()) => {
+                Value::String(s) if looks_like_pg_timestamp(&s) => {
+                    Value::String(s.replacen('T', " ", 1))
+                }
+                v @ (Value::Object(_) | Value::Array(_))
+                    if spec.json_strings.contains(&k.as_str()) =>
+                {
                     Value::String(v.to_string())
                 }
                 v => v,
@@ -89,7 +93,10 @@ mod tests {
     #[test]
     fn carbon_format_matches_laravel() {
         assert_eq!(carbon("2026-11-24T11:23:20"), "2026-11-24T11:23:20.000000Z");
-        assert_eq!(carbon("2026-11-24T11:23:20.12"), "2026-11-24T11:23:20.120000Z");
+        assert_eq!(
+            carbon("2026-11-24T11:23:20.12"),
+            "2026-11-24T11:23:20.120000Z"
+        );
         assert_eq!(carbon("2026-11-24 11:23:20"), "2026-11-24T11:23:20.000000Z");
     }
 

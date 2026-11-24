@@ -23,6 +23,7 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 
 mod api;
 mod crypto;
+mod ssh;
 
 #[derive(Clone)]
 pub struct AppState {
