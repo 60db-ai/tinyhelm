@@ -18,7 +18,7 @@ interface EnvVar {
   uuid: string;
   key: string;
   value?: string | null;
-  is_build_time?: boolean;
+  is_buildtime?: boolean;
 }
 
 const MASK = "••••••••••••";
@@ -110,7 +110,7 @@ function EnvRow({ kind, resourceUuid, env, reveal, onChanged }: EnvRowProps) {
       <TableCell className="pl-5 align-middle">
         <div className="flex items-center gap-2">
           <span className="font-mono text-[13px] font-medium">{env.key}</span>
-          {env.is_build_time && (
+          {env.is_buildtime && (
             <ToneBadge tone="info" dot={false}>
               build
             </ToneBadge>

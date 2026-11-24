@@ -38,7 +38,7 @@ pub fn to_laravel(row: Value, spec: &ModelSpec) -> Value {
                     Value::String(carbon(&format!("{}T00:00:00", &s[..s.len().min(10)])))
                 }
                 // Uncast timestamp columns come back from PDO as "Y-m-d H:i:s".
-                Value::String(s) if looks_like_pg_timestamp(&s) => {
+                Value::String(s) if k.ends_with("_at") && looks_like_pg_timestamp(&s) => {
                     Value::String(s.replacen('T', " ", 1))
                 }
                 v @ (Value::Object(_) | Value::Array(_))

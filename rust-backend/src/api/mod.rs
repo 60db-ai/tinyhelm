@@ -35,8 +35,8 @@ pub(crate) mod prelude {
     pub(crate) use sqlx::{PgPool, Row};
 
     pub(crate) use super::audit;
-    pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::auth::Ctx;
+    pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::{
         applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
         services::*, tags::*, team::*,
@@ -159,5 +159,8 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
             .route("/api/v1/tags", get(list_tags).post(create_tag))
             .route("/api/v1/tags/:uuid", delete(delete_tag));
     }
+    // A path served natively for some methods must still reach Laravel for the others
+    // (e.g. PATCH /applications/{uuid}/envs/bulk matches the DELETE-only {env_uuid} route).
     r.route_layer(middleware::from_fn_with_state(state, auth::native_guard))
+        .method_not_allowed_fallback(crate::proxy)
 }
