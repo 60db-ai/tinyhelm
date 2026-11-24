@@ -254,3 +254,146 @@ pub async fn get_application(State(state): State<crate::AppState>, headers: Head
         }
     }
 }
+
+// ---- shared response helpers ----
+fn ok_json<T: Serialize>(rows: T) -> Response {
+    (StatusCode::OK, Json(serde_json::to_value(rows).unwrap_or(json!([])))).into_response()
+}
+fn not_found(msg: &str) -> Response {
+    (StatusCode::NOT_FOUND, Json(json!({ "message": msg }))).into_response()
+}
+fn query_err(what: &str, e: sqlx::Error) -> Response {
+    tracing::error!("{what} query failed: {e}");
+    (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+}
+
+// ---- services ----
+#[derive(Serialize, sqlx::FromRow)]
+struct ServiceRow {
+    uuid: String,
+    name: String,
+    description: Option<String>,
+}
+
+const SERVICE_SELECT: &str = r#"SELECT s.uuid, s.name, s.description
+    FROM services s
+    JOIN environments e ON e.id = s.environment_id
+    JOIN projects p ON p.id = e.project_id"#;
+
+/// GET /api/v1/services
+pub async fn list_services(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let sql = format!("{SERVICE_SELECT} WHERE p.team_id = $1 ORDER BY s.id");
+    match sqlx::query_as::<_, ServiceRow>(&sql).bind(team_id).fetch_all(pool).await {
+        Ok(r) => ok_json(r),
+        Err(e) => query_err("list_services", e),
+    }
+}
+
+/// GET /api/v1/services/:uuid
+pub async fn get_service(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let sql = format!("{SERVICE_SELECT} WHERE p.team_id = $1 AND s.uuid = $2 LIMIT 1");
+    match sqlx::query_as::<_, ServiceRow>(&sql).bind(team_id).bind(&uuid).fetch_optional(pool).await {
+        Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
+        Ok(None) => not_found("Service not found."),
+        Err(e) => query_err("get_service", e),
+    }
+}
+
+// ---- databases (union across the 9 standalone engines) ----
+#[derive(Serialize, sqlx::FromRow)]
+struct DatabaseRow {
+    uuid: String,
+    name: String,
+    description: Option<String>,
+    status: String,
+    #[sqlx(rename = "type")]
+    #[serde(rename = "type")]
+    db_type: String,
+}
+
+const DATABASE_UNION: &str = r#"
+    SELECT uuid,name,description,status,environment_id,'postgresql' AS type FROM standalone_postgresqls
+    UNION ALL SELECT uuid,name,description,status,environment_id,'mysql' FROM standalone_mysqls
+    UNION ALL SELECT uuid,name,description,status,environment_id,'mariadb' FROM standalone_mariadbs
+    UNION ALL SELECT uuid,name,description,status,environment_id,'mongodb' FROM standalone_mongodbs
+    UNION ALL SELECT uuid,name,description,status,environment_id,'redis' FROM standalone_redis
+    UNION ALL SELECT uuid,name,description,status,environment_id,'keydb' FROM standalone_keydbs
+    UNION ALL SELECT uuid,name,description,status,environment_id,'dragonfly' FROM standalone_dragonflies
+    UNION ALL SELECT uuid,name,description,status,environment_id,'clickhouse' FROM standalone_clickhouses
+    UNION ALL SELECT uuid,name,description,status,environment_id,'sqlite' FROM standalone_sqlites"#;
+
+/// GET /api/v1/databases
+pub async fn list_databases(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let sql = format!(
+        "SELECT d.uuid, d.name, d.description, d.status, d.type FROM ({DATABASE_UNION}) d \
+         JOIN environments e ON e.id = d.environment_id JOIN projects p ON p.id = e.project_id \
+         WHERE p.team_id = $1 ORDER BY d.name"
+    );
+    match sqlx::query_as::<_, DatabaseRow>(&sql).bind(team_id).fetch_all(pool).await {
+        Ok(r) => ok_json(r),
+        Err(e) => query_err("list_databases", e),
+    }
+}
+
+/// GET /api/v1/databases/:uuid
+pub async fn get_database(State(state): State<crate::AppState>, headers: HeaderMap, Path(uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    let sql = format!(
+        "SELECT d.uuid, d.name, d.description, d.status, d.type FROM ({DATABASE_UNION}) d \
+         JOIN environments e ON e.id = d.environment_id JOIN projects p ON p.id = e.project_id \
+         WHERE p.team_id = $1 AND d.uuid = $2 LIMIT 1"
+    );
+    match sqlx::query_as::<_, DatabaseRow>(&sql).bind(team_id).bind(&uuid).fetch_optional(pool).await {
+        Ok(Some(r)) => (StatusCode::OK, Json(r)).into_response(),
+        Ok(None) => not_found("Database not found."),
+        Err(e) => query_err("get_database", e),
+    }
+}
+
+// ---- environments (by project) ----
+#[derive(Serialize, sqlx::FromRow)]
+struct EnvironmentRow {
+    uuid: String,
+    name: String,
+}
+
+/// GET /api/v1/projects/:uuid/environments
+pub async fn list_environments(State(state): State<crate::AppState>, headers: HeaderMap, Path(project_uuid): Path<String>) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    match sqlx::query_as::<_, EnvironmentRow>(
+        r#"SELECT e.uuid, e.name FROM environments e JOIN projects p ON p.id = e.project_id
+           WHERE p.uuid = $1 AND p.team_id = $2 ORDER BY e.id"#,
+    )
+    .bind(&project_uuid)
+    .bind(team_id)
+    .fetch_all(pool)
+    .await
+    {
+        Ok(r) => ok_json(r),
+        Err(e) => query_err("list_environments", e),
+    }
+}
+
+// ---- current team ----
+#[derive(Serialize, sqlx::FromRow)]
+struct TeamRow {
+    id: i64,
+    name: Option<String>,
+}
+
+/// GET /api/v1/team — the token's team.
+pub async fn get_current_team(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await { Ok(v) => v, Err(r) => return r };
+    match sqlx::query_as::<_, TeamRow>("SELECT id, name FROM teams WHERE id = $1 LIMIT 1")
+        .bind(team_id)
+        .fetch_optional(pool)
+        .await
+    {
+        Ok(Some(t)) => (StatusCode::OK, Json(t)).into_response(),
+        Ok(None) => not_found("Team not found."),
+        Err(e) => query_err("get_current_team", e),
+    }
+}
