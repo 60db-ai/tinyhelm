@@ -60,11 +60,15 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
   const [err, setErr] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
 
-  useEffect(() => {
+  const load = () =>
     api
       .get<Application>(`/applications/${uuid}`)
       .then(setApp)
       .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load application"));
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uuid]);
 
   return (
@@ -81,10 +85,13 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
 
       {app && (
         <>
-          <div className="flex items-center gap-3">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: statusColor(app.status) }} />
-            <h1 className="text-2xl font-semibold tracking-tight">{app.name}</h1>
-            <span className="text-sm text-[var(--color-muted-foreground)]">{app.status ?? "unknown"}</span>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: statusColor(app.status) }} />
+              <h1 className="text-2xl font-semibold tracking-tight">{app.name}</h1>
+              <span className="text-sm text-[var(--color-muted-foreground)]">{app.status ?? "unknown"}</span>
+            </div>
+            <Actions uuid={uuid} onDone={load} />
           </div>
 
           <div className="flex gap-1 border-b">
@@ -110,6 +117,46 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
           {tab === "logs" && <LogsTab uuid={uuid} />}
         </>
       )}
+    </div>
+  );
+}
+
+function Actions({ uuid, onDone }: { uuid: string; onDone: () => void | Promise<void> }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const run = async (label: string, path: string, confirmMsg?: string) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setBusy(label);
+    setMsg(null);
+    try {
+      await api.post(path);
+      setMsg(`${label} triggered`);
+      await onDone();
+    } catch (e: unknown) {
+      setMsg(e instanceof ApiError ? e.message : `${label} failed`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {msg && <span className="text-xs text-[var(--color-muted-foreground)]">{msg}</span>}
+      <Button variant="accent" size="sm" disabled={!!busy} onClick={() => run("Deploy", `/applications/${uuid}/start`)}>
+        {busy === "Deploy" ? "Deploying…" : "Deploy"}
+      </Button>
+      <Button variant="outline" size="sm" disabled={!!busy} onClick={() => run("Restart", `/applications/${uuid}/restart`)}>
+        {busy === "Restart" ? "Restarting…" : "Restart"}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled={!!busy}
+        onClick={() => run("Stop", `/applications/${uuid}/stop`, "Stop this application?")}
+      >
+        {busy === "Stop" ? "Stopping…" : "Stop"}
+      </Button>
     </div>
   );
 }
