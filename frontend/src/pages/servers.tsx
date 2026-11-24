@@ -28,8 +28,8 @@ function reachable(s: ServerRow): boolean | undefined {
 }
 
 function statusColor(ok: boolean | undefined): string {
-  if (ok === undefined) return "var(--color-muted-foreground)";
-  return ok ? "var(--color-success)" : "var(--color-destructive)";
+  if (ok === undefined) return "var(--muted-foreground)";
+  return ok ? "var(--success)" : "var(--destructive)";
 }
 
 function Dot({ ok }: { ok: boolean | undefined }) {
@@ -53,7 +53,7 @@ function ServerList({ onOpen }: { onOpen: (uuid: string) => void }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Servers</h1>
-          <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">Hosts TinyHelm manages over SSH.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Hosts TinyHelm manages over SSH.</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void refresh()}>
           <RefreshCw size={15} /> Refresh
@@ -65,23 +65,23 @@ function ServerList({ onOpen }: { onOpen: (uuid: string) => void }) {
       {!err && rows?.length === 0 && <EmptyBox message="No servers yet." />}
 
       {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+        <div className="divide-y overflow-hidden rounded-xl border bg-card">
           {rows.map((s) => (
             <button
               key={s.uuid}
               onClick={() => onOpen(s.uuid)}
-              className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--color-elevated)]"
+              className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-elevated"
             >
               <Dot ok={reachable(s)} />
-              <ServerIcon size={18} className="shrink-0 text-[var(--color-muted-foreground)]" />
+              <ServerIcon size={18} className="shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{s.name}</div>
                 {s.description && (
-                  <div className="truncate text-sm text-[var(--color-muted-foreground)]">{s.description}</div>
+                  <div className="truncate text-sm text-muted-foreground">{s.description}</div>
                 )}
               </div>
               {s.ip && (
-                <div className="hidden items-center gap-1.5 text-sm text-[var(--color-muted-foreground)] sm:flex">
+                <div className="hidden items-center gap-1.5 text-sm text-muted-foreground sm:flex">
                   <Globe size={14} /> <span className="tabular-nums">{s.ip}</span>
                 </div>
               )}
@@ -108,7 +108,7 @@ function ServerDetailView({ uuid, onBack }: { uuid: string; onBack: () => void }
     <div className="mx-auto max-w-5xl space-y-6">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
+        className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={16} /> Servers
       </button>
@@ -131,17 +131,17 @@ function ServerDetailView({ uuid, onBack }: { uuid: string; onBack: () => void }
           </section>
 
           <section className="space-y-2">
-            <h2 className="text-sm font-medium text-[var(--color-muted-foreground)]">Resources</h2>
+            <h2 className="text-sm font-medium text-muted-foreground">Resources</h2>
             {server.resources?.length ? (
-              <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+              <div className="divide-y overflow-hidden rounded-xl border bg-card">
                 {server.resources.map((r) => (
                   <div key={r.uuid} className="flex items-center gap-4 px-5 py-3">
                     <Dot ok={r.status ? r.status.startsWith("running") : undefined} />
                     <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
-                    <span className="rounded-md bg-[var(--color-muted)] px-2 py-0.5 text-xs text-[var(--color-muted-foreground)]">
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {r.type}
                     </span>
-                    <span className="hidden text-sm text-[var(--color-muted-foreground)] sm:block">
+                    <span className="hidden text-sm text-muted-foreground sm:block">
                       {r.status ?? "unknown"}
                     </span>
                   </div>
@@ -163,8 +163,8 @@ function fmtBool(v: boolean | undefined): string {
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[var(--radius)] border bg-[var(--color-card)] p-4">
-      <div className="text-xs text-[var(--color-muted-foreground)]">{label}</div>
+    <div className="rounded-xl border bg-card p-4">
+      <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 truncate font-medium tabular-nums">{value}</div>
     </div>
   );
@@ -172,7 +172,7 @@ function Meta({ label, value }: { label: string; value: string }) {
 
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-4 py-3 text-sm">
+    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
       {message}
     </div>
   );
@@ -180,7 +180,7 @@ function ErrorBox({ message }: { message: string }) {
 
 function EmptyBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-dashed py-16 text-center text-sm text-[var(--color-muted-foreground)]">
+    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
       {message}
     </div>
   );
@@ -190,7 +190,7 @@ function SkeletonRows() {
   return (
     <div className="space-y-2">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="h-16 animate-pulse rounded-[var(--radius)] border bg-[var(--color-card)]" />
+        <div key={i} className="h-16 animate-pulse rounded-xl border bg-card" />
       ))}
     </div>
   );

@@ -9,14 +9,14 @@ type Sel = { kind: "application" | "databases" | "services"; uuid: string };
 // Small state helpers (kept local; promote to a shared module when a 3rd page needs them).
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-4 py-3 text-sm">
+    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
       {message}
     </div>
   );
 }
 function EmptyBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-dashed py-16 text-center text-sm text-[var(--color-muted-foreground)]">
+    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
       {message}
     </div>
   );
@@ -25,7 +25,7 @@ function Skeleton() {
   return (
     <div className="space-y-2">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="h-16 animate-pulse rounded-[var(--radius)] border bg-[var(--color-card)]" />
+        <div key={i} className="h-16 animate-pulse rounded-xl border bg-card" />
       ))}
     </div>
   );
@@ -33,12 +33,12 @@ function Skeleton() {
 function Dot({ status }: { status?: string | null }) {
   const color =
     status == null
-      ? "var(--color-muted-foreground)"
+      ? "var(--muted-foreground)"
       : status.startsWith("running")
-        ? "var(--color-success)"
+        ? "var(--success)"
         : status.startsWith("exited") || status.includes("unhealthy")
-          ? "var(--color-destructive)"
-          : "var(--color-muted-foreground)";
+          ? "var(--destructive)"
+          : "var(--muted-foreground)";
   return <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />;
 }
 
@@ -116,13 +116,13 @@ function ProjectList({ onOpen }: { onOpen: (p: Project) => void }) {
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-        <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">Group environments and resources.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Group environments and resources.</p>
       </div>
       {err && <ErrorBox message={err} />}
       {!err && rows === null && <Skeleton />}
       {!err && rows?.length === 0 && <EmptyBox message="No projects yet." />}
       {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+        <div className="divide-y overflow-hidden rounded-xl border bg-card">
           {rows.map((p) => (
             <Row key={p.uuid} icon={<Boxes size={18} />} title={p.name} subtitle={p.description} onClick={() => onOpen(p)} />
           ))}
@@ -159,7 +159,7 @@ function EnvironmentList({
       {!err && rows === null && <Skeleton />}
       {!err && rows?.length === 0 && <EmptyBox message="No environments." />}
       {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+        <div className="divide-y overflow-hidden rounded-xl border bg-card">
           {rows.map((e) => (
             <Row key={e.uuid} icon={<Layers size={18} />} title={e.name} onClick={() => onOpen(e)} />
           ))}
@@ -196,7 +196,7 @@ function EnvironmentDetail({
     <div className="mx-auto max-w-5xl space-y-6">
       <Back onClick={onBack} label={project.name} />
       <h1 className="text-2xl font-semibold tracking-tight">
-        {project.name} <span className="text-[var(--color-muted-foreground)]">/ {env.name}</span>
+        {project.name} <span className="text-muted-foreground">/ {env.name}</span>
       </h1>
       {err && <ErrorBox message={err} />}
       {!err && data === null && <Skeleton />}
@@ -224,24 +224,24 @@ function Group({
 }) {
   return (
     <section className="space-y-2">
-      <h2 className="flex items-center gap-2 text-sm font-medium text-[var(--color-muted-foreground)]">
+      <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         {icon} {title} <span className="tabular-nums">({items.length})</span>
       </h2>
       {items.length ? (
-        <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+        <div className="divide-y overflow-hidden rounded-xl border bg-card">
           {items.map((r) => {
             const inner = (
               <>
                 <Dot status={r.status} />
                 <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
-                <span className="hidden text-sm text-[var(--color-muted-foreground)] sm:block">{r.status ?? "—"}</span>
+                <span className="hidden text-sm text-muted-foreground sm:block">{r.status ?? "—"}</span>
               </>
             );
             return onOpen ? (
               <button
                 key={r.uuid}
                 onClick={() => onOpen(r.uuid)}
-                className="flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-[var(--color-elevated)]"
+                className="flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-elevated"
               >
                 {inner}
               </button>
@@ -273,12 +273,12 @@ function Row({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--color-elevated)]"
+      className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-elevated"
     >
-      <span className="shrink-0 text-[var(--color-muted-foreground)]">{icon}</span>
+      <span className="shrink-0 text-muted-foreground">{icon}</span>
       <div className="min-w-0 flex-1">
         <div className="truncate font-medium">{title}</div>
-        {subtitle && <div className="truncate text-sm text-[var(--color-muted-foreground)]">{subtitle}</div>}
+        {subtitle && <div className="truncate text-sm text-muted-foreground">{subtitle}</div>}
       </div>
     </button>
   );
@@ -288,7 +288,7 @@ function Back({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
+      className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
     >
       <ArrowLeft size={16} /> {label}
     </button>

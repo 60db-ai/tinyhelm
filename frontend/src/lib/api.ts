@@ -51,6 +51,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
+    // Stale or invalid token: drop it so the app returns to the sign-in screen.
+    if (res.status === 401 && token) {
+      clearToken();
+      window.dispatchEvent(new Event("tinyhelm:unauthenticated"));
+    }
     let message = res.statusText;
     try {
       const body = (await res.json()) as { message?: string };

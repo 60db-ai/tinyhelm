@@ -14,7 +14,7 @@ interface EnvVar {
 }
 
 const input =
-  "w-full rounded-md border bg-[var(--color-background)] px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[var(--color-ring)]";
+  "w-full rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring";
 
 export function EnvEditor({ kind, uuid }: { kind: EnvKind; uuid: string }) {
   const [rows, setRows] = useState<EnvVar[] | null>(null);
@@ -37,17 +37,17 @@ export function EnvEditor({ kind, uuid }: { kind: EnvKind; uuid: string }) {
   return (
     <div className="space-y-3">
       {err && (
-        <div className="rounded-[var(--radius)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-4 py-3 text-sm">
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
           {err}
         </div>
       )}
       {rows === null && !err && (
-        <div className="h-32 animate-pulse rounded-[var(--radius)] border bg-[var(--color-card)]" />
+        <div className="h-32 animate-pulse rounded-xl border bg-card" />
       )}
       {rows && (
-        <div className="overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+        <div className="overflow-hidden rounded-xl border bg-card">
           {rows.length === 0 && (
-            <div className="px-4 py-6 text-center text-sm text-[var(--color-muted-foreground)]">
+            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
               No environment variables yet.
             </div>
           )}
@@ -106,7 +106,7 @@ function EnvRow({
 
   return (
     <div className="flex items-center gap-2 border-b px-3 py-2 font-mono text-sm last:border-b-0">
-      <span className="w-48 shrink-0 truncate font-medium text-[var(--color-accent)]" title={env.key}>
+      <span className="w-48 shrink-0 truncate font-medium text-accent" title={env.key}>
         {env.key}
       </span>
       <input className={input} value={value} onChange={(ev) => setValue(ev.target.value)} disabled={busy} />
@@ -153,7 +153,7 @@ function AddRow({
   };
 
   return (
-    <div className="flex items-center gap-2 bg-[var(--color-elevated)] px-3 py-2 font-mono text-sm">
+    <div className="flex items-center gap-2 bg-elevated px-3 py-2 font-mono text-sm">
       <input
         className={input + " w-48 shrink-0"}
         placeholder="NEW_KEY"
@@ -169,7 +169,7 @@ function AddRow({
         onKeyDown={(e) => e.key === "Enter" && void add()}
         disabled={busy}
       />
-      <Button size="sm" variant="accent" disabled={busy || !key.trim()} onClick={add}>
+      <Button size="sm" variant="default" disabled={busy || !key.trim()} onClick={add}>
         <Plus size={15} /> Add
       </Button>
     </div>

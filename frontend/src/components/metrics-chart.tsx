@@ -25,8 +25,8 @@ interface MetricsChartProps {
 
 export function MetricsChart({ title, data, unit = "" }: MetricsChartProps) {
   return (
-    <div className="rounded-[var(--radius)] border bg-[var(--color-card)] p-4">
-      <h3 className="mb-3 text-sm font-medium text-[var(--color-muted-foreground)]">
+    <div className="rounded-xl border bg-card p-4">
+      <h3 className="mb-3 text-sm font-medium text-muted-foreground">
         {title}
       </h3>
       <div className="h-56 w-full">
@@ -34,25 +34,25 @@ export function MetricsChart({ title, data, unit = "" }: MetricsChartProps) {
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
             <defs>
               <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.6} />
-                <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.6} />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
-            <XAxis dataKey="t" tickLine={false} axisLine={false} fontSize={11} stroke="var(--color-muted-foreground)" />
-            <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="var(--color-muted-foreground)" unit={unit} />
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+            <XAxis dataKey="t" tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" />
+            <YAxis tickLine={false} axisLine={false} fontSize={11} stroke="var(--muted-foreground)" unit={unit} />
             <Tooltip
               contentStyle={{
-                background: "var(--color-card)",
-                border: "1px solid var(--color-border)",
+                background: "var(--card)",
+                border: "1px solid var(--border)",
                 borderRadius: 8,
-                color: "var(--color-foreground)",
+                color: "var(--foreground)",
               }}
             />
             <Area
               type="monotone"
               dataKey="value"
-              stroke="var(--color-accent)"
+              stroke="var(--accent)"
               strokeWidth={2}
               fill="url(#fillValue)"
             />

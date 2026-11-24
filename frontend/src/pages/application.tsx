@@ -8,26 +8,26 @@ import { EnvEditor } from "@/components/env-editor";
 // Local state helpers (same small set used by the other ported pages).
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-4 py-3 text-sm">
+    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
       {message}
     </div>
   );
 }
 function EmptyBox({ message }: { message: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-dashed py-16 text-center text-sm text-[var(--color-muted-foreground)]">
+    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
       {message}
     </div>
   );
 }
 function Skeleton() {
-  return <div className="h-40 animate-pulse rounded-[var(--radius)] border bg-[var(--color-card)]" />;
+  return <div className="h-40 animate-pulse rounded-xl border bg-card" />;
 }
 function statusColor(status?: string | null): string {
-  if (!status) return "var(--color-muted-foreground)";
-  if (status.startsWith("running")) return "var(--color-success)";
-  if (status.startsWith("exited") || status.includes("unhealthy")) return "var(--color-destructive)";
-  return "var(--color-muted-foreground)";
+  if (!status) return "var(--muted-foreground)";
+  if (status.startsWith("running")) return "var(--success)";
+  if (status.startsWith("exited") || status.includes("unhealthy")) return "var(--destructive)";
+  return "var(--muted-foreground)";
 }
 
 interface Application {
@@ -62,7 +62,7 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
     <div className="mx-auto max-w-5xl space-y-6">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)] transition-colors hover:text-[var(--color-foreground)]"
+        className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft size={16} /> {backLabel}
       </button>
@@ -76,7 +76,7 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
             <div className="flex items-center gap-3">
               <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: statusColor(app.status) }} />
               <h1 className="text-2xl font-semibold tracking-tight">{app.name}</h1>
-              <span className="text-sm text-[var(--color-muted-foreground)]">{app.status ?? "unknown"}</span>
+              <span className="text-sm text-muted-foreground">{app.status ?? "unknown"}</span>
             </div>
             <Actions uuid={uuid} onDone={refresh} />
           </div>
@@ -89,8 +89,8 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
                 className={
                   "relative px-3 py-2 text-sm capitalize transition-colors " +
                   (tab === t
-                    ? "text-[var(--color-foreground)] after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-[var(--color-accent)]"
-                    : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]")
+                    ? "text-foreground after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-accent"
+                    : "text-muted-foreground hover:text-foreground")
                 }
               >
                 {t}
@@ -129,8 +129,8 @@ function Actions({ uuid, onDone }: { uuid: string; onDone: () => void | Promise<
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {msg && <span className="text-xs text-[var(--color-muted-foreground)]">{msg}</span>}
-      <Button variant="accent" size="sm" disabled={!!busy} onClick={() => run("Deploy", `/applications/${uuid}/start`)}>
+      {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
+      <Button variant="default" size="sm" disabled={!!busy} onClick={() => run("Deploy", `/applications/${uuid}/start`)}>
         {busy === "Deploy" ? "Deploying…" : "Deploy"}
       </Button>
       <Button variant="outline" size="sm" disabled={!!busy} onClick={() => run("Restart", `/applications/${uuid}/restart`)}>
@@ -162,8 +162,8 @@ function Overview({ app }: { app: Application }) {
 
 function Meta({ icon, label, value, full }: { icon?: ReactNode; label: string; value: string; full?: boolean }) {
   return (
-    <div className={"rounded-[var(--radius)] border bg-[var(--color-card)] p-4" + (full ? " sm:col-span-2" : "")}>
-      <div className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
+    <div className={"rounded-xl border bg-card p-4" + (full ? " sm:col-span-2" : "")}>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {icon} {label}
       </div>
       <div className="mt-1 break-all font-medium">{value}</div>
@@ -185,15 +185,15 @@ function DeploymentsTab({ uuid }: { uuid: string }) {
   if (rows === null) return <Skeleton />;
   if (rows.length === 0) return <EmptyBox message="No deployments yet." />;
   return (
-    <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)]">
+    <div className="divide-y overflow-hidden rounded-xl border bg-card">
       {rows.map((d, i) => (
         <div key={d.deployment_uuid ?? d.id ?? i} className="flex items-center gap-4 px-5 py-3">
           <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: deployColor(d.status) }} />
           <span className="w-28 shrink-0 text-sm capitalize">{d.status}</span>
-          <span className="min-w-0 flex-1 truncate font-mono text-sm text-[var(--color-muted-foreground)]">
+          <span className="min-w-0 flex-1 truncate font-mono text-sm text-muted-foreground">
             {d.commit ? d.commit.slice(0, 8) : "—"}
           </span>
-          <span className="hidden text-sm text-[var(--color-muted-foreground)] sm:block">{fmtDate(d.created_at)}</span>
+          <span className="hidden text-sm text-muted-foreground sm:block">{fmtDate(d.created_at)}</span>
         </div>
       ))}
     </div>
@@ -225,7 +225,7 @@ function LogsTab({ uuid }: { uuid: string }) {
       {err && <ErrorBox message={err} />}
       {!err && logs === null && <Skeleton />}
       {!err && logs !== null && (
-        <pre className="max-h-[480px] overflow-auto rounded-[var(--radius)] border bg-black/40 p-4 font-mono text-xs leading-relaxed text-[var(--color-muted-foreground)]">
+        <pre className="max-h-[480px] overflow-auto rounded-xl border bg-black/40 p-4 font-mono text-xs leading-relaxed text-muted-foreground">
           {logs || "No log output."}
         </pre>
       )}
@@ -234,10 +234,10 @@ function LogsTab({ uuid }: { uuid: string }) {
 }
 
 function deployColor(status: string): string {
-  if (status.includes("finished") || status.includes("success")) return "var(--color-success)";
-  if (status.includes("failed") || status.includes("error") || status.includes("cancelled")) return "var(--color-destructive)";
-  if (status.includes("progress") || status.includes("queued")) return "var(--color-accent)";
-  return "var(--color-muted-foreground)";
+  if (status.includes("finished") || status.includes("success")) return "var(--success)";
+  if (status.includes("failed") || status.includes("error") || status.includes("cancelled")) return "var(--destructive)";
+  if (status.includes("progress") || status.includes("queued")) return "var(--accent)";
+  return "var(--muted-foreground)";
 }
 
 function fmtDate(s?: string | null): string {
