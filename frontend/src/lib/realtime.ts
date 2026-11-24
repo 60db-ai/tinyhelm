@@ -38,8 +38,10 @@ export async function connectRealtime(onEvent: () => void): Promise<() => void> 
   } as unknown as ConstructorParameters<typeof Echo>[0]);
 
   const channelName = `team.${team.id}`;
-  // listenToAll avoids coupling to each event's class name.
-  echo.private(channelName).listenToAll(() => onEvent());
+  // listenToAll exists on the pusher private channel but isn't in the base Channel type.
+  (echo.private(channelName) as unknown as { listenToAll: (cb: () => void) => void }).listenToAll(() =>
+    onEvent(),
+  );
 
   return () => {
     try {
