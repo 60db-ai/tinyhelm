@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ArrowLeft, GitBranch, Globe, Box, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
 // Local state helpers (same small set used by the other ported pages).
 function ErrorBox({ message }: { message: string }) {
@@ -56,20 +57,11 @@ const TABS = ["overview", "environment", "deployments", "logs"] as const;
 type Tab = (typeof TABS)[number];
 
 export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: string; onBack: () => void; backLabel?: string }) {
-  const [app, setApp] = useState<Application | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const { data: app, error: err, refresh } = usePolledData<Application>(
+    () => api.get<Application>(`/applications/${uuid}`),
+    6000,
+  );
   const [tab, setTab] = useState<Tab>("overview");
-
-  const load = () =>
-    api
-      .get<Application>(`/applications/${uuid}`)
-      .then(setApp)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load application"));
-
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uuid]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -91,7 +83,7 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
               <h1 className="text-2xl font-semibold tracking-tight">{app.name}</h1>
               <span className="text-sm text-[var(--color-muted-foreground)]">{app.status ?? "unknown"}</span>
             </div>
-            <Actions uuid={uuid} onDone={load} />
+            <Actions uuid={uuid} onDone={refresh} />
           </div>
 
           <div className="flex gap-1 border-b">

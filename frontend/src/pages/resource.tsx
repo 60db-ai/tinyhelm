@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ArrowLeft, Globe, Box, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
 // Generic detail page for Databases and Services (Applications have their own page with git/deployments).
 export type ResourceKind = "databases" | "services";
@@ -59,20 +60,11 @@ export function ResourceDetail({
   onBack: () => void;
   backLabel?: string;
 }) {
-  const [res, setRes] = useState<Resource | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const { data: res, error: err, refresh } = usePolledData<Resource>(
+    () => api.get<Resource>(`/${kind}/${uuid}`),
+    6000,
+  );
   const [tab, setTab] = useState<Tab>("overview");
-
-  const load = () =>
-    api
-      .get<Resource>(`/${kind}/${uuid}`)
-      .then(setRes)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load"));
-
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, uuid]);
 
   const label = kind === "databases" ? "Database" : "Service";
 
@@ -97,7 +89,7 @@ export function ResourceDetail({
               <span className="rounded-md bg-[var(--color-muted)] px-2 py-0.5 text-xs text-[var(--color-muted-foreground)]">{label}</span>
               <span className="text-sm text-[var(--color-muted-foreground)]">{res.status ?? "unknown"}</span>
             </div>
-            <Actions kind={kind} uuid={uuid} onDone={load} />
+            <Actions kind={kind} uuid={uuid} onDone={refresh} />
           </div>
 
           <div className="flex gap-1 border-b">

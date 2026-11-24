@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Server as ServerIcon, Globe, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
 interface ServerRow {
   uuid: string;
@@ -45,18 +46,7 @@ export function ServersPage() {
 }
 
 function ServerList({ onOpen }: { onOpen: (uuid: string) => void }) {
-  const [rows, setRows] = useState<ServerRow[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [nonce, setNonce] = useState(0);
-
-  useEffect(() => {
-    setRows(null);
-    setErr(null);
-    api
-      .get<ServerRow[]>("/servers")
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load servers"));
-  }, [nonce]);
+  const { data: rows, error: err, refresh } = usePolledData<ServerRow[]>(() => api.get<ServerRow[]>("/servers"), 8000);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -65,7 +55,7 @@ function ServerList({ onOpen }: { onOpen: (uuid: string) => void }) {
           <h1 className="text-2xl font-semibold tracking-tight">Servers</h1>
           <p className="mt-1 text-sm text-[var(--color-muted-foreground)]">Hosts TinyHelm manages over SSH.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setNonce((n) => n + 1)}>
+        <Button variant="outline" size="sm" onClick={() => void refresh()}>
           <RefreshCw size={15} /> Refresh
         </Button>
       </div>

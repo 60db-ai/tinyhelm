@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MetricsChart, type MetricPoint } from "@/components/metrics-chart";
-import { api, getToken, setToken, clearToken, ApiError, type Server, type Project } from "@/lib/api";
+import { api, getToken, setToken, clearToken, type Server, type Project } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 import { ServersPage } from "@/pages/servers";
 import { ProjectsPage } from "@/pages/projects";
 
@@ -91,8 +92,8 @@ function ApiStatus() {
   const color = ok === null ? "var(--color-muted-foreground)" : ok ? "var(--color-success)" : "var(--color-destructive)";
   return (
     <div className="flex items-center gap-2 text-xs text-[var(--color-muted-foreground)]">
-      <span className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
-      API {ok === null ? "…" : ok ? "connected" : "error"}
+      <span className={"inline-block h-2 w-2 rounded-full" + (ok ? " animate-pulse" : "")} style={{ background: color }} />
+      {ok === null ? "connecting…" : ok ? "Live" : "API error"}
     </div>
   );
 }
@@ -101,15 +102,12 @@ const demo = (base: number, amp: number, fn: (i: number) => number): MetricPoint
   Array.from({ length: 12 }, (_, i) => ({ t: `${i * 5}m`, value: Math.round(base + amp * fn(i)) }));
 
 function Dashboard() {
-  const [servers, setServers] = useState<Server[] | null>(null);
-  const [projects, setProjects] = useState<Project[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    Promise.all([api.get<Server[]>("/servers"), api.get<Project[]>("/projects")])
-      .then(([s, p]) => { setServers(s); setProjects(p); })
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load"));
-  }, []);
+  const { data, error: err } = usePolledData<[Server[], Project[]]>(
+    () => Promise.all([api.get<Server[]>("/servers"), api.get<Project[]>("/projects")]),
+    10000,
+  );
+  const servers = data?.[0] ?? null;
+  const projects = data?.[1] ?? null;
 
   const num = (v: unknown[] | null) => (v === null ? "—" : String(v.length));
 
