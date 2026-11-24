@@ -29,3 +29,6 @@ hmac = "0.12.1"
 base64 = "0.22.1"
 rand = "0.8.5"
 chrono = { version = "0.4.39", features = ["serde"] }
+# Job scheduler: server/instance time zones for cron schedules, Pusher HTTP API body hash.
+chrono-tz = "0.10.1"
+md-5 = "0.10.6"

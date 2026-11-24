@@ -153,8 +153,23 @@ class ServerManagerJob implements ShouldBeEncrypted, ShouldQueue
         });
     }
 
+    /**
+     * True when the Rust scheduler runs this job (TINYHELM_RUST_JOBS); Laravel then skips it, so it never runs twice.
+     * `server-manager` covers the connection and storage checks.
+     */
+    public static function rustOwns(string $job): bool
+    {
+        $jobs = array_map('trim', explode(',', (string) config('constants.tinyhelm.rust_jobs')));
+
+        return in_array($job, $jobs, true)
+            || (in_array('server-manager', $jobs, true) && in_array($job, ['server-connection-check', 'server-storage-check'], true));
+    }
+
     private function dispatchConnectionChecks(Collection $servers): void
     {
+        if (self::rustOwns('server-connection-check')) {
+            return;
+        }
         $servers->each(function (Server $server) {
             try {
                 if ($server->hasPlaceholderIp()) {
@@ -242,7 +257,7 @@ class ServerManagerJob implements ShouldBeEncrypted, ShouldQueue
             }
             $shouldRunStorageCheck = shouldRunCronNow($serverDiskUsageCheckFrequency, $serverTimezone, "server-storage-check:{$server->id}", $this->executionTime);
 
-            if ($shouldRunStorageCheck) {
+            if ($shouldRunStorageCheck && ! self::rustOwns('server-storage-check')) {
                 ServerStorageCheckJob::dispatch($server);
             }
         }

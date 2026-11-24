@@ -4,4 +4,6 @@ pub mod remote;
 pub mod sudo;
 
 #[allow(unused_imports)]
-pub use remote::{instant_remote_process, RemoteError, RunOptions, ServerConnection};
+pub use remote::{
+    instant_remote_process, run_raw, RawOutput, RemoteError, RunOptions, ServerConnection,
+};

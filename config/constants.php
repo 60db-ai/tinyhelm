@@ -11,6 +11,8 @@ return [
         'version' => env('TINYHELM_VERSION') ?: $release['stable']['tinyhelm'],
         'helper_version' => $upstream['helper']['version'],
         'railpack_version' => '0.43.0',
+        // Jobs the Rust scheduler runs instead of Laravel (comma list, see rust-backend/src/jobs/mod.rs).
+        'rust_jobs' => env('TINYHELM_RUST_JOBS', ''),
         // Container runtime installed on managed servers: 'docker' or 'kiri'. Kiri speaks the Docker Engine API
         // and exposes the compat socket /var/run/docker.sock, so the command layer is unchanged either way.
         'container_runtime' => env('SERVER_CONTAINER_RUNTIME', 'kiri'),

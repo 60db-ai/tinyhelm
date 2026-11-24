@@ -285,6 +285,34 @@ async fn run_once(
     timeout: u64,
     disable_mux: bool,
 ) -> Result<Option<String>, RemoteError> {
+    let raw = run_raw(server, script, timeout, disable_mux).await?;
+    if raw.code != Some(0) {
+        return Err(command_error(&raw.stderr, raw.code));
+    }
+    let out = raw.stdout.trim().to_string();
+    Ok(if out.is_empty() || out == "null" {
+        None
+    } else {
+        Some(out)
+    })
+}
+
+/// Raw result of one ssh run. stderr is kept on success too: a warn-mode host key mismatch
+/// exits 0 and only prints a warning.
+pub struct RawOutput {
+    pub code: Option<i32>,
+    pub stdout: String,
+    pub stderr: String,
+}
+
+/// One ssh call without retries, sudo rewrite or error mapping (Laravel's `Process::run` on
+/// `generateSshBatchCommand`, as `ServerConnectionCheckJob::runSsh` uses it).
+pub async fn run_raw(
+    server: &ServerConnection,
+    script: &str,
+    timeout: u64,
+    disable_mux: bool,
+) -> Result<RawOutput, RemoteError> {
     if server.force_disabled {
         return Err(err("Server is disabled.", None));
     }
@@ -319,18 +347,10 @@ async fn run_once(
             }
         };
 
-    let code = output.status.code();
-    if code != Some(0) {
-        return Err(command_error(
-            &String::from_utf8_lossy(&output.stderr),
-            code,
-        ));
-    }
-    let out = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    Ok(if out.is_empty() || out == "null" {
-        None
-    } else {
-        Some(out)
+    Ok(RawOutput {
+        code: output.status.code(),
+        stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+        stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
     })
 }
 

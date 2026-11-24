@@ -10,8 +10,15 @@
 //!
 //! Env: DATABASE_URL (required), APP_KEY (to decrypt keys), WORKER_POLL_SECS (default 5).
 
+//! It also runs the job scheduler (`src/jobs/`) for the jobs listed in `TINYHELM_RUST_JOBS`.
+//! `worker --scheduler-once` runs one scheduler minute and exits (for checks).
+
 #[path = "../crypto.rs"]
 mod crypto;
+#[path = "../jobs/mod.rs"]
+mod jobs;
+#[path = "../ssh/mod.rs"]
+mod ssh;
 
 use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
@@ -45,10 +52,30 @@ async fn main() {
                 Ok(())
             })
         })
-        .max_connections(5)
+        .max_connections(10)
         .connect(&url)
         .await
         .expect("db connect");
+
+    if std::env::args().any(|a| a == "--scheduler-once") {
+        let key = app_key.expect("APP_KEY is required for the scheduler");
+        jobs::server_manager::tick(&pool, &key, chrono::Utc::now()).await;
+        return;
+    }
+    match app_key {
+        Some(key) => {
+            tokio::spawn(jobs::run_scheduler(pool.clone(), key));
+        }
+        None if !std::env::var("TINYHELM_RUST_JOBS")
+            .unwrap_or_default()
+            .is_empty() =>
+        {
+            tracing::error!(
+                "TINYHELM_RUST_JOBS is set but APP_KEY is missing: scheduler not started"
+            );
+        }
+        None => {}
+    }
 
     tracing::info!("TinyHelm deploy worker started (poll {}s)", poll.as_secs());
     loop {
