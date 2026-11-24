@@ -50,11 +50,16 @@ async fn main() {
     // Phase 3: opt-in native Rust endpoints (comma-separated, e.g. RUST_NATIVE_ROUTES=servers).
     // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
     let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
-    let enabled: Vec<&str> = native_routes
-        .split(',')
-        .map(str::trim)
-        .filter(|g| api::GROUPS.contains(g))
-        .collect();
+    // "all" enables every ported group; otherwise a comma list of api::GROUPS.
+    let enabled: Vec<&str> = if native_routes.trim() == "all" {
+        api::GROUPS.to_vec()
+    } else {
+        native_routes
+            .split(',')
+            .map(str::trim)
+            .filter(|g| api::GROUPS.contains(g))
+            .collect()
+    };
     let pool = if enabled.is_empty() {
         None
     } else {
