@@ -17,14 +17,14 @@ const SERVICE_SPEC: ModelSpec = ModelSpec {
     json_strings: &[],
     no_timestamps: false,
 };
-const SERVICE_APPLICATION_SPEC: ModelSpec = ModelSpec {
+pub(crate) const SERVICE_APPLICATION_SPEC: ModelSpec = ModelSpec {
     hidden: &["domain_dns_statuses", "domain_port_overrides"],
     datetimes: &["deleted_at"],
     dates: &[],
     json_strings: &[],
     no_timestamps: false,
 };
-const SERVICE_DATABASE_SPEC: ModelSpec = ModelSpec {
+pub(crate) const SERVICE_DATABASE_SPEC: ModelSpec = ModelSpec {
     hidden: &[],
     datetimes: &["deleted_at"],
     dates: &[],
@@ -164,7 +164,7 @@ async fn is_starting(pool: &PgPool, uuid: &str) -> Result<bool, sqlx::Error> {
 }
 
 /// `ServiceApplication::url`. Port overrides need DomainUrlParts, so those rows are answered by Laravel.
-fn service_application_url(m: &Map<String, Value>) -> Result<Value, Fail> {
+pub(crate) fn service_application_url(m: &Map<String, Value>) -> Result<Value, Fail> {
     let fqdn = m.get("fqdn").and_then(Value::as_str).unwrap_or("");
     if fqdn.trim().is_empty() {
         return Ok(Value::Null);
