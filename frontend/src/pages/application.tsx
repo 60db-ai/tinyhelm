@@ -3,6 +3,7 @@ import { ArrowLeft, GitBranch, Globe, Box, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 import { usePolledData } from "@/hooks/use-polled-data";
+import { EnvEditor } from "@/components/env-editor";
 
 // Local state helpers (same small set used by the other ported pages).
 function ErrorBox({ message }: { message: string }) {
@@ -38,12 +39,6 @@ interface Application {
   git_repository?: string | null;
   git_branch?: string | null;
   build_pack?: string | null;
-}
-interface EnvVar {
-  uuid?: string;
-  key: string;
-  value?: string | null;
-  is_build_time?: boolean;
 }
 interface Deployment {
   id?: number;
@@ -104,7 +99,7 @@ export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: 
           </div>
 
           {tab === "overview" && <Overview app={app} />}
-          {tab === "environment" && <EnvTab uuid={uuid} />}
+          {tab === "environment" && <EnvEditor kind="applications" uuid={uuid} />}
           {tab === "deployments" && <DeploymentsTab uuid={uuid} />}
           {tab === "logs" && <LogsTab uuid={uuid} />}
         </>
@@ -172,35 +167,6 @@ function Meta({ icon, label, value, full }: { icon?: ReactNode; label: string; v
         {icon} {label}
       </div>
       <div className="mt-1 break-all font-medium">{value}</div>
-    </div>
-  );
-}
-
-function EnvTab({ uuid }: { uuid: string }) {
-  const [rows, setRows] = useState<EnvVar[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    api
-      .get<EnvVar[]>(`/applications/${uuid}/envs`)
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load variables"));
-  }, [uuid]);
-
-  if (err) return <ErrorBox message={err} />;
-  if (rows === null) return <Skeleton />;
-  if (rows.length === 0) return <EmptyBox message="No environment variables." />;
-  return (
-    <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)] font-mono text-sm">
-      {rows.map((e) => (
-        <div key={e.uuid ?? e.key} className="flex items-start gap-3 px-4 py-2.5">
-          <span className="shrink-0 font-medium text-[var(--color-accent)]">{e.key}</span>
-          <span className="text-[var(--color-muted-foreground)]">=</span>
-          <span className="min-w-0 flex-1 break-all text-[var(--color-muted-foreground)]">{e.value ?? ""}</span>
-          {e.is_build_time && (
-            <span className="shrink-0 rounded bg-[var(--color-muted)] px-1.5 py-0.5 text-[10px] uppercase">build</span>
-          )}
-        </div>
-      ))}
     </div>
   );
 }

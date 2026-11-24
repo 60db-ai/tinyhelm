@@ -3,6 +3,7 @@ import { ArrowLeft, Globe, Box, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 import { usePolledData } from "@/hooks/use-polled-data";
+import { EnvEditor } from "@/components/env-editor";
 
 // Generic detail page for Databases and Services (Applications have their own page with git/deployments).
 export type ResourceKind = "databases" | "services";
@@ -10,13 +11,6 @@ export type ResourceKind = "databases" | "services";
 function ErrorBox({ message }: { message: string }) {
   return (
     <div className="rounded-[var(--radius)] border border-[var(--color-destructive)]/40 bg-[var(--color-destructive)]/10 px-4 py-3 text-sm">
-      {message}
-    </div>
-  );
-}
-function EmptyBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-[var(--radius)] border border-dashed py-16 text-center text-sm text-[var(--color-muted-foreground)]">
       {message}
     </div>
   );
@@ -39,13 +33,6 @@ interface Resource {
   image?: string | null;
   fqdn?: string | null;
 }
-interface EnvVar {
-  uuid?: string;
-  key: string;
-  value?: string | null;
-  is_build_time?: boolean;
-}
-
 const TABS = ["overview", "environment", "logs"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -110,7 +97,7 @@ export function ResourceDetail({
           </div>
 
           {tab === "overview" && <Overview res={res} />}
-          {tab === "environment" && <EnvTab kind={kind} uuid={uuid} />}
+          {tab === "environment" && <EnvEditor kind={kind} uuid={uuid} />}
           {tab === "logs" && <LogsTab kind={kind} uuid={uuid} />}
         </>
       )}
@@ -171,32 +158,6 @@ function Meta({ icon, label, value, full }: { icon?: ReactNode; label: string; v
         {icon} {label}
       </div>
       <div className="mt-1 break-all font-medium">{value}</div>
-    </div>
-  );
-}
-
-function EnvTab({ kind, uuid }: { kind: ResourceKind; uuid: string }) {
-  const [rows, setRows] = useState<EnvVar[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    api
-      .get<EnvVar[]>(`/${kind}/${uuid}/envs`)
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load variables"));
-  }, [kind, uuid]);
-
-  if (err) return <ErrorBox message={err} />;
-  if (rows === null) return <Skeleton />;
-  if (rows.length === 0) return <EmptyBox message="No environment variables." />;
-  return (
-    <div className="divide-y overflow-hidden rounded-[var(--radius)] border bg-[var(--color-card)] font-mono text-sm">
-      {rows.map((e) => (
-        <div key={e.uuid ?? e.key} className="flex items-start gap-3 px-4 py-2.5">
-          <span className="shrink-0 font-medium text-[var(--color-accent)]">{e.key}</span>
-          <span className="text-[var(--color-muted-foreground)]">=</span>
-          <span className="min-w-0 flex-1 break-all text-[var(--color-muted-foreground)]">{e.value ?? ""}</span>
-        </div>
-      ))}
     </div>
   );
 }
