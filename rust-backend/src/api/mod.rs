@@ -11,13 +11,13 @@ pub mod cloud;
 pub mod dashboard;
 pub mod databases;
 pub mod envs;
-pub mod instance;
 pub mod git_sources;
+pub mod instance;
 pub mod model;
 pub mod notifications;
 pub mod projects;
-pub mod resources;
 pub mod resource_writes;
+pub mod resources;
 pub mod respond;
 pub mod security;
 pub mod servers;
@@ -48,7 +48,10 @@ pub(crate) mod prelude {
     pub(crate) use super::auth::Ctx;
     pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
     pub(crate) use super::{
-        applications::*, cloud::*, dashboard::*, databases::*, envs::*, git_sources::*, instance::*, notifications::*, projects::*, resource_writes::*, resources::*, respond::*, security::*, servers::*, service_parts::*, services::*, shared_envs::*, support::*, tags::*, team::*,
+        applications::*, cloud::*, dashboard::*, databases::*, envs::*, git_sources::*,
+        instance::*, notifications::*, projects::*, resource_writes::*, resources::*, respond::*,
+        security::*, servers::*, service_parts::*, services::*, shared_envs::*, support::*,
+        tags::*, team::*,
     };
 }
 
@@ -183,7 +186,10 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     if on("applications") {
         r = r
             .route("/api/v1/applications", get(list_applications))
-            .route("/api/v1/applications/:uuid", get(get_application).patch(update_application))
+            .route(
+                "/api/v1/applications/:uuid",
+                get(get_application).patch(update_application),
+            )
             .route(
                 "/api/v1/applications/:uuid/envs",
                 get(list_app_envs)
@@ -199,10 +205,22 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
         r = r
             .route("/api/v1/services", get(list_services))
             .route("/api/v1/services/:uuid", get(get_service))
-            .route("/api/v1/services/:uuid/applications", get(list_service_applications))
-            .route("/api/v1/services/:uuid/applications/:app_uuid", get(get_service_application))
-            .route("/api/v1/services/:uuid/databases", get(list_service_databases))
-            .route("/api/v1/services/:uuid/databases/:database_uuid", get(get_service_database))
+            .route(
+                "/api/v1/services/:uuid/applications",
+                get(list_service_applications),
+            )
+            .route(
+                "/api/v1/services/:uuid/applications/:app_uuid",
+                get(get_service_application),
+            )
+            .route(
+                "/api/v1/services/:uuid/databases",
+                get(list_service_databases),
+            )
+            .route(
+                "/api/v1/services/:uuid/databases/:database_uuid",
+                get(get_service_database),
+            )
             .route(
                 "/api/v1/services/:uuid/envs",
                 get(list_service_envs)
@@ -217,7 +235,10 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
     if on("databases") {
         r = r
             .route("/api/v1/databases", get(list_databases))
-            .route("/api/v1/databases/:uuid", get(get_database).patch(update_database))
+            .route(
+                "/api/v1/databases/:uuid",
+                get(get_database).patch(update_database),
+            )
             .route(
                 "/api/v1/databases/:uuid/envs",
                 get(list_database_envs)

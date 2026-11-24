@@ -119,6 +119,8 @@ def _throwaway_service(laravel: str, root: str) -> str | None:
         "type": "bookstack",
         "name": "parity-service",
         "server_uuid": servers[0]["uuid"],
+        # The server may have several destinations; Laravel then requires one explicitly.
+        **({"destination_uuid": d[0]["uuid"]} if isinstance(d := call(laravel, "GET", f"/servers/{servers[0]['uuid']}/destinations", root, None).body, list) and d else {}),
         "project_uuid": projects[0]["uuid"],
         "environment_name": "production",
         "instant_deploy": False,
