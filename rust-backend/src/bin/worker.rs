@@ -158,6 +158,7 @@ async fn run_deployment(pool: &PgPool, app_key: Option<&[u8; 32]>, application_i
     // TODO: Traefik/Caddy labels for domains, full compose generation, rolling update, health gating.
     let script = format!(
         "set -e\n\
+         export PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\"\n\
          docker network create {net} >/dev/null 2>&1 || true\n\
          echo '[pull] {img}'; docker pull {img}\n\
          echo '[replace]'; docker rm -f {name} >/dev/null 2>&1 || true\n\
