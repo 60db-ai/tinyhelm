@@ -13,6 +13,16 @@ import { connectRealtime } from "@/lib/realtime";
 import { DashboardPage } from "@/pages/dashboard";
 import { ServersPage } from "@/pages/servers";
 import { ProjectsPage } from "@/pages/projects";
+import { MonitoringPage } from "@/pages/monitoring";
+import { TerminalPage } from "@/pages/terminal";
+import { IntegrationsPage } from "@/pages/integrations";
+import { SharedVariablesPage } from "@/pages/shared-variables";
+import { TeamPage } from "@/pages/team";
+import { NotificationsPage } from "@/pages/notifications";
+import { KeysPage } from "@/pages/keys";
+import { TagsPage } from "@/pages/tags";
+import { SettingsPage } from "@/pages/settings";
+import type { ReactNode } from "react";
 
 interface Team {
   id: number;
@@ -78,15 +88,8 @@ function Shell({ onSignOut }: { onSignOut: () => void }) {
           </div>
         </header>
         <main className="flex-1 px-6 py-8 lg:px-10">
-          {active === "dashboard" ? (
-            <DashboardPage teamName={team?.name ?? null} onNavigate={setActive} />
-          ) : active === "servers" ? (
-            <ServersPage />
-          ) : active === "projects" ? (
-            <ProjectsPage />
-          ) : (
-            <ComingSoon title={NAV_LABEL[active]} />
-          )}
+          {/* key: re-mount on nav so drill-down pages reset to their list view */}
+          <div key={active}>{renderPage(active, team?.name ?? null, setActive)}</div>
         </main>
       </SidebarInset>
       <CommandMenu open={searchOpen} onOpenChange={setSearchOpen} onNavigate={setActive} />
@@ -94,16 +97,33 @@ function Shell({ onSignOut }: { onSignOut: () => void }) {
   );
 }
 
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed bg-muted/30 py-24 text-center">
-        <p className="text-sm font-medium">This page is being ported to the new UI.</p>
-        <p className="mt-1 max-w-sm text-sm text-muted-foreground">Its API already works; the screen comes next.</p>
-      </div>
-    </div>
-  );
+function renderPage(active: NavId, teamName: string | null, navigate: (id: NavId) => void): ReactNode {
+  switch (active) {
+    case "dashboard":
+      return <DashboardPage teamName={teamName} onNavigate={navigate} />;
+    case "projects":
+      return <ProjectsPage />;
+    case "monitoring":
+      return <MonitoringPage />;
+    case "terminal":
+      return <TerminalPage />;
+    case "servers":
+      return <ServersPage />;
+    case "integrations":
+      return <IntegrationsPage />;
+    case "shared-variables":
+      return <SharedVariablesPage />;
+    case "team":
+      return <TeamPage />;
+    case "notifications":
+      return <NotificationsPage />;
+    case "keys":
+      return <KeysPage />;
+    case "tags":
+      return <TagsPage />;
+    case "settings":
+      return <SettingsPage />;
+  }
 }
 
 function SignIn({ onSignedIn }: { onSignedIn: (token: string) => void }) {

@@ -1,197 +1,198 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, Server as ServerIcon, Globe, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { Loader2, PlugZap, RefreshCw, Server as ServerIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  EmptyState,
+  ErrorAlert,
+  Field,
+  LoadingRows,
+  Page,
+  SectionTitle,
+  StatusBadge,
+  ToneBadge,
+  errorMessage,
+} from "@/components/page";
+import { api } from "@/lib/api";
 import { usePolledData } from "@/hooks/use-polled-data";
 
 interface ServerRow {
   uuid: string;
   name: string;
-  ip?: string;
+  ip: string;
+  port?: number;
+  user?: string;
   description?: string | null;
+  is_reachable?: boolean | null;
+  is_usable?: boolean | null;
   settings?: { is_reachable?: boolean; is_usable?: boolean } | null;
 }
 
 interface ServerResource {
+  id?: number;
   uuid: string;
   name: string;
   type: string;
   status?: string | null;
 }
 
-interface ServerDetail extends ServerRow {
-  resources: ServerResource[];
+/** Native gateway returns flat flags; Laravel nests them under `settings`. */
+function health(s: ServerRow): { reachable: boolean; usable: boolean } {
+  return {
+    reachable: !!(s.is_reachable ?? s.settings?.is_reachable),
+    usable: !!(s.is_usable ?? s.settings?.is_usable),
+  };
 }
 
-function reachable(s: ServerRow): boolean | undefined {
-  return s.settings?.is_reachable;
-}
-
-function statusColor(ok: boolean | undefined): string {
-  if (ok === undefined) return "var(--muted-foreground)";
-  return ok ? "var(--success)" : "var(--destructive)";
-}
-
-function Dot({ ok }: { ok: boolean | undefined }) {
-  return <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: statusColor(ok) }} />;
+function ServerHealth({ server }: { server: ServerRow }) {
+  const { reachable, usable } = health(server);
+  if (reachable && usable) return <ToneBadge tone="success">Healthy</ToneBadge>;
+  if (reachable) return <ToneBadge tone="warning">Not usable</ToneBadge>;
+  return <ToneBadge tone="danger">Unreachable</ToneBadge>;
 }
 
 export function ServersPage() {
   const [selected, setSelected] = useState<string | null>(null);
-  return selected ? (
-    <ServerDetailView uuid={selected} onBack={() => setSelected(null)} />
-  ) : (
-    <ServerList onOpen={setSelected} />
-  );
+  if (selected) return <ServerDetail uuid={selected} onBack={() => setSelected(null)} />;
+  return <ServerList onOpen={setSelected} />;
 }
 
 function ServerList({ onOpen }: { onOpen: (uuid: string) => void }) {
-  const { data: rows, error: err, refresh } = usePolledData<ServerRow[]>(() => api.get<ServerRow[]>("/servers"), 8000);
+  const { data, error, refresh } = usePolledData<ServerRow[]>(() => api.get("/servers"), 8000);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Servers</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Hosts TinyHelm manages over SSH.</p>
-        </div>
+    <Page
+      title="Servers"
+      description="Hosts TinyHelm manages over SSH."
+      actions={
         <Button variant="outline" size="sm" onClick={() => void refresh()}>
-          <RefreshCw size={15} /> Refresh
+          <RefreshCw /> Refresh
         </Button>
-      </div>
-
-      {err && <ErrorBox message={err} />}
-      {!err && rows === null && <SkeletonRows />}
-      {!err && rows?.length === 0 && <EmptyBox message="No servers yet." />}
-
-      {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-xl border bg-card">
-          {rows.map((s) => (
-            <button
-              key={s.uuid}
-              onClick={() => onOpen(s.uuid)}
-              className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-elevated"
-            >
-              <Dot ok={reachable(s)} />
-              <ServerIcon size={18} className="shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{s.name}</div>
-                {s.description && (
-                  <div className="truncate text-sm text-muted-foreground">{s.description}</div>
-                )}
-              </div>
-              {s.ip && (
-                <div className="hidden items-center gap-1.5 text-sm text-muted-foreground sm:flex">
-                  <Globe size={14} /> <span className="tabular-nums">{s.ip}</span>
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+      }
+    >
+      {error && <ErrorAlert message={error} />}
+      {!data && !error && <LoadingRows />}
+      {data?.length === 0 && (
+        <EmptyState icon={ServerIcon} title="No servers yet" description="Add a server to start deploying applications to it." />
       )}
-    </div>
-  );
-}
-
-function ServerDetailView({ uuid, onBack }: { uuid: string; onBack: () => void }) {
-  const [server, setServer] = useState<ServerDetail | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .get<ServerDetail>(`/servers/${uuid}/resources`)
-      .then(setServer)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load server"));
-  }, [uuid]);
-
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft size={16} /> Servers
-      </button>
-
-      {err && <ErrorBox message={err} />}
-      {!err && !server && <SkeletonRows />}
-
-      {server && (
-        <>
-          <div className="flex items-center gap-3">
-            <Dot ok={reachable(server)} />
-            <h1 className="text-2xl font-semibold tracking-tight">{server.name}</h1>
-          </div>
-
-          <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Meta label="IP" value={server.ip ?? "—"} />
-            <Meta label="Reachable" value={fmtBool(server.settings?.is_reachable)} />
-            <Meta label="Usable" value={fmtBool(server.settings?.is_usable)} />
-            <Meta label="Resources" value={String(server.resources?.length ?? 0)} />
-          </section>
-
-          <section className="space-y-2">
-            <h2 className="text-sm font-medium text-muted-foreground">Resources</h2>
-            {server.resources?.length ? (
-              <div className="divide-y overflow-hidden rounded-xl border bg-card">
-                {server.resources.map((r) => (
-                  <div key={r.uuid} className="flex items-center gap-4 px-5 py-3">
-                    <Dot ok={r.status ? r.status.startsWith("running") : undefined} />
-                    <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                      {r.type}
-                    </span>
-                    <span className="hidden text-sm text-muted-foreground sm:block">
-                      {r.status ?? "unknown"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyBox message="No resources on this server." />
-            )}
-          </section>
-        </>
+      {data && data.length > 0 && (
+        <Card className="py-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Name</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>SSH</TableHead>
+                <TableHead className="pr-6 text-right">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((s) => (
+                <TableRow key={s.uuid} className="cursor-pointer" onClick={() => onOpen(s.uuid)}>
+                  <TableCell className="pl-6">
+                    <div className="font-medium">{s.name}</div>
+                    {s.description && <div className="text-xs text-muted-foreground">{s.description}</div>}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{s.ip}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
+                    {s.user ?? "root"}:{s.port ?? 22}
+                  </TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <ServerHealth server={s} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
-    </div>
+    </Page>
   );
 }
 
-function fmtBool(v: boolean | undefined): string {
-  return v === undefined ? "—" : v ? "Yes" : "No";
-}
+function ServerDetail({ uuid, onBack }: { uuid: string; onBack: () => void }) {
+  const server = usePolledData<ServerRow>(() => api.get(`/servers/${uuid}`), 8000);
+  const resources = usePolledData<ServerResource[]>(() => api.get(`/servers/${uuid}/resources`), 10000);
+  const [validating, setValidating] = useState(false);
 
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 truncate font-medium tabular-nums">{value}</div>
-    </div>
-  );
-}
+  const validate = async () => {
+    setValidating(true);
+    try {
+      const res = await api.post<{ message?: string }>(`/servers/${uuid}/validate`);
+      toast.success(res?.message ?? "Validation started");
+      await server.refresh();
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Validation failed"));
+    } finally {
+      setValidating(false);
+    }
+  };
 
-function ErrorBox({ message }: { message: string }) {
+  const s = server.data;
   return (
-    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-      {message}
-    </div>
-  );
-}
+    <Page
+      back={{ label: "Servers", onClick: onBack }}
+      title={
+        <span className="flex items-center gap-3">
+          {s?.name ?? "Server"}
+          {s && <ServerHealth server={s} />}
+        </span>
+      }
+      description={s?.description || undefined}
+      actions={
+        <Button variant="outline" size="sm" disabled={validating} onClick={() => void validate()}>
+          {validating ? <Loader2 className="animate-spin" /> : <PlugZap />} Validate connection
+        </Button>
+      }
+    >
+      {server.error && <ErrorAlert message={server.error} />}
+      {!s && !server.error && <LoadingRows rows={2} />}
+      {s && (
+        <Card>
+          <CardContent>
+            <dl className="grid grid-cols-2 gap-6 md:grid-cols-5">
+              <Field label="IP address" mono>{s.ip}</Field>
+              <Field label="Port" mono>{String(s.port ?? 22)}</Field>
+              <Field label="User" mono>{s.user ?? "root"}</Field>
+              <Field label="Description">{s.description}</Field>
+              <Field label="UUID" mono>{s.uuid}</Field>
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
-function EmptyBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
-  );
-}
-
-function SkeletonRows() {
-  return (
-    <div className="space-y-2">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="h-16 animate-pulse rounded-xl border bg-card" />
-      ))}
-    </div>
+      <SectionTitle>Resources</SectionTitle>
+      {resources.error && <ErrorAlert message={resources.error} />}
+      {!resources.data && !resources.error && <LoadingRows rows={2} />}
+      {resources.data?.length === 0 && (
+        <EmptyState icon={ServerIcon} title="No resources on this server" description="Applications, databases, and services deployed here appear in this list." />
+      )}
+      {resources.data && resources.data.length > 0 && (
+        <Card className="py-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="pr-6 text-right">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {resources.data.map((r) => (
+                <TableRow key={r.uuid}>
+                  <TableCell className="pl-6 font-medium">{r.name}</TableCell>
+                  <TableCell className="text-muted-foreground capitalize">{r.type.replace(/^standalone-/, "")}</TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <StatusBadge status={r.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+    </Page>
   );
 }

@@ -1,177 +1,244 @@
-import { useEffect, useState } from "react";
-import { Trash2, Plus } from "lucide-react";
+import { useState } from "react";
+import { Eye, EyeOff, Plus, Trash2, Check, X, Pencil, KeyRound } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmButton, EmptyState, ErrorAlert, LoadingRows, ToneBadge, errorMessage } from "@/components/page";
+import { api } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
-// Create/read/update/delete environment variables for an application, database, or service.
+/** Environment variables of an application, database, or service (create / edit / delete). */
 export type EnvKind = "applications" | "databases" | "services";
 
 interface EnvVar {
-  uuid?: string;
+  uuid: string;
   key: string;
   value?: string | null;
   is_build_time?: boolean;
 }
 
-const input =
-  "w-full rounded-md border bg-background px-2.5 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring";
+const MASK = "••••••••••••";
 
 export function EnvEditor({ kind, uuid }: { kind: EnvKind; uuid: string }) {
-  const [rows, setRows] = useState<EnvVar[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  const load = () => {
-    setErr(null);
-    return api
-      .get<EnvVar[]>(`/${kind}/${uuid}/envs`)
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load variables"));
-  };
-
-  useEffect(() => {
-    setRows(null);
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, uuid]);
+  const { data, error, refresh } = usePolledData<EnvVar[]>(() => api.get(`/${kind}/${uuid}/envs`), 30000);
+  const [revealAll, setRevealAll] = useState(false);
 
   return (
-    <div className="space-y-3">
-      {err && (
-        <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-          {err}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">Values are encrypted at rest and injected when the resource starts.</p>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setRevealAll((v) => !v)} disabled={!data?.length}>
+            {revealAll ? <EyeOff /> : <Eye />} {revealAll ? "Hide values" : "Reveal values"}
+          </Button>
+          <AddVariableDialog kind={kind} uuid={uuid} onAdded={refresh} />
         </div>
+      </div>
+
+      {error && <ErrorAlert message={error} />}
+      {!data && !error && <LoadingRows rows={3} />}
+      {data?.length === 0 && (
+        <EmptyState icon={KeyRound} title="No environment variables" description="Add secrets and configuration this resource needs at runtime." />
       )}
-      {rows === null && !err && (
-        <div className="h-32 animate-pulse rounded-xl border bg-card" />
-      )}
-      {rows && (
-        <div className="overflow-hidden rounded-xl border bg-card">
-          {rows.length === 0 && (
-            <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-              No environment variables yet.
-            </div>
-          )}
-          {rows.map((e) => (
-            <EnvRow key={e.uuid ?? e.key} kind={kind} resourceUuid={uuid} env={e} onChanged={load} onError={setErr} />
-          ))}
-          <AddRow kind={kind} resourceUuid={uuid} onChanged={load} onError={setErr} />
-        </div>
+      {!!data?.length && (
+        <Card className="gap-0 overflow-hidden py-0">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[32%] pl-5">Key</TableHead>
+                <TableHead>Value</TableHead>
+                <TableHead className="w-28 pr-5 text-right" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((env) => (
+                <EnvRow key={env.uuid} kind={kind} resourceUuid={uuid} env={env} reveal={revealAll} onChanged={refresh} />
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
       )}
     </div>
   );
 }
 
-function EnvRow({
-  kind,
-  resourceUuid,
-  env,
-  onChanged,
-  onError,
-}: {
+interface EnvRowProps {
   kind: EnvKind;
   resourceUuid: string;
   env: EnvVar;
+  reveal: boolean;
   onChanged: () => void | Promise<void>;
-  onError: (m: string) => void;
-}) {
-  const [value, setValue] = useState(env.value ?? "");
+}
+
+function EnvRow({ kind, resourceUuid, env, reveal, onChanged }: EnvRowProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(env.value ?? "");
+  const [shown, setShown] = useState(false);
   const [busy, setBusy] = useState(false);
-  const dirty = value !== (env.value ?? "");
+  const visible = reveal || shown;
 
   const save = async () => {
     setBusy(true);
     try {
-      await api.patch(`/${kind}/${resourceUuid}/envs`, { key: env.key, value });
+      await api.patch(`/${kind}/${resourceUuid}/envs`, { key: env.key, value: draft });
+      toast.success(`Saved ${env.key}`);
+      setEditing(false);
       await onChanged();
     } catch (e: unknown) {
-      onError(e instanceof ApiError ? e.message : "Update failed");
+      toast.error(errorMessage(e, "Save failed"));
     } finally {
       setBusy(false);
     }
   };
 
   const remove = async () => {
-    if (!env.uuid) return;
-    if (!window.confirm(`Delete ${env.key}?`)) return;
-    setBusy(true);
     try {
       await api.delete(`/${kind}/${resourceUuid}/envs/${env.uuid}`);
+      toast.success(`Deleted ${env.key}`);
       await onChanged();
     } catch (e: unknown) {
-      onError(e instanceof ApiError ? e.message : "Delete failed");
-    } finally {
-      setBusy(false);
+      toast.error(errorMessage(e, "Delete failed"));
     }
   };
 
   return (
-    <div className="flex items-center gap-2 border-b px-3 py-2 font-mono text-sm last:border-b-0">
-      <span className="w-48 shrink-0 truncate font-medium text-accent" title={env.key}>
-        {env.key}
-      </span>
-      <input className={input} value={value} onChange={(ev) => setValue(ev.target.value)} disabled={busy} />
-      {dirty && (
-        <Button size="sm" disabled={busy} onClick={save}>
-          Save
-        </Button>
-      )}
-      <Button size="icon" variant="ghost" disabled={busy || !env.uuid} onClick={remove} aria-label="Delete">
-        <Trash2 size={15} />
-      </Button>
-    </div>
+    <TableRow className="group">
+      <TableCell className="pl-5 align-middle">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[13px] font-medium">{env.key}</span>
+          {env.is_build_time && (
+            <ToneBadge tone="info" dot={false}>
+              build
+            </ToneBadge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="max-w-0">
+        {editing ? (
+          <Input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void save();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            className="h-8 font-mono text-[13px]"
+          />
+        ) : (
+          <button
+            onClick={() => setShown((s) => !s)}
+            className="block max-w-full truncate text-left font-mono text-[13px] text-muted-foreground hover:text-foreground"
+            title={visible ? "Click to hide" : "Click to reveal"}
+          >
+            {visible ? env.value || <span className="italic">empty</span> : MASK}
+          </button>
+        )}
+      </TableCell>
+      <TableCell className="pr-5 text-right">
+        {editing ? (
+          <div className="flex justify-end gap-1">
+            <Button size="icon" variant="ghost" className="size-8" onClick={() => void save()} disabled={busy} aria-label="Save">
+              <Check />
+            </Button>
+            <Button size="icon" variant="ghost" className="size-8" onClick={() => setEditing(false)} disabled={busy} aria-label="Cancel">
+              <X />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8"
+              aria-label={`Edit ${env.key}`}
+              onClick={() => {
+                setDraft(env.value ?? "");
+                setEditing(true);
+              }}
+            >
+              <Pencil />
+            </Button>
+            <ConfirmButton title={`Delete ${env.key}?`} description="The resource keeps the old value until it restarts." confirmLabel="Delete" onConfirm={remove}>
+              <Button size="icon" variant="ghost" className="size-8 text-muted-foreground hover:text-destructive" aria-label={`Delete ${env.key}`}>
+                <Trash2 />
+              </Button>
+            </ConfirmButton>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
   );
 }
 
-function AddRow({
-  kind,
-  resourceUuid,
-  onChanged,
-  onError,
-}: {
-  kind: EnvKind;
-  resourceUuid: string;
-  onChanged: () => void | Promise<void>;
-  onError: (m: string) => void;
-}) {
+function AddVariableDialog({ kind, uuid, onAdded }: { kind: EnvKind; uuid: string; onAdded: () => void | Promise<void> }) {
+  const [open, setOpen] = useState(false);
   const [key, setKey] = useState("");
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const validKey = /^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key.trim());
 
-  const add = async () => {
-    if (!key.trim()) return;
+  const submit = async () => {
     setBusy(true);
+    setError(null);
     try {
-      await api.post(`/${kind}/${resourceUuid}/envs`, { key: key.trim(), value });
+      await api.post(`/${kind}/${uuid}/envs`, { key: key.trim(), value });
+      toast.success(`Added ${key.trim()}`);
       setKey("");
       setValue("");
-      await onChanged();
+      setOpen(false);
+      await onAdded();
     } catch (e: unknown) {
-      onError(e instanceof ApiError ? e.message : "Create failed");
+      setError(errorMessage(e, "Could not add variable"));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="flex items-center gap-2 bg-elevated px-3 py-2 font-mono text-sm">
-      <input
-        className={input + " w-48 shrink-0"}
-        placeholder="NEW_KEY"
-        value={key}
-        onChange={(e) => setKey(e.target.value)}
-        disabled={busy}
-      />
-      <input
-        className={input}
-        placeholder="value"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && void add()}
-        disabled={busy}
-      />
-      <Button size="sm" variant="default" disabled={busy || !key.trim()} onClick={add}>
-        <Plus size={15} /> Add
-      </Button>
-    </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Plus /> Add variable
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add environment variable</DialogTitle>
+          <DialogDescription>Available to the resource after its next restart or deploy.</DialogDescription>
+        </DialogHeader>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (validKey) void submit();
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="env-key">Key</Label>
+            <Input id="env-key" autoFocus value={key} onChange={(e) => setKey(e.target.value)} placeholder="DATABASE_URL" className="font-mono" />
+            {key && !validKey && <p className="text-xs text-destructive">Use letters, digits, and underscores; do not start with a digit.</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="env-value">Value</Label>
+            <Input id="env-value" value={value} onChange={(e) => setValue(e.target.value)} placeholder="postgres://…" className="font-mono" />
+          </div>
+          {error && <ErrorAlert message={error} />}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!validKey || busy}>
+              Add variable
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

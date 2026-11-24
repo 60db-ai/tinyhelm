@@ -1,29 +1,17 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, Globe, Box, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { Play, RotateCw, Square, RefreshCw, ScrollText, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api";
-import { usePolledData } from "@/hooks/use-polled-data";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmButton, EmptyState, ErrorAlert, Field, LoadingRows, Page, StatusBadge, errorMessage } from "@/components/page";
 import { EnvEditor } from "@/components/env-editor";
+import { api } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
-// Generic detail page for Databases and Services (Applications have their own page with git/deployments).
+/** Detail page for databases and services (applications have their own page with git + deployments). */
 export type ResourceKind = "databases" | "services";
-
-function ErrorBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-      {message}
-    </div>
-  );
-}
-function Skeleton() {
-  return <div className="h-40 animate-pulse rounded-xl border bg-card" />;
-}
-function statusColor(status?: string | null): string {
-  if (!status) return "var(--muted-foreground)";
-  if (status.startsWith("running")) return "var(--success)";
-  if (status.startsWith("exited") || status.includes("unhealthy")) return "var(--destructive)";
-  return "var(--muted-foreground)";
-}
+type ActionKind = ResourceKind | "applications";
 
 interface Resource {
   uuid: string;
@@ -33,162 +21,147 @@ interface Resource {
   image?: string | null;
   fqdn?: string | null;
 }
-const TABS = ["overview", "environment", "logs"] as const;
-type Tab = (typeof TABS)[number];
 
-export function ResourceDetail({
-  kind,
-  uuid,
-  onBack,
-  backLabel = "Back",
-}: {
+interface ResourceDetailProps {
   kind: ResourceKind;
   uuid: string;
   onBack: () => void;
   backLabel?: string;
-}) {
-  const { data: res, error: err, refresh } = usePolledData<Resource>(
-    () => api.get<Resource>(`/${kind}/${uuid}`),
-    6000,
-  );
-  const [tab, setTab] = useState<Tab>("overview");
+}
 
-  const label = kind === "databases" ? "Database" : "Service";
+export function ResourceDetail({ kind, uuid, onBack, backLabel = "Back" }: ResourceDetailProps) {
+  const { data: res, error, refresh } = usePolledData<Resource>(() => api.get(`/${kind}/${uuid}`), 8000);
+  const noun = kind === "databases" ? "database" : "service";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft size={16} /> {backLabel}
-      </button>
-
-      {err && <ErrorBox message={err} />}
-      {!err && !res && <Skeleton />}
-
+    <Page
+      back={{ label: backLabel, onClick: onBack }}
+      title={
+        <span className="flex items-center gap-3">
+          {res?.name ?? "…"}
+          {res && <StatusBadge status={res.status} />}
+        </span>
+      }
+      description={res?.description || `${noun.charAt(0).toUpperCase()}${noun.slice(1)}`}
+      actions={res && <ResourceActions kind={kind} uuid={uuid} noun={noun} onDone={refresh} />}
+    >
+      {error && <ErrorAlert message={error} />}
+      {!res && !error && <LoadingRows rows={3} />}
       {res && (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: statusColor(res.status) }} />
-              <h1 className="text-2xl font-semibold tracking-tight">{res.name}</h1>
-              <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{label}</span>
-              <span className="text-sm text-muted-foreground">{res.status ?? "unknown"}</span>
-            </div>
-            <Actions kind={kind} uuid={uuid} onDone={refresh} />
-          </div>
-
-          <div className="flex gap-1 border-b">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={
-                  "relative px-3 py-2 text-sm capitalize transition-colors " +
-                  (tab === t
-                    ? "text-foreground after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-accent"
-                    : "text-muted-foreground hover:text-foreground")
-                }
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          {tab === "overview" && <Overview res={res} />}
-          {tab === "environment" && <EnvEditor kind={kind} uuid={uuid} />}
-          {tab === "logs" && <LogsTab kind={kind} uuid={uuid} />}
-        </>
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="environment">Environment</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="mt-4">
+            <Card>
+              <CardContent>
+                <dl className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  <Field label="Status">
+                    <StatusBadge status={res.status} />
+                  </Field>
+                  <Field label="Image" mono>
+                    {res.image}
+                  </Field>
+                  <Field label="Domain" mono>
+                    {res.fqdn}
+                  </Field>
+                  <Field label="UUID" mono>
+                    {res.uuid}
+                  </Field>
+                </dl>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="environment" className="mt-4">
+            <EnvEditor kind={kind} uuid={uuid} />
+          </TabsContent>
+          <TabsContent value="logs" className="mt-4">
+            <LogsPanel kind={kind} uuid={uuid} />
+          </TabsContent>
+        </Tabs>
       )}
-    </div>
+    </Page>
   );
 }
 
-function Actions({ kind, uuid, onDone }: { kind: ResourceKind; uuid: string; onDone: () => void | Promise<void> }) {
-  const [busy, setBusy] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+interface ResourceActionsProps {
+  kind: ActionKind;
+  uuid: string;
+  noun: string;
+  startLabel?: string;
+  onDone: () => void | Promise<void>;
+}
 
-  const run = async (verb: string, confirmMsg?: string) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
+/** Start/Deploy, Restart, Stop. All three are POST in the API (GET returns "post required"). */
+export function ResourceActions({ kind, uuid, noun, startLabel = "Start", onDone }: ResourceActionsProps) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const run = async (verb: "start" | "restart" | "stop", label: string) => {
     setBusy(verb);
-    setMsg(null);
     try {
       await api.post(`/${kind}/${uuid}/${verb}`);
-      setMsg(`${verb} triggered`);
+      toast.success(`${label} requested`, { description: `The ${noun} status updates in a few seconds.` });
       await onDone();
     } catch (e: unknown) {
-      setMsg(e instanceof ApiError ? e.message : `${verb} failed`);
+      toast.error(`${label} failed`, { description: errorMessage(e) });
     } finally {
       setBusy(null);
     }
   };
 
+  const spin = (verb: string, Icon: typeof Play) => (busy === verb ? <Loader2 className="animate-spin" /> : <Icon />);
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
-      <Button variant="default" size="sm" disabled={!!busy} onClick={() => run("start")}>
-        {busy === "start" ? "Starting…" : "Start"}
+    <>
+      <ConfirmButton title={`Stop this ${noun}?`} description="Its containers are stopped. You can start it again later." confirmLabel="Stop" onConfirm={() => run("stop", "Stop")}>
+        <Button variant="outline" disabled={!!busy}>
+          {spin("stop", Square)} Stop
+        </Button>
+      </ConfirmButton>
+      <Button variant="outline" disabled={!!busy} onClick={() => void run("restart", "Restart")}>
+        {spin("restart", RotateCw)} Restart
       </Button>
-      <Button variant="outline" size="sm" disabled={!!busy} onClick={() => run("restart")}>
-        {busy === "restart" ? "Restarting…" : "Restart"}
+      <Button disabled={!!busy} onClick={() => void run("start", startLabel)}>
+        {spin("start", Play)} {startLabel}
       </Button>
-      <Button variant="outline" size="sm" disabled={!!busy} onClick={() => run("stop", "Stop this resource?")}>
-        {busy === "stop" ? "Stopping…" : "Stop"}
-      </Button>
-    </div>
+    </>
   );
 }
 
-function Overview({ res }: { res: Resource }) {
-  return (
-    <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      {res.image && <Meta icon={<Box size={15} />} label="Image" value={res.image} />}
-      {res.fqdn && <Meta icon={<Globe size={15} />} label="Domains" value={res.fqdn} />}
-      {res.description && <Meta label="Description" value={res.description} full />}
-      {!res.image && !res.fqdn && !res.description && <Meta label="Status" value={res.status ?? "unknown"} />}
-    </section>
-  );
-}
-
-function Meta({ icon, label, value, full }: { icon?: ReactNode; label: string; value: string; full?: boolean }) {
-  return (
-    <div className={"rounded-xl border bg-card p-4" + (full ? " sm:col-span-2" : "")}>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        {icon} {label}
-      </div>
-      <div className="mt-1 break-all font-medium">{value}</div>
-    </div>
-  );
-}
-
-function LogsTab({ kind, uuid }: { kind: ResourceKind; uuid: string }) {
+/** Container logs on demand (the API reads them over SSH, so they are fetched only when asked). */
+export function LogsPanel({ kind, uuid }: { kind: ActionKind; uuid: string }) {
   const [logs, setLogs] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [nonce, setNonce] = useState(0);
-  useEffect(() => {
-    setLogs(null);
-    setErr(null);
-    api
-      .get<{ logs?: string; message?: string }>(`/${kind}/${uuid}/logs`)
-      .then((d) => setLogs(d.logs ?? d.message ?? ""))
-      .catch((e: unknown) =>
-        setErr(e instanceof ApiError ? (e.status === 403 ? "Needs a token with read:sensitive." : e.message) : "Failed to load logs"),
-      );
-  }, [kind, uuid, nonce]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const body = await api.get<{ logs?: string; message?: string }>(`/${kind}/${uuid}/logs?lines=200`);
+      setLogs(body.logs ?? body.message ?? "");
+    } catch (e: unknown) {
+      setError(errorMessage(e, "Could not read logs. The server may be unreachable."));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={() => setNonce((n) => n + 1)}>
-          <RefreshCw size={15} /> Refresh
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Last 200 lines from the running container.</p>
+        <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
+          {loading ? <Loader2 className="animate-spin" /> : <RefreshCw />} {logs === null ? "Load logs" : "Refresh"}
         </Button>
       </div>
-      {err && <ErrorBox message={err} />}
-      {!err && logs === null && <Skeleton />}
-      {!err && logs !== null && (
-        <pre className="max-h-[480px] overflow-auto rounded-xl border bg-black/40 p-4 font-mono text-xs leading-relaxed text-muted-foreground">
-          {logs || "No log output."}
+      {error && <ErrorAlert message={error} />}
+      {logs === null && !error && !loading && <EmptyState icon={ScrollText} title="Logs are loaded on demand" description="Reading logs connects to the server over SSH." />}
+      {logs !== null && (
+        <pre className="max-h-[32rem] overflow-auto rounded-xl border bg-neutral-950 p-4 font-mono text-xs leading-relaxed text-neutral-200">
+          {logs || "No output."}
         </pre>
       )}
     </div>

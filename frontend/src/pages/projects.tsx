@@ -1,296 +1,307 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, Boxes, Layers, AppWindow, Database, Container } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { useState, type ComponentType } from "react";
+import { AppWindow, Boxes, Container, Database, Plus, Trash2, ChevronRight, Layers } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmButton, EmptyState, ErrorAlert, LoadingRows, Page, StatusBadge, errorMessage } from "@/components/page";
+import { api } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 import { ApplicationDetail } from "@/pages/application";
 import { ResourceDetail } from "@/pages/resource";
-
-type Sel = { kind: "application" | "databases" | "services"; uuid: string };
-
-// Small state helpers (kept local; promote to a shared module when a 3rd page needs them).
-function ErrorBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-      {message}
-    </div>
-  );
-}
-function EmptyBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
-  );
-}
-function Skeleton() {
-  return (
-    <div className="space-y-2">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="h-16 animate-pulse rounded-xl border bg-card" />
-      ))}
-    </div>
-  );
-}
-function Dot({ status }: { status?: string | null }) {
-  const color =
-    status == null
-      ? "var(--muted-foreground)"
-      : status.startsWith("running")
-        ? "var(--success)"
-        : status.startsWith("exited") || status.includes("unhealthy")
-          ? "var(--destructive)"
-          : "var(--muted-foreground)";
-  return <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />;
-}
 
 interface Project {
   uuid: string;
   name: string;
   description?: string | null;
 }
+
+interface DashProject extends Project {
+  environments: number;
+  resources: number;
+}
+
 interface Environment {
   uuid: string;
   name: string;
 }
-interface Resource {
+
+interface ResourceItem {
   uuid: string;
   name: string;
   status?: string | null;
+  fqdn?: string | null;
 }
-// Env payload: applications[], services[], and one array per database engine.
-const DB_KEYS = [
-  "postgresqls",
-  "mysqls",
-  "mariadbs",
-  "mongodbs",
-  "redis",
-  "keydbs",
-  "dragonflies",
-  "clickhouses",
-  "sqlites",
-] as const;
-type EnvDetail = {
-  applications?: Resource[];
-  services?: Resource[];
-} & Partial<Record<(typeof DB_KEYS)[number], Resource[]>>;
+
+const DB_KEYS = ["postgresqls", "mysqls", "mariadbs", "mongodbs", "redis", "keydbs", "dragonflies", "clickhouses", "sqlites"] as const;
+const DB_LABEL: Record<(typeof DB_KEYS)[number], string> = {
+  postgresqls: "PostgreSQL",
+  mysqls: "MySQL",
+  mariadbs: "MariaDB",
+  mongodbs: "MongoDB",
+  redis: "Redis",
+  keydbs: "KeyDB",
+  dragonflies: "Dragonfly",
+  clickhouses: "ClickHouse",
+  sqlites: "SQLite",
+};
+
+type EnvDetail = { applications?: ResourceItem[]; services?: ResourceItem[] } & Partial<Record<(typeof DB_KEYS)[number], ResourceItem[]>>;
+
+type ResourceKind = "application" | "services" | "databases";
+
+interface Row extends ResourceItem {
+  kind: ResourceKind;
+  type: string;
+  icon: ComponentType<{ className?: string }>;
+}
+
+type View =
+  | { name: "list" }
+  | { name: "project"; project: Project }
+  | { name: "resource"; project: Project; kind: ResourceKind; uuid: string };
 
 export function ProjectsPage() {
-  const [project, setProject] = useState<Project | null>(null);
-  const [env, setEnv] = useState<Environment | null>(null);
-  const [sel, setSel] = useState<Sel | null>(null);
+  const [view, setView] = useState<View>({ name: "list" });
 
-  if (project && env && sel) {
-    return sel.kind === "application" ? (
-      <ApplicationDetail uuid={sel.uuid} onBack={() => setSel(null)} backLabel={env.name} />
+  if (view.name === "resource") {
+    const back = () => setView({ name: "project", project: view.project });
+    return view.kind === "application" ? (
+      <ApplicationDetail uuid={view.uuid} onBack={back} backLabel={view.project.name} />
     ) : (
-      <ResourceDetail kind={sel.kind} uuid={sel.uuid} onBack={() => setSel(null)} backLabel={env.name} />
+      <ResourceDetail kind={view.kind} uuid={view.uuid} onBack={back} backLabel={view.project.name} />
     );
   }
-  if (project && env) {
+  if (view.name === "project") {
     return (
-      <EnvironmentDetail
-        project={project}
-        env={env}
-        onBack={() => setEnv(null)}
-        onOpen={(kind, uuid) => setSel({ kind, uuid })}
+      <ProjectDetail
+        project={view.project}
+        onBack={() => setView({ name: "list" })}
+        onOpen={(kind, uuid) => setView({ name: "resource", project: view.project, kind, uuid })}
       />
     );
   }
-  if (project) {
-    return <EnvironmentList project={project} onOpen={setEnv} onBack={() => setProject(null)} />;
-  }
-  return <ProjectList onOpen={setProject} />;
+  return <ProjectList onOpen={(project) => setView({ name: "project", project })} />;
 }
 
 function ProjectList({ onOpen }: { onOpen: (p: Project) => void }) {
-  const [rows, setRows] = useState<Project[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .get<Project[]>("/projects")
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load projects"));
-  }, []);
+  // /dashboard carries per-project environment and resource counts in one call.
+  const { data, error, refresh } = usePolledData<{ projects: DashProject[] }>(() => api.get("/dashboard"), 15000);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Group environments and resources.</p>
-      </div>
-      {err && <ErrorBox message={err} />}
-      {!err && rows === null && <Skeleton />}
-      {!err && rows?.length === 0 && <EmptyBox message="No projects yet." />}
-      {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-xl border bg-card">
-          {rows.map((p) => (
-            <Row key={p.uuid} icon={<Boxes size={18} />} title={p.name} subtitle={p.description} onClick={() => onOpen(p)} />
-          ))}
-        </div>
+    <Page title="Projects" description="Group environments and the resources deployed into them." actions={<CreateProjectDialog onCreated={refresh} />}>
+      {error && <ErrorAlert message={error} />}
+      {!data && !error && <LoadingRows rows={2} />}
+      {data?.projects.length === 0 && (
+        <EmptyState icon={Boxes} title="No projects yet" description="Create a project to start deploying applications, databases and services." action={<CreateProjectDialog onCreated={refresh} />} />
       )}
-    </div>
-  );
-}
-
-function EnvironmentList({
-  project,
-  onOpen,
-  onBack,
-}: {
-  project: Project;
-  onOpen: (e: Environment) => void;
-  onBack: () => void;
-}) {
-  const [rows, setRows] = useState<Environment[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .get<Environment[]>(`/projects/${project.uuid}/environments`)
-      .then(setRows)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load environments"));
-  }, [project.uuid]);
-
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <Back onClick={onBack} label="Projects" />
-      <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
-      {err && <ErrorBox message={err} />}
-      {!err && rows === null && <Skeleton />}
-      {!err && rows?.length === 0 && <EmptyBox message="No environments." />}
-      {rows && rows.length > 0 && (
-        <div className="divide-y overflow-hidden rounded-xl border bg-card">
-          {rows.map((e) => (
-            <Row key={e.uuid} icon={<Layers size={18} />} title={e.name} onClick={() => onOpen(e)} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function EnvironmentDetail({
-  project,
-  env,
-  onBack,
-  onOpen,
-}: {
-  project: Project;
-  env: Environment;
-  onBack: () => void;
-  onOpen: (kind: Sel["kind"], uuid: string) => void;
-}) {
-  const [data, setData] = useState<EnvDetail | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    api
-      .get<EnvDetail>(`/projects/${project.uuid}/${env.uuid}`)
-      .then(setData)
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load environment"));
-  }, [project.uuid, env.uuid]);
-
-  const databases = data ? DB_KEYS.flatMap((k) => data[k] ?? []) : [];
-
-  return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <Back onClick={onBack} label={project.name} />
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {project.name} <span className="text-muted-foreground">/ {env.name}</span>
-      </h1>
-      {err && <ErrorBox message={err} />}
-      {!err && data === null && <Skeleton />}
-      {data && (
-        <>
-          <Group icon={<AppWindow size={16} />} title="Applications" items={data.applications ?? []} onOpen={(u) => onOpen("application", u)} />
-          <Group icon={<Database size={16} />} title="Databases" items={databases} onOpen={(u) => onOpen("databases", u)} />
-          <Group icon={<Container size={16} />} title="Services" items={data.services ?? []} onOpen={(u) => onOpen("services", u)} />
-        </>
-      )}
-    </div>
-  );
-}
-
-function Group({
-  icon,
-  title,
-  items,
-  onOpen,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  items: Resource[];
-  onOpen?: (uuid: string) => void;
-}) {
-  return (
-    <section className="space-y-2">
-      <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        {icon} {title} <span className="tabular-nums">({items.length})</span>
-      </h2>
-      {items.length ? (
-        <div className="divide-y overflow-hidden rounded-xl border bg-card">
-          {items.map((r) => {
-            const inner = (
-              <>
-                <Dot status={r.status} />
-                <div className="min-w-0 flex-1 truncate font-medium">{r.name}</div>
-                <span className="hidden text-sm text-muted-foreground sm:block">{r.status ?? "—"}</span>
-              </>
-            );
-            return onOpen ? (
-              <button
-                key={r.uuid}
-                onClick={() => onOpen(r.uuid)}
-                className="flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-elevated"
-              >
-                {inner}
-              </button>
-            ) : (
-              <div key={r.uuid} className="flex items-center gap-4 px-5 py-3">
-                {inner}
+      {!!data?.projects.length && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.projects.map((p) => (
+            <button
+              key={p.uuid}
+              onClick={() => onOpen(p)}
+              className="group flex flex-col rounded-2xl border bg-card p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+              <div className="flex items-start justify-between">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-orange-400/20 text-sm font-semibold">
+                  {p.name.slice(0, 1).toUpperCase()}
+                </span>
+                <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
               </div>
-            );
-          })}
+              <div className="mt-5 font-medium">{p.name}</div>
+              <div className="mt-1 line-clamp-2 min-h-10 text-sm text-muted-foreground">{p.description || "No description"}</div>
+              <div className="mt-4 flex gap-4 border-t pt-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Layers className="size-3.5" /> {p.environments} {p.environments === 1 ? "environment" : "environments"}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Container className="size-3.5" /> {p.resources} {p.resources === 1 ? "resource" : "resources"}
+                </span>
+              </div>
+            </button>
+          ))}
         </div>
-      ) : (
-        <EmptyBox message={`No ${title.toLowerCase()}.`} />
       )}
-    </section>
+    </Page>
   );
 }
 
-function Row({
-  icon,
-  title,
-  subtitle,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string | null;
-  onClick: () => void;
-}) {
+function CreateProjectDialog({ onCreated }: { onCreated: () => void | Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.post("/projects", { name: name.trim(), description: description.trim() || null });
+      toast.success(`Created ${name.trim()}`);
+      setName("");
+      setDescription("");
+      setOpen(false);
+      await onCreated();
+    } catch (e: unknown) {
+      setError(errorMessage(e, "Could not create project"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <button
-      onClick={onClick}
-      className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-elevated"
-    >
-      <span className="shrink-0 text-muted-foreground">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <div className="truncate font-medium">{title}</div>
-        {subtitle && <div className="truncate text-sm text-muted-foreground">{subtitle}</div>}
-      </div>
-    </button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus /> New project
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>New project</DialogTitle>
+          <DialogDescription>A production environment is created with it.</DialogDescription>
+        </DialogHeader>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (name.trim()) void submit();
+          }}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="project-name">Name</Label>
+            <Input id="project-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="My SaaS" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="project-description">Description</Label>
+            <Textarea id="project-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional" rows={3} />
+          </div>
+          {error && <ErrorAlert message={error} />}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!name.trim() || busy}>
+              Create project
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-function Back({ onClick, label }: { onClick: () => void; label: string }) {
+interface ProjectDetailProps {
+  project: Project;
+  onBack: () => void;
+  onOpen: (kind: ResourceKind, uuid: string) => void;
+}
+
+function ProjectDetail({ project, onBack, onOpen }: ProjectDetailProps) {
+  const { data: envs, error } = usePolledData<Environment[]>(() => api.get(`/projects/${project.uuid}/environments`), 30000);
+  const [tab, setTab] = useState<string | null>(null);
+  const active = tab ?? envs?.[0]?.uuid ?? null;
+
+  const remove = async () => {
+    try {
+      await api.delete(`/projects/${project.uuid}`);
+      toast.success(`Deleted ${project.name}`);
+      onBack();
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Delete failed"));
+    }
+  };
+
   return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+    <Page
+      title={project.name}
+      description={project.description || "No description"}
+      back={{ label: "Projects", onClick: onBack }}
+      actions={
+        <ConfirmButton title={`Delete ${project.name}?`} description="Only empty projects can be deleted. This cannot be undone." confirmLabel="Delete project" onConfirm={remove}>
+          <Button variant="outline" className="text-muted-foreground hover:text-destructive">
+            <Trash2 /> Delete
+          </Button>
+        </ConfirmButton>
+      }
     >
-      <ArrowLeft size={16} /> {label}
-    </button>
+      {error && <ErrorAlert message={error} />}
+      {!envs && !error && <LoadingRows rows={3} />}
+      {envs?.length === 0 && <EmptyState icon={Layers} title="No environments" description="This project has no environments." />}
+      {envs && active && (
+        <Tabs value={active} onValueChange={setTab}>
+          <TabsList>
+            {envs.map((e) => (
+              <TabsTrigger key={e.uuid} value={e.uuid} className="capitalize">
+                {e.name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {envs.map((e) => (
+            <TabsContent key={e.uuid} value={e.uuid} className="mt-4">
+              {active === e.uuid && <EnvironmentResources project={project} env={e} onOpen={onOpen} />}
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
+    </Page>
+  );
+}
+
+function toRows(detail: EnvDetail): Row[] {
+  const apps: Row[] = (detail.applications ?? []).map((r) => ({ ...r, kind: "application", type: "Application", icon: AppWindow }));
+  const services: Row[] = (detail.services ?? []).map((r) => ({ ...r, kind: "services", type: "Service", icon: Container }));
+  const dbs: Row[] = DB_KEYS.flatMap((k) => (detail[k] ?? []).map((r) => ({ ...r, kind: "databases" as const, type: DB_LABEL[k], icon: Database })));
+  return [...apps, ...services, ...dbs];
+}
+
+function EnvironmentResources({ project, env, onOpen }: { project: Project; env: Environment; onOpen: ProjectDetailProps["onOpen"] }) {
+  const { data, error } = usePolledData<EnvDetail>(() => api.get(`/projects/${project.uuid}/${env.uuid}`), 10000);
+  const rows = data ? toRows(data) : null;
+
+  if (error) return <ErrorAlert message={error} />;
+  if (!rows) return <LoadingRows rows={3} />;
+  if (rows.length === 0) {
+    return <EmptyState icon={Container} title="No resources in this environment" description="Applications, databases and services you deploy here show up in this list." />;
+  }
+  return (
+    <Card className="gap-0 overflow-hidden py-0">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="pl-5">Resource</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Domain</TableHead>
+            <TableHead className="pr-5 text-right">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map(({ icon: Icon, ...r }) => (
+            <TableRow key={`${r.kind}-${r.uuid}`} className="cursor-pointer" onClick={() => onOpen(r.kind, r.uuid)}>
+              <TableCell className="pl-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-8 items-center justify-center rounded-lg border bg-muted/50">
+                    <Icon className="size-4 text-muted-foreground" />
+                  </span>
+                  <span className="font-medium">{r.name}</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground">{r.type}</TableCell>
+              <TableCell className="max-w-56 truncate font-mono text-xs text-muted-foreground">{r.fqdn || "—"}</TableCell>
+              <TableCell className="pr-5 text-right">
+                <StatusBadge status={r.status} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }

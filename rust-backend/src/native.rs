@@ -269,6 +269,14 @@ struct ApplicationRow {
     git_repository: Option<String>,
     git_branch: Option<String>,
     build_pack: Option<String>,
+    docker_registry_image_name: Option<String>,
+    docker_registry_image_tag: Option<String>,
+    ports_mappings: Option<String>,
+    ports_exposes: Option<String>,
+    base_directory: Option<String>,
+    health_check_path: Option<String>,
+    created_at: Option<chrono::NaiveDateTime>,
+    updated_at: Option<chrono::NaiveDateTime>,
 }
 
 /// GET /api/v1/applications — team-scoped via environment -> project.
@@ -286,7 +294,9 @@ pub async fn list_applications(
     };
     match sqlx::query_as::<_, ApplicationRow>(
         r#"SELECT a.uuid, a.name, a.description, a.fqdn, a.status,
-                  a.git_repository, a.git_branch, a.build_pack
+                  a.git_repository, a.git_branch, a.build_pack,
+                  a.docker_registry_image_name, a.docker_registry_image_tag, a.ports_mappings,
+                  a.ports_exposes, a.base_directory, a.health_check_path, a.created_at, a.updated_at
            FROM applications a
            JOIN environments e ON e.id = a.environment_id
            JOIN projects p ON p.id = e.project_id
@@ -325,7 +335,9 @@ pub async fn get_application(
     };
     match sqlx::query_as::<_, ApplicationRow>(
         r#"SELECT a.uuid, a.name, a.description, a.fqdn, a.status,
-                  a.git_repository, a.git_branch, a.build_pack
+                  a.git_repository, a.git_branch, a.build_pack,
+                  a.docker_registry_image_name, a.docker_registry_image_tag, a.ports_mappings,
+                  a.ports_exposes, a.base_directory, a.health_check_path, a.created_at, a.updated_at
            FROM applications a
            JOIN environments e ON e.id = a.environment_id
            JOIN projects p ON p.id = e.project_id

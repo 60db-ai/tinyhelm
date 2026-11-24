@@ -1,34 +1,12 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { ArrowLeft, GitBranch, Globe, Box, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { api, ApiError } from "@/lib/api";
-import { usePolledData } from "@/hooks/use-polled-data";
+import { GitBranch, Globe, Rocket, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DeploymentBadge, EmptyState, ErrorAlert, Field, LoadingRows, Page, StatusBadge, ToneBadge, timeAgo } from "@/components/page";
 import { EnvEditor } from "@/components/env-editor";
-
-// Local state helpers (same small set used by the other ported pages).
-function ErrorBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
-      {message}
-    </div>
-  );
-}
-function EmptyBox({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-dashed py-16 text-center text-sm text-muted-foreground">
-      {message}
-    </div>
-  );
-}
-function Skeleton() {
-  return <div className="h-40 animate-pulse rounded-xl border bg-card" />;
-}
-function statusColor(status?: string | null): string {
-  if (!status) return "var(--muted-foreground)";
-  if (status.startsWith("running")) return "var(--success)";
-  if (status.startsWith("exited") || status.includes("unhealthy")) return "var(--destructive)";
-  return "var(--muted-foreground)";
-}
+import { LogsPanel, ResourceActions } from "@/pages/resource";
+import { api } from "@/lib/api";
+import { usePolledData } from "@/hooks/use-polled-data";
 
 interface Application {
   uuid: string;
@@ -39,209 +17,180 @@ interface Application {
   git_repository?: string | null;
   git_branch?: string | null;
   build_pack?: string | null;
+  docker_registry_image_name?: string | null;
+  docker_registry_image_tag?: string | null;
+  ports_mappings?: string | null;
+  ports_exposes?: string | null;
+  base_directory?: string | null;
+  health_check_path?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
+
 interface Deployment {
-  id?: number;
-  deployment_uuid?: string;
+  deployment_uuid: string;
   status: string;
   commit?: string | null;
+  commit_message?: string | null;
   created_at?: string | null;
+  finished_at?: string | null;
 }
 
-const TABS = ["overview", "environment", "deployments", "logs"] as const;
-type Tab = (typeof TABS)[number];
+interface ApplicationDetailProps {
+  uuid: string;
+  onBack: () => void;
+  backLabel?: string;
+}
 
-export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: { uuid: string; onBack: () => void; backLabel?: string }) {
-  const { data: app, error: err, refresh } = usePolledData<Application>(
-    () => api.get<Application>(`/applications/${uuid}`),
-    6000,
-  );
-  const [tab, setTab] = useState<Tab>("overview");
+export function ApplicationDetail({ uuid, onBack, backLabel = "Back" }: ApplicationDetailProps) {
+  const { data: app, error, refresh } = usePolledData<Application>(() => api.get(`/applications/${uuid}`), 8000);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft size={16} /> {backLabel}
-      </button>
-
-      {err && <ErrorBox message={err} />}
-      {!err && !app && <Skeleton />}
-
+    <Page
+      back={{ label: backLabel, onClick: onBack }}
+      title={
+        <span className="flex items-center gap-3">
+          {app?.name ?? "…"}
+          {app && <StatusBadge status={app.status} />}
+        </span>
+      }
+      description={app?.description || "Application"}
+      actions={app && <ResourceActions kind="applications" uuid={uuid} noun="application" startLabel="Deploy" onDone={refresh} />}
+    >
+      {error && <ErrorAlert message={error} />}
+      {!app && !error && <LoadingRows rows={3} />}
       {app && (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: statusColor(app.status) }} />
-              <h1 className="text-2xl font-semibold tracking-tight">{app.name}</h1>
-              <span className="text-sm text-muted-foreground">{app.status ?? "unknown"}</span>
-            </div>
-            <Actions uuid={uuid} onDone={refresh} />
-          </div>
-
-          <div className="flex gap-1 border-b">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={
-                  "relative px-3 py-2 text-sm capitalize transition-colors " +
-                  (tab === t
-                    ? "text-foreground after:absolute after:inset-x-3 after:-bottom-px after:h-0.5 after:bg-accent"
-                    : "text-muted-foreground hover:text-foreground")
-                }
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          {tab === "overview" && <Overview app={app} />}
-          {tab === "environment" && <EnvEditor kind="applications" uuid={uuid} />}
-          {tab === "deployments" && <DeploymentsTab uuid={uuid} />}
-          {tab === "logs" && <LogsTab uuid={uuid} />}
-        </>
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="environment">Environment</TabsTrigger>
+            <TabsTrigger value="deployments">Deployments</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
+          </TabsList>
+          <TabsContent value="overview" className="mt-4">
+            <Overview app={app} />
+          </TabsContent>
+          <TabsContent value="environment" className="mt-4">
+            <EnvEditor kind="applications" uuid={uuid} />
+          </TabsContent>
+          <TabsContent value="deployments" className="mt-4">
+            <Deployments uuid={uuid} />
+          </TabsContent>
+          <TabsContent value="logs" className="mt-4">
+            <LogsPanel kind="applications" uuid={uuid} />
+          </TabsContent>
+        </Tabs>
       )}
-    </div>
-  );
-}
-
-function Actions({ uuid, onDone }: { uuid: string; onDone: () => void | Promise<void> }) {
-  const [busy, setBusy] = useState<string | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const run = async (label: string, path: string, confirmMsg?: string) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-    setBusy(label);
-    setMsg(null);
-    try {
-      await api.post(path);
-      setMsg(`${label} triggered`);
-      await onDone();
-    } catch (e: unknown) {
-      setMsg(e instanceof ApiError ? e.message : `${label} failed`);
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
-      <Button variant="default" size="sm" disabled={!!busy} onClick={() => run("Deploy", `/applications/${uuid}/start`)}>
-        {busy === "Deploy" ? "Deploying…" : "Deploy"}
-      </Button>
-      <Button variant="outline" size="sm" disabled={!!busy} onClick={() => run("Restart", `/applications/${uuid}/restart`)}>
-        {busy === "Restart" ? "Restarting…" : "Restart"}
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        disabled={!!busy}
-        onClick={() => run("Stop", `/applications/${uuid}/stop`, "Stop this application?")}
-      >
-        {busy === "Stop" ? "Stopping…" : "Stop"}
-      </Button>
-    </div>
+    </Page>
   );
 }
 
 function Overview({ app }: { app: Application }) {
-  return (
-    <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Meta icon={<Globe size={15} />} label="Domains" value={app.fqdn || "—"} />
-      <Meta icon={<Box size={15} />} label="Build pack" value={app.build_pack || "—"} />
-      <Meta icon={<GitBranch size={15} />} label="Repository" value={app.git_repository || "—"} />
-      <Meta icon={<GitBranch size={15} />} label="Branch" value={app.git_branch || "—"} />
-      {app.description && <Meta label="Description" value={app.description} full />}
-    </section>
-  );
-}
+  const image = app.docker_registry_image_name ? `${app.docker_registry_image_name}:${app.docker_registry_image_tag || "latest"}` : null;
+  const domains = (app.fqdn ?? "").split(",").map((d) => d.trim()).filter(Boolean);
 
-function Meta({ icon, label, value, full }: { icon?: ReactNode; label: string; value: string; full?: boolean }) {
   return (
-    <div className={"rounded-xl border bg-card p-4" + (full ? " sm:col-span-2" : "")}>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        {icon} {label}
-      </div>
-      <div className="mt-1 break-all font-medium">{value}</div>
+    <div className="grid gap-4 lg:grid-cols-3">
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle className="text-sm">Source</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-6 sm:grid-cols-2">
+            <Field label="Repository" mono>
+              {app.git_repository}
+            </Field>
+            <Field label="Branch">
+              {app.git_branch && (
+                <span className="inline-flex items-center gap-1.5">
+                  <GitBranch className="size-3.5 text-muted-foreground" /> {app.git_branch}
+                </span>
+              )}
+            </Field>
+            <Field label="Build pack">{app.build_pack && <ToneBadge tone="neutral" dot={false}>{app.build_pack}</ToneBadge>}</Field>
+            <Field label="Image" mono>
+              {image}
+            </Field>
+            <Field label="Base directory" mono>
+              {app.base_directory}
+            </Field>
+            <Field label="Health check" mono>
+              {app.health_check_path}
+            </Field>
+          </dl>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Network</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <div className="text-xs text-muted-foreground">Domains</div>
+            {domains.length === 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">No domain configured</p>
+            ) : (
+              <ul className="mt-1 space-y-1">
+                {domains.map((d) => (
+                  <li key={d}>
+                    <a href={d} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 font-mono text-[13px] hover:underline">
+                      <Globe className="size-3.5 text-muted-foreground" /> {d.replace(/^https?:\/\//, "")} <ExternalLink className="size-3 text-muted-foreground" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <dl className="grid gap-6">
+            <Field label="Port mappings" mono>
+              {app.ports_mappings}
+            </Field>
+            <Field label="Exposed ports" mono>
+              {app.ports_exposes}
+            </Field>
+            <Field label="Last updated">{timeAgo(app.updated_at)}</Field>
+          </dl>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-function DeploymentsTab({ uuid }: { uuid: string }) {
-  const [rows, setRows] = useState<Deployment[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    api
-      .get<{ deployments?: Deployment[] }>(`/deployments/applications/${uuid}`)
-      .then((d) => setRows(d.deployments ?? []))
-      .catch((e: unknown) => setErr(e instanceof ApiError ? e.message : "Failed to load deployments"));
-  }, [uuid]);
+function Deployments({ uuid }: { uuid: string }) {
+  const { data, error } = usePolledData<{ deployments?: Deployment[] }>(() => api.get(`/deployments/applications/${uuid}`), 8000);
+  const rows = data?.deployments ?? null;
 
-  if (err) return <ErrorBox message={err} />;
-  if (rows === null) return <Skeleton />;
-  if (rows.length === 0) return <EmptyBox message="No deployments yet." />;
+  if (error) return <ErrorAlert message={error} />;
+  if (!rows) return <LoadingRows rows={3} />;
+  if (rows.length === 0) return <EmptyState icon={Rocket} title="No deployments yet" description="Press Deploy to build and start this application." />;
   return (
-    <div className="divide-y overflow-hidden rounded-xl border bg-card">
-      {rows.map((d, i) => (
-        <div key={d.deployment_uuid ?? d.id ?? i} className="flex items-center gap-4 px-5 py-3">
-          <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ background: deployColor(d.status) }} />
-          <span className="w-28 shrink-0 text-sm capitalize">{d.status}</span>
-          <span className="min-w-0 flex-1 truncate font-mono text-sm text-muted-foreground">
-            {d.commit ? d.commit.slice(0, 8) : "—"}
-          </span>
-          <span className="hidden text-sm text-muted-foreground sm:block">{fmtDate(d.created_at)}</span>
-        </div>
-      ))}
-    </div>
+    <Card className="gap-0 overflow-hidden py-0">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="pl-5">Deployment</TableHead>
+            <TableHead>Commit</TableHead>
+            <TableHead>Started</TableHead>
+            <TableHead className="pr-5 text-right">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((d) => (
+            <TableRow key={d.deployment_uuid}>
+              <TableCell className="pl-5 font-mono text-xs">{d.deployment_uuid}</TableCell>
+              <TableCell className="max-w-64 truncate text-muted-foreground">
+                {d.commit ? <span className="font-mono text-xs">{d.commit.slice(0, 7)}</span> : "—"}
+                {d.commit_message && <span className="ml-2">{d.commit_message}</span>}
+              </TableCell>
+              <TableCell className="text-muted-foreground">{timeAgo(d.created_at)}</TableCell>
+              <TableCell className="pr-5 text-right">
+                <DeploymentBadge status={d.status} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
   );
-}
-
-function LogsTab({ uuid }: { uuid: string }) {
-  const [logs, setLogs] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [nonce, setNonce] = useState(0);
-  useEffect(() => {
-    setLogs(null);
-    setErr(null);
-    api
-      .get<{ logs?: string; message?: string }>(`/applications/${uuid}/logs`)
-      .then((d) => setLogs(d.logs ?? d.message ?? ""))
-      .catch((e: unknown) =>
-        setErr(e instanceof ApiError ? (e.status === 403 ? "Needs a token with read:sensitive." : e.message) : "Failed to load logs"),
-      );
-  }, [uuid, nonce]);
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" onClick={() => setNonce((n) => n + 1)}>
-          <RefreshCw size={15} /> Refresh
-        </Button>
-      </div>
-      {err && <ErrorBox message={err} />}
-      {!err && logs === null && <Skeleton />}
-      {!err && logs !== null && (
-        <pre className="max-h-[480px] overflow-auto rounded-xl border bg-black/40 p-4 font-mono text-xs leading-relaxed text-muted-foreground">
-          {logs || "No log output."}
-        </pre>
-      )}
-    </div>
-  );
-}
-
-function deployColor(status: string): string {
-  if (status.includes("finished") || status.includes("success")) return "var(--success)";
-  if (status.includes("failed") || status.includes("error") || status.includes("cancelled")) return "var(--destructive)";
-  if (status.includes("progress") || status.includes("queued")) return "var(--accent)";
-  return "var(--muted-foreground)";
-}
-
-function fmtDate(s?: string | null): string {
-  if (!s) return "—";
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? s : d.toLocaleString();
 }
