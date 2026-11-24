@@ -56,6 +56,9 @@ class InstallDocker
 
             return remote_process($command, $server);
         } else {
+            if (config('constants.tinyhelm.container_runtime', 'docker') === 'kiri') {
+                return $this->installKiri($server, $supported_os_type);
+            }
             $command = $command->merge([
                 "echo 'Installing Docker Engine...'",
             ]);
@@ -101,6 +104,54 @@ class InstallDocker
 
             return remote_process($command, $server);
         }
+    }
+
+    /**
+     * Install the Kiri container runtime instead of Docker Engine.
+     *
+     * Kiri speaks the Docker Engine API (reports as Docker 27.5.1 / API 1.47) and its systemd unit
+     * creates the compatibility socket /var/run/docker.sock on start, so the rest of the command layer
+     * (docker / docker compose / docker inspect over SSH) is unchanged. Kiri is beta (0.2.2); Compose
+     * support is a subset of the full spec. Arch/Alpine have no Kiri package yet.
+     */
+    private function installKiri(Server $server, $supported_os_type)
+    {
+        if ($supported_os_type->contains('arch') || $supported_os_type->contains('alpine')) {
+            throw new \Exception('The Kiri runtime has no package for Arch/Alpine yet. Use a Debian/Ubuntu, RHEL/Fedora, or SUSE server, or set SERVER_CONTAINER_RUNTIME=docker.');
+        }
+
+        $sshUser = filled($server->user) ? trim($server->user) : 'root';
+
+        $command = collect([
+            "echo 'Installing Kiri container runtime...'",
+            // Official installer: detects apt/dnf/zypper/yum, verifies SHA256SUMS-linux, installs the .deb/.rpm.
+            'curl -fsSL https://runkiri.com/install.sh | bash',
+            "echo 'Starting Kiri service...'",
+            'systemctl enable --now kiri',
+        ]);
+
+        if ($sshUser !== 'root') {
+            // The Kiri Docker API socket is root:kiri 0660; a non-root SSH user needs the kiri group.
+            $command->push("usermod -aG kiri {$sshUser} || true");
+            $command->push("kiri host-access {$sshUser} || true");
+        }
+
+        $command = $command->merge([
+            "echo 'Waiting for the Kiri Docker API socket...'",
+            // kiri.service creates the /var/run/docker.sock compat link on start; wrapped in sh -c so the
+            // loop passes through the non-root sudo parser as one elevated unit.
+            "sh -c 'for i in \$(seq 1 30); do [ -S /var/run/docker.sock ] && break; sleep 1; done'",
+            'docker version >/dev/null 2>&1 || { echo "Kiri Docker API is not reachable at /var/run/docker.sock" >&2; exit 1; }',
+        ]);
+
+        if ($server->isSwarm()) {
+            $command->push('docker network create --attachable --driver overlay tinyhelm-overlay >/dev/null 2>&1 || true');
+        } else {
+            $command->push(dockerProxyNetworkEnsureCommand('tinyhelm'));
+        }
+        $command->push("echo 'Done!'");
+
+        return remote_process($command, $server);
     }
 
     private function getDebianDockerInstallCommand(): string
