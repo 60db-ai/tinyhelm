@@ -1,0 +1,32 @@
+services:
+    tinyhelm:
+        container_name: tinyhelm
+        restart: always
+        working_dir: /var/www/html
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        expose:
+            - "6001"
+            - "6002"
+        networks:
+            - tinyhelm
+        depends_on:
+            - postgres
+            - redis
+    postgres:
+        image: postgres:15-alpine
+        container_name: tinyhelm-db
+        restart: always
+        networks:
+            - tinyhelm
+    redis:
+        image: redis:7-alpine
+        container_name: tinyhelm-redis
+        restart: always
+        networks:
+            - tinyhelm
+networks:
+    tinyhelm:
+        name: tinyhelm
+        driver: bridge
+        external: false
