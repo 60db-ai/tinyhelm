@@ -47,12 +47,14 @@ async fn main() {
     // Phase 3: opt-in native Rust endpoints (comma-separated, e.g. RUST_NATIVE_ROUTES=servers).
     // EXPERIMENTAL — default off; unlisted routes proxy to Laravel unchanged.
     let native_routes = std::env::var("RUST_NATIVE_ROUTES").unwrap_or_default();
-    let native_servers = native_routes.split(',').any(|r| r.trim() == "servers");
-    let pool = if native_servers { native::pool().await } else { None };
-    if native_servers && pool.is_none() {
-        tracing::warn!("RUST_NATIVE_ROUTES=servers but no DB pool; falling back to proxy");
+    let want = |r: &str| native_routes.split(',').any(|x| x.trim() == r);
+    let any_native = want("servers") || want("projects");
+    let pool = if any_native { native::pool().await } else { None };
+    if any_native && pool.is_none() {
+        tracing::warn!("RUST_NATIVE_ROUTES set but no DB pool; falling back to proxy");
     }
-    let native_servers = native_servers && pool.is_some();
+    let native_servers = want("servers") && pool.is_some();
+    let native_projects = want("projects") && pool.is_some();
 
     let state = AppState {
         api_origin: api_origin.trim_end_matches('/').to_string(),
@@ -67,6 +69,10 @@ async fn main() {
     if native_servers {
         tracing::info!("native route enabled: GET /api/v1/servers");
         app = app.route("/api/v1/servers", get(native::list_servers));
+    }
+    if native_projects {
+        tracing::info!("native route enabled: GET /api/v1/projects");
+        app = app.route("/api/v1/projects", get(native::list_projects));
     }
     let app = app
         // Everything else under /api and /webhooks still goes to Laravel until ported.

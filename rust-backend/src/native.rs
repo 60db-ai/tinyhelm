@@ -4,7 +4,7 @@
 //! migration pattern (read endpoint ported to Rust behind the gateway), NOT production-trusted:
 //! enable only after diffing responses against Laravel and a security review of the auth path.
 
-use axum::{extract::State, http::HeaderMap, http::StatusCode, response::IntoResponse, Json};
+use axum::{extract::State, http::HeaderMap, http::StatusCode, response::{IntoResponse, Response}, Json};
 use serde::Serialize;
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -78,33 +78,67 @@ struct ServerRow {
     user: String,
 }
 
-/// GET /api/v1/servers — team-scoped, mirrors the Laravel endpoint's core fields.
-pub async fn list_servers(State(state): State<crate::AppState>, headers: HeaderMap) -> impl IntoResponse {
+/// Validate token + read ability, returning the pool and the token's team id (or an error response).
+async fn authorize_read<'a>(state: &'a crate::AppState, headers: &HeaderMap) -> Result<(&'a PgPool, i64), Response> {
     let Some(pool) = state.pool.as_ref() else {
-        return (StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Native DB not configured."}))).into_response();
+        return Err((StatusCode::SERVICE_UNAVAILABLE, Json(json!({"message": "Native DB not configured."}))).into_response());
     };
-
-    let Some(auth) = authenticate(pool, &headers).await else {
-        return (StatusCode::UNAUTHORIZED, Json(json!({"message": "Unauthenticated."}))).into_response();
+    let Some(auth) = authenticate(pool, headers).await else {
+        return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Unauthenticated."}))).into_response());
     };
     if !has_ability(&auth.abilities, "read") {
-        return (StatusCode::FORBIDDEN, Json(json!({"message": "Missing read ability."}))).into_response();
+        return Err((StatusCode::FORBIDDEN, Json(json!({"message": "Missing read ability."}))).into_response());
     }
     let Ok(team_id) = auth.team_id.parse::<i64>() else {
-        return (StatusCode::UNAUTHORIZED, Json(json!({"message": "Invalid token team."}))).into_response();
+        return Err((StatusCode::UNAUTHORIZED, Json(json!({"message": "Invalid token team."}))).into_response());
     };
+    Ok((pool, team_id))
+}
 
-    let rows = sqlx::query_as::<_, ServerRow>(
+/// GET /api/v1/servers — team-scoped, mirrors the Laravel endpoint's core fields.
+pub async fn list_servers(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    match sqlx::query_as::<_, ServerRow>(
         r#"SELECT uuid, name, description, ip, port, "user" FROM servers WHERE team_id = $1 ORDER BY id"#,
     )
     .bind(team_id)
     .fetch_all(pool)
-    .await;
-
-    match rows {
+    .await
+    {
         Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
         Err(e) => {
             tracing::error!("list_servers query failed: {e}");
+            (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
+        }
+    }
+}
+
+#[derive(Serialize, sqlx::FromRow)]
+struct ProjectRow {
+    uuid: String,
+    name: String,
+    description: Option<String>,
+}
+
+/// GET /api/v1/projects — team-scoped.
+pub async fn list_projects(State(state): State<crate::AppState>, headers: HeaderMap) -> Response {
+    let (pool, team_id) = match authorize_read(&state, &headers).await {
+        Ok(v) => v,
+        Err(resp) => return resp,
+    };
+    match sqlx::query_as::<_, ProjectRow>(
+        "SELECT uuid, name, description FROM projects WHERE team_id = $1 ORDER BY id",
+    )
+    .bind(team_id)
+    .fetch_all(pool)
+    .await
+    {
+        Ok(r) => (StatusCode::OK, Json(serde_json::to_value(r).unwrap_or(json!([])))).into_response(),
+        Err(e) => {
+            tracing::error!("list_projects query failed: {e}");
             (StatusCode::BAD_GATEWAY, Json(json!({"message": "Query failed."}))).into_response()
         }
     }
