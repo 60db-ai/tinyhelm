@@ -1,0 +1,60 @@
+name: Publish sentinel image
+
+# Sentinel is a separate Rust project (upstream: coollabsio/sentinel). Fork it to 60db-ai/sentinel,
+# then this workflow builds that repo and publishes to GHCR (ghcr.io/60db-ai/sentinel).
+# Free on public repos; otherwise use scripts/publish-images.sh sentinel to avoid Actions minutes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sentinel_ref:
+        description: Git ref of the sentinel repo to build
+        default: main
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/sentinel
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Read sentinel version
+        id: ver
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository_owner }}/tinyhelm/main/upstream.json" -o upstream.json
+          echo "version=$(jq -r '.sentinel.version' upstream.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the sentinel repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/sentinel
+          ref: ${{ inputs.sentinel_ref }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.ver.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          provenance: false
