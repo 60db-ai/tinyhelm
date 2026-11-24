@@ -1,4 +1,4 @@
-# Rust migration plan: coolify (PHP)
+# Rust migration plan: tinyhelm (PHP)
 
 1 package, 2389 source files (309463 lines), 1522 test files, 0 UI files, grouped into 277 units.
 
