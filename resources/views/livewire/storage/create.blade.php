@@ -1,7 +1,7 @@
 @can('create', App\Models\S3Storage::class)
     <div class="w-full">
         <div class="mb-4">For more details, please visit the <a class="underline dark:text-brand-light"
-                href="https://tinyhelm.io/docs/knowledge-base/s3/introduction" target="_blank">TinyHelm Docs</a>.</div>
+                href="https://tinyhelm.com/docs/knowledge-base/s3/introduction" target="_blank">TinyHelm Docs</a>.</div>
         <form class="flex flex-col gap-2" wire:submit='submit'>
             <div class="w-64">
                 <x-forms.listbox required live id="type" label="Type" :options="App\Enums\BackupStorageType::options()" />

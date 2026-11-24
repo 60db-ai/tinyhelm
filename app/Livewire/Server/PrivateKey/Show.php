@@ -126,7 +126,7 @@ class Show extends Component
     {
         $sanitizedError = htmlspecialchars($error ?? '', ENT_QUOTES, 'UTF-8');
 
-        return 'Server is not reachable.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/openssh">documentation</a> for further help.<br><br>Error: '.$sanitizedError;
+        return 'Server is not reachable.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/openssh">documentation</a> for further help.<br><br>Error: '.$sanitizedError;
     }
 
     public function render()

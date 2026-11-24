@@ -4,7 +4,7 @@ info:
   version: '0.1'
 servers:
   -
-    url: 'https://app.tinyhelm.io/api/v1'
+    url: 'https://app.tinyhelm.com/api/v1'
     description: 'TinyHelm Cloud API. Change the host to your own instance if you are self-hosting.'
 paths:
   '/applications/{uuid}/previews':
@@ -514,7 +514,7 @@ paths:
                 docker_compose_domains:
                   type: array
                   description: 'Array of URLs to be applied to containers of a dockercompose application.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
                 watch_paths:
                   type: string
                   description: 'Watch path patterns, one per line (newline-separated). Commas do not separate patterns.'
@@ -962,7 +962,7 @@ paths:
                 docker_compose_domains:
                   type: array
                   description: 'Array of URLs to be applied to containers of a dockercompose application.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
                 watch_paths:
                   type: string
                   description: 'Watch path patterns, one per line (newline-separated). Commas do not separate patterns.'
@@ -1412,7 +1412,7 @@ paths:
                 docker_compose_domains:
                   type: array
                   description: 'Array of URLs to be applied to containers of a dockercompose application.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
                 watch_paths:
                   type: string
                   description: 'Watch path patterns, one per line (newline-separated). Commas do not separate patterns.'
@@ -1860,7 +1860,7 @@ paths:
                 docker_compose_domains:
                   type: array
                   description: 'Array of URLs to be applied to containers of a dockercompose application.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
                 watch_paths:
                   type: string
                   description: 'Watch path patterns, one per line (newline-separated). Commas do not separate patterns.'
@@ -3157,7 +3157,7 @@ paths:
                 docker_compose_domains:
                   type: array
                   description: 'Array of URLs to be applied to containers of a dockercompose application.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, domain: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com")' }, redirect: { type: string, nullable: true, description: 'Per-service www/non-www redirect for this compose service.', enum: [www, non-www, both] } }, type: object }
                 watch_paths:
                   type: string
                   description: 'Watch path patterns, one per line (newline-separated). Commas do not separate patterns.'
@@ -14553,7 +14553,7 @@ paths:
                 urls:
                   type: array
                   description: 'Array of URLs to be applied to containers of a service.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, url: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io").' } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, url: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com").' } }, type: object }
                 force_domain_override:
                   type: boolean
                   default: false
@@ -14747,7 +14747,7 @@ paths:
                 urls:
                   type: array
                   description: 'Array of URLs to be applied to containers of a service.'
-                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, url: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.io,https://app2.tinyhelm.io").' } }, type: object }
+                  items: { properties: { name: { type: string, description: 'The service name as defined in docker-compose.' }, url: { type: string, description: 'Comma-separated list of URLs (e.g. "https://app.tinyhelm.com,https://app2.tinyhelm.com").' } }, type: object }
                 force_domain_override:
                   type: boolean
                   default: false

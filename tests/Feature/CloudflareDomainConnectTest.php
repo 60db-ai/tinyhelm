@@ -24,7 +24,7 @@ beforeEach(function () {
 
     config([
         'constants.tinyhelm.self_hosted' => false, // isCloud()
-        'services.domain_connect.provider_id' => 'tinyhelm.io',
+        'services.domain_connect.provider_id' => 'tinyhelm.com',
         'services.domain_connect.service_id' => 'hosting',
         'services.domain_connect.key_id' => '_dcpubkeyv1',
         'services.domain_connect.private_key' => $this->privateKey,
@@ -51,7 +51,7 @@ it('builds a signed cloudflare domain connect apply url like resend', function (
     );
 
     expect($url)
-        ->toStartWith('https://dash.cloudflare.com/domainconnect/v2/domainTemplates/providers/tinyhelm.io/services/hosting/apply?')
+        ->toStartWith('https://dash.cloudflare.com/domainconnect/v2/domainTemplates/providers/tinyhelm.com/services/hosting/apply?')
         ->toContain('domain=example.com')
         ->toContain('host=app')
         ->toContain('ip=203.0.113.10')

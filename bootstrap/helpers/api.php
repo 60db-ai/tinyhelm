@@ -40,7 +40,7 @@ function getTeamIdFromToken()
 }
 function invalidTokenResponse()
 {
-    return response()->json(['message' => 'Invalid token.', 'docs' => 'https://tinyhelm.io/docs/api-reference/authorization'], 400);
+    return response()->json(['message' => 'Invalid token.', 'docs' => 'https://tinyhelm.com/docs/api-reference/authorization'], 400);
 }
 
 function serializeApiResponse($data)

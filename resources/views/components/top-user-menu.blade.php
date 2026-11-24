@@ -85,7 +85,7 @@
         <div class="my-1 h-px bg-neutral-200 dark:bg-white/[0.07]"></div>
 
         <livewire:settings-dropdown trigger="account-menu" />
-        <a href="https://tinyhelm.io/docs" target="_blank" rel="noopener noreferrer" class="listbox-option">
+        <a href="https://tinyhelm.com/docs" target="_blank" rel="noopener noreferrer" class="listbox-option">
             <span class="flex items-center gap-2">
                 <x-reicon name="documentation" class="size-4 opacity-80" />
                 Documentation
@@ -103,7 +103,7 @@
             <livewire:help />
         </x-modal-input>
         @if (isSubscribed() || !isCloud())
-            <a href="https://tinyhelm.io/sponsorships" target="_blank" rel="noopener noreferrer"
+            <a href="https://tinyhelm.com/sponsorships" target="_blank" rel="noopener noreferrer"
                 class="listbox-option">
                 <span class="flex items-center gap-2">
                     <x-reicon name="sponsor" class="size-4 text-pink-500" />

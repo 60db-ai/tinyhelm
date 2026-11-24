@@ -158,7 +158,7 @@ test('returns invalid token when the access token team is not a member team', fu
         ->assertBadRequest()
         ->assertJson([
             'message' => 'Invalid token.',
-            'docs' => 'https://tinyhelm.io/docs/api-reference/authorization',
+            'docs' => 'https://tinyhelm.com/docs/api-reference/authorization',
         ]);
 })->with([
     'upload' => ['postJson', '/api/v1/databases/%s/imports/uploads'],

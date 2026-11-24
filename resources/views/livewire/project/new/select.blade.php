@@ -472,39 +472,39 @@
                         databaseLinks: {
                             postgresql: {
                                 docs: 'https://www.postgresql.org/docs/',
-                                website: 'https://www.postgresql.org/?ref=tinyhelm.io'
+                                website: 'https://www.postgresql.org/?ref=tinyhelm.com'
                             },
                             mysql: {
                                 docs: 'https://dev.mysql.com/doc/',
-                                website: 'https://www.mysql.com/?ref=tinyhelm.io'
+                                website: 'https://www.mysql.com/?ref=tinyhelm.com'
                             },
                             mariadb: {
                                 docs: 'https://mariadb.com/kb/en/documentation/',
-                                website: 'https://mariadb.org/?ref=tinyhelm.io'
+                                website: 'https://mariadb.org/?ref=tinyhelm.com'
                             },
                             redis: {
                                 docs: 'https://redis.io/docs/latest/',
-                                website: 'https://redis.io/?ref=tinyhelm.io'
+                                website: 'https://redis.io/?ref=tinyhelm.com'
                             },
                             keydb: {
                                 docs: 'https://docs.keydb.dev/',
-                                website: 'https://keydb.dev/?ref=tinyhelm.io'
+                                website: 'https://keydb.dev/?ref=tinyhelm.com'
                             },
                             dragonfly: {
                                 docs: 'https://www.dragonflydb.io/docs',
-                                website: 'https://www.dragonflydb.io/?ref=tinyhelm.io'
+                                website: 'https://www.dragonflydb.io/?ref=tinyhelm.com'
                             },
                             mongodb: {
                                 docs: 'https://www.mongodb.com/docs/',
-                                website: 'https://www.mongodb.com/?ref=tinyhelm.io'
+                                website: 'https://www.mongodb.com/?ref=tinyhelm.com'
                             },
                             clickhouse: {
                                 docs: 'https://clickhouse.com/docs',
-                                website: 'https://clickhouse.com/?ref=tinyhelm.io'
+                                website: 'https://clickhouse.com/?ref=tinyhelm.com'
                             },
                             sqlite: {
                                 docs: 'https://sqlite.org/docs.html',
-                                website: 'https://sqlite.org/?ref=tinyhelm.io'
+                                website: 'https://sqlite.org/?ref=tinyhelm.com'
                             }
                         },
                         docLinkCache: {}, // Cache resolved doc URLs: { serviceName: url | null }
@@ -543,7 +543,7 @@
                         },
                         tinyhelmDocsUrl(service) {
                             const baseName = service.docsSlug || this.extractBaseServiceName(service.name);
-                            return 'https://tinyhelm.io/docs/services/' + baseName;
+                            return 'https://tinyhelm.com/docs/services/' + baseName;
                         },
                         officialDocsUrl(service) {
                             return service.documentation || null;

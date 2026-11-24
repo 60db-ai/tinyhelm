@@ -27,10 +27,11 @@ return [
         'helper_image' => env('HELPER_IMAGE', env('REGISTRY_URL', 'docker.io').'/coollabsio/tinyhelm-helper'),
         // https://hub.docker.com/r/rclone/rclone/tags (also on ghcr.io with the same digest): copies backups to SFTP, FTPS, and WebDAV storages on the servers.
         'rclone_image' => env('RCLONE_IMAGE', env('REGISTRY_URL', 'docker.io').'/rclone/rclone:1.75.2@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5'),
-        'cdn_url' => env('CDN_URL', 'https://cdn.coollabs.io'),
-        'versions_url' => env('VERSIONS_URL', env('CDN_URL', 'https://cdn.coollabs.io').'/tinyhelm/versions.json'),
-        'upgrade_script_url' => env('UPGRADE_SCRIPT_URL', env('CDN_URL', 'https://cdn.coollabs.io').'/tinyhelm/upgrade.sh'),
-        'releases_url' => env('RELEASES_URL', 'https://cdn.coollabs.io/tinyhelm/releases.json'),
+        // Release metadata/scripts. These require TinyHelm's own release pipeline + CDN; override via env until it exists.
+        'cdn_url' => env('CDN_URL', 'https://cdn.tinyhelm.com'),
+        'versions_url' => env('VERSIONS_URL', env('CDN_URL', 'https://cdn.tinyhelm.com').'/tinyhelm/versions.json'),
+        'upgrade_script_url' => env('UPGRADE_SCRIPT_URL', env('CDN_URL', 'https://cdn.tinyhelm.com').'/tinyhelm/upgrade.sh'),
+        'releases_url' => env('RELEASES_URL', env('CDN_URL', 'https://cdn.tinyhelm.com').'/tinyhelm/releases.json'),
         // "sequential" or "concurrent". Empty uses sequential on self-hosted and concurrent on TinyHelm Cloud.
         'scheduled_jobs_dispatch_mode' => env('SCHEDULED_JOBS_DISPATCH_MODE'),
     ],
@@ -41,12 +42,14 @@ return [
     ],
 
     'urls' => [
-        'docs' => 'https://tinyhelm.io/docs',
-        'contact' => 'https://tinyhelm.io/docs/contact',
+        'docs' => 'https://tinyhelm.com/docs',
+        'contact' => 'https://tinyhelm.com/docs/contact',
     ],
 
     'services' => [
-        'official' => 'https://cdn.coollabs.io/tinyhelm/service-templates-latest.json',
+        // Self-owned: the bundled templates/service-templates-latest.json is served from this repo.
+        // Non-force loads already read the local bundled copy; this is only used for the scheduled refresh.
+        'official' => env('SERVICE_TEMPLATES_URL', 'https://raw.githubusercontent.com/60db-ai/tinyhelm/main/templates/service-templates-latest.json'),
         'file_name' => 'service-templates-latest.json',
         // Shared across HTTP/Horizon nodes when CACHE_DRIVER is redis (default).
         'cache_key' => 'tinyhelm:service-templates-bundle',

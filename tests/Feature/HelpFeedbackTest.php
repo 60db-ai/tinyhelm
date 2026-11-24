@@ -16,7 +16,7 @@ beforeEach(function () {
 });
 
 it('shows success when the cloud api accepts feedback without email configured', function () {
-    Http::fake(['app.tinyhelm.io/*' => Http::response(['message' => 'Feedback sent.'], 200)]);
+    Http::fake(['app.tinyhelm.com/*' => Http::response(['message' => 'Feedback sent.'], 200)]);
 
     Livewire::test(Help::class)
         ->set('subject', 'Test subject')
@@ -25,11 +25,11 @@ it('shows success when the cloud api accepts feedback without email configured',
         ->assertDispatched('success')
         ->assertNotDispatched('error');
 
-    Http::assertSent(fn ($request) => $request->url() === 'https://app.tinyhelm.io/api/feedback');
+    Http::assertSent(fn ($request) => $request->url() === 'https://app.tinyhelm.com/api/feedback');
 });
 
 it('shows an error when the cloud api rejects feedback without email configured', function (int $status) {
-    Http::fake(['app.tinyhelm.io/*' => Http::response([], $status)]);
+    Http::fake(['app.tinyhelm.com/*' => Http::response([], $status)]);
 
     Livewire::test(Help::class)
         ->set('subject', 'Test subject')

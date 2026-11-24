@@ -24,7 +24,7 @@
                         </x-process-dialog>
                     @endif
                     @if (!$isCloudflareTunnelsEnabled)
-                        <a class="button" href="https://tinyhelm.io/docs/knowledge-base/cloudflare/tunnels/server-ssh"
+                        <a class="button" href="https://tinyhelm.com/docs/knowledge-base/cloudflare/tunnels/server-ssh"
                             target="_blank">
                             Documentation
                             <x-external-link />

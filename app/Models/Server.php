@@ -2304,7 +2304,7 @@ $siteAddress {
         return $this->settings->is_logdrain_newrelic_enabled || $this->settings->is_logdrain_axiom_enabled || $this->settings->is_logdrain_custom_enabled;
     }
 
-    public const UNSUPPORTED_OS_MESSAGE = 'Server OS type is not supported. See the <a target="_blank" class="underline" href="https://tinyhelm.io/docs/start-with-self-hosted#2-supported-operating-systems">supported operating systems</a>. Amazon Linux 2 reached its end of life: use Amazon Linux 2023.';
+    public const UNSUPPORTED_OS_MESSAGE = 'Server OS type is not supported. See the <a target="_blank" class="underline" href="https://tinyhelm.com/docs/start-with-self-hosted#2-supported-operating-systems">supported operating systems</a>. Amazon Linux 2 reached its end of life: use Amazon Linux 2023.';
 
     public function validateOS(): bool|Stringable
     {

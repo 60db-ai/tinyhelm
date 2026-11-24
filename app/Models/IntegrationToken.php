@@ -118,7 +118,7 @@ class IntegrationToken extends BaseModel
             'accountId' => '*',
             'zoneId' => 'all',
             'name' => in_array('tunnel', $capabilities, true) ? 'TinyHelm DNS and Tunnel Management' : 'TinyHelm DNS Management',
-            'ref' => 'tinyhelm.io',
+            'ref' => 'tinyhelm.com',
         ], '', '&', PHP_QUERY_RFC3986);
     }
 

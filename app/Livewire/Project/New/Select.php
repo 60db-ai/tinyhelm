@@ -165,21 +165,21 @@ class Select extends Component
                 'id' => 'public',
                 'name' => 'Public Git Repository',
                 'description' => 'Deploy any public Git repository. TinyHelm builds it from source, no credentials required.',
-                'documentation' => 'https://tinyhelm.io/docs/applications/ci-cd',
+                'documentation' => 'https://tinyhelm.com/docs/applications/ci-cd',
                 'logo' => resource_logo_url('public-repo'),
             ],
             [
                 'id' => 'private-deploy-key',
                 'name' => 'Private Git Repository (with Deploy Key)',
                 'description' => 'Deploy a private repository over SSH with a repository-scoped deploy key. Set the URL and branch manually, no automatic deploys.',
-                'documentation' => 'https://tinyhelm.io/docs/applications/ci-cd/github/deploy-key',
+                'documentation' => 'https://tinyhelm.com/docs/applications/ci-cd/github/deploy-key',
                 'logo' => resource_logo_url('deploy-key'),
             ],
             [
                 'id' => 'private-gh-app',
                 'name' => 'Git Repository (with GitHub App)',
                 'description' => 'Deploy public or private GitHub repositories through a GitHub App, with automatic webhooks and pull request previews.',
-                'documentation' => 'https://tinyhelm.io/docs/applications/ci-cd/github/setup-app',
+                'documentation' => 'https://tinyhelm.com/docs/applications/ci-cd/github/setup-app',
                 'logo' => resource_logo_url('github-app'),
                 'logoDark' => resource_logo_url('github-app-dark'),
             ],
@@ -201,21 +201,21 @@ class Select extends Component
                 'id' => 'dockerfile',
                 'name' => 'Dockerfile',
                 'description' => 'Deploy an application using a Dockerfile, without a Git repository.',
-                'documentation' => 'https://tinyhelm.io/docs/applications/build-packs/dockerfile',
+                'documentation' => 'https://tinyhelm.com/docs/applications/build-packs/dockerfile',
                 'logo' => resource_logo_url('dockerfile'),
             ],
             [
                 'id' => 'docker-compose-empty',
                 'name' => 'Docker Compose',
                 'description' => 'Deploy a multi-container application using a Docker Compose file, without a Git repository.',
-                'documentation' => 'https://tinyhelm.io/docs/applications/build-packs/docker-compose',
+                'documentation' => 'https://tinyhelm.com/docs/applications/build-packs/docker-compose',
                 'logo' => resource_logo_url('docker-compose'),
             ],
             [
                 'id' => 'docker-image',
                 'name' => 'Docker Image',
                 'description' => 'Deploy an application using a prebuilt image from any Docker registry, without a Git repository.',
-                'documentation' => 'https://tinyhelm.io/docs/applications',
+                'documentation' => 'https://tinyhelm.com/docs/applications',
                 'logo' => resource_logo_url('docker-image'),
             ],
         ];
@@ -326,7 +326,7 @@ class Select extends Component
 
         $projectPath = str($url['path'] ?? '')->explode('/')->filter()->take($projectPathSegments)->implode('/');
 
-        return rtrim("{$url['scheme']}://{$url['host']}/{$projectPath}", '/').'?ref=tinyhelm.io';
+        return rtrim("{$url['scheme']}://{$url['host']}/{$projectPath}", '/').'?ref=tinyhelm.com';
     }
 
     private function serviceTemplatesLastUpdated(): ?string

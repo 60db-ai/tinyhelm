@@ -29,7 +29,7 @@ it('stores the CDN service templates bundle in shared cache and local file', fun
         ],
         'activepieces' => [
             'category' => 'automation',
-            'documentation' => 'https://tinyhelm.io/docs',
+            'documentation' => 'https://tinyhelm.com/docs',
             'compose' => '',
             'slogan' => 'Activepieces',
             'tags' => null,

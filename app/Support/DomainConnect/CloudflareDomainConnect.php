@@ -31,7 +31,7 @@ class CloudflareDomainConnect
 
     public function providerId(): string
     {
-        return (string) config('services.domain_connect.provider_id', 'tinyhelm.io');
+        return (string) config('services.domain_connect.provider_id', 'tinyhelm.com');
     }
 
     public function serviceId(): string

@@ -56,7 +56,7 @@ it('prefers embedded service template git timestamps from the templates bundle',
     $path = base_path('templates/'.config('constants.services.file_name'));
     $payload = json_encode([
         'activepieces' => [
-            'documentation' => 'https://tinyhelm.io/docs',
+            'documentation' => 'https://tinyhelm.com/docs',
             'slogan' => 'Open source no-code business automation.',
             'compose' => '',
             'tags' => null,
@@ -108,7 +108,7 @@ it('keeps service template keys for service selection and docs links', function 
         ->with($path)
         ->andReturn(json_encode([
             'denoKV' => [
-                'documentation' => 'https://tinyhelm.io/docs',
+                'documentation' => 'https://tinyhelm.com/docs',
                 'slogan' => 'Deno KV.',
                 'compose' => '',
                 'tags' => null,
@@ -139,10 +139,10 @@ it('preserves one click service key casing when selecting a service template', f
 it('links service websites to the project page instead of a shared host root', function () {
     $path = base_path('templates/'.config('constants.services.file_name'));
     $payload = json_encode([
-        'uptime-kuma' => ['documentation' => 'https://github.com/louislam/uptime-kuma?tab=readme-ov-file&utm_source=tinyhelm.io'],
+        'uptime-kuma' => ['documentation' => 'https://github.com/louislam/uptime-kuma?tab=readme-ov-file&utm_source=tinyhelm.com'],
         'alexandrie' => ['documentation' => 'https://www.github.com/Smaug6739/Alexandrie/tree/main/docs'],
-        'radarr' => ['documentation' => 'https://hub.docker.com/r/linuxserver/radarr?utm_source=tinyhelm.io'],
-        'n8n' => ['documentation' => 'https://n8n.io/docs?utm_source=tinyhelm.io'],
+        'radarr' => ['documentation' => 'https://hub.docker.com/r/linuxserver/radarr?utm_source=tinyhelm.com'],
+        'n8n' => ['documentation' => 'https://n8n.io/docs?utm_source=tinyhelm.com'],
         'broken' => ['documentation' => 'not a url'],
     ]);
 
@@ -156,9 +156,9 @@ it('links service websites to the project page instead of a shared host root', f
 
     $services = (new Select)->loadServices()['services'];
 
-    expect($services['uptime-kuma']['website'])->toBe('https://github.com/louislam/uptime-kuma?ref=tinyhelm.io')
-        ->and($services['alexandrie']['website'])->toBe('https://www.github.com/Smaug6739/Alexandrie?ref=tinyhelm.io')
-        ->and($services['radarr']['website'])->toBe('https://hub.docker.com/r/linuxserver/radarr?ref=tinyhelm.io')
-        ->and($services['n8n']['website'])->toBe('https://n8n.io?ref=tinyhelm.io')
+    expect($services['uptime-kuma']['website'])->toBe('https://github.com/louislam/uptime-kuma?ref=tinyhelm.com')
+        ->and($services['alexandrie']['website'])->toBe('https://www.github.com/Smaug6739/Alexandrie?ref=tinyhelm.com')
+        ->and($services['radarr']['website'])->toBe('https://hub.docker.com/r/linuxserver/radarr?ref=tinyhelm.com')
+        ->and($services['n8n']['website'])->toBe('https://n8n.io?ref=tinyhelm.com')
         ->and($services['broken']['website'])->toBeNull();
 });

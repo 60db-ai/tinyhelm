@@ -20,7 +20,7 @@ function service_logo_urls(mixed $logo): array
 
     return [
         'logo' => asset($logo),
-        'logo_cdn_url' => 'https://raw.githubusercontent.com/coollabsio/tinyhelm/refs/heads/main/public/'.$logo,
+        'logo_cdn_url' => 'https://raw.githubusercontent.com/60db-ai/tinyhelm/refs/heads/main/public/'.$logo,
         'logo_default_url' => asset($defaultLogo),
     ];
 }

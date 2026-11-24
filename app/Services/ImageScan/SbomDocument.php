@@ -91,7 +91,7 @@ final class SbomDocument
             'dataLicense' => 'CC0-1.0',
             'SPDXID' => 'SPDXRef-DOCUMENT',
             'name' => $image,
-            'documentNamespace' => 'https://tinyhelm.io/spdx/'.Str::uuid(),
+            'documentNamespace' => 'https://tinyhelm.com/spdx/'.Str::uuid(),
             'creationInfo' => [
                 'created' => now()->toIso8601ZuluString(),
                 'creators' => ['Tool: TinyHelm'],

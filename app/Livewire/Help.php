@@ -38,7 +38,7 @@ class Help extends Component
 
             // Sending feedback through Cloud API
             if (blank($type)) {
-                $url = 'https://app.tinyhelm.io/api/feedback';
+                $url = 'https://app.tinyhelm.com/api/feedback';
                 try {
                     $response = Http::timeout(10)->post($url, [
                         'content' => 'User: `'.auth()->user()?->email.'` with subject: `'.$this->subject.'` has the following problem: `'.$this->description.'`',

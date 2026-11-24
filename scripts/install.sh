@@ -707,7 +707,7 @@ SSH_PERMIT_ROOT_LOGIN=$(sshd -T | grep -i "permitrootlogin" | awk '{print $2}') 
 if [ "$SSH_PERMIT_ROOT_LOGIN" = "yes" ] || [ "$SSH_PERMIT_ROOT_LOGIN" = "without-password" ] || [ "$SSH_PERMIT_ROOT_LOGIN" = "prohibit-password" ]; then
     echo " - SSH PermitRootLogin is enabled."
 else
-    warn "SSH PermitRootLogin is disabled. If you have problems with SSH, read https://tinyhelm.io/docs/knowledge-base/server/openssh"
+    warn "SSH PermitRootLogin is disabled. If you have problems with SSH, read https://tinyhelm.com/docs/knowledge-base/server/openssh"
 fi
 
 # Detect if docker is installed via snap
@@ -1238,7 +1238,7 @@ if [ -n "$ROOT_USER_ERRORS" ]; then
         printf '    %s- %s%s\n' "$C_YELLOW" "$ROOT_USER_ERROR" "$C_RESET" >&3
     done <<<"$ROOT_USER_ERRORS"
     printf '  %sRun the installer again with corrected ROOT_USER_* values. Registration in the browser stays closed while they are set.%s\n' "$C_YELLOW" "$C_RESET" >&3
-    printf '  %sRequirements: https://tinyhelm.io/docs/start-with-self-hosted#_1-root-user%s\n' "$C_YELLOW" "$C_RESET" >&3
+    printf '  %sRequirements: https://tinyhelm.com/docs/start-with-self-hosted#_1-root-user%s\n' "$C_YELLOW" "$C_RESET" >&3
 fi
 if [ "$IS_TINYHELM_VOLUME_EXISTS" -eq 0 ] && { [ -z "$ROOT_USER_EMAIL" ] || [ -z "$ROOT_USER_PASSWORD" ]; }; then
     printf '\n  %s! Create the root account within 10 minutes. If the time ends, run %sdocker restart tinyhelm%s%s and try again.%s\n' "$C_YELLOW" "$C_BOLD" "$C_RESET" "$C_YELLOW" "$C_RESET" >&3

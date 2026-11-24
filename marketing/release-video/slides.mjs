@@ -61,7 +61,7 @@ function slideBody(s) {
   if (s.type === 'outro') {
     return `<div class="c" style="align-items:center;text-align:center"><h1 style="font-size:96px">${s.title}</h1>
 <p class="s" style="font-size:40px;margin-top:28px">${s.lines.join('<br>')}</p>
-<p class="s" style="margin-top:60px;font-size:34px;color:#ffffff99">tinyhelm.io</p></div>`;
+<p class="s" style="margin-top:60px;font-size:34px;color:#ffffff99">tinyhelm.com</p></div>`;
   }
   return featureSlide(s);
 }

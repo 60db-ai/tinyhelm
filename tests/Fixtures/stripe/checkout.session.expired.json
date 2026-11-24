@@ -28,7 +28,7 @@
         "status": "requires_location_inputs"
       },
       "billing_address_collection": "required",
-      "cancel_url": "https://app.tinyhelm.io/subscription/new?cancelled=1",
+      "cancel_url": "https://app.tinyhelm.com/subscription/new?cancelled=1",
       "client_reference_id": "{{client_reference_id}}",
       "client_secret": null,
       "collected_information": null,
@@ -85,7 +85,7 @@
       "status": "expired",
       "submit_type": null,
       "subscription": null,
-      "success_url": "https://app.tinyhelm.io/?success=1",
+      "success_url": "https://app.tinyhelm.com/?success=1",
       "tax_id_collection": {
         "enabled": true,
         "required": "never"

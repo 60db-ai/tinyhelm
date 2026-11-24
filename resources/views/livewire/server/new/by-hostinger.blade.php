@@ -7,7 +7,7 @@
                 :tokens="$available_tokens" />
             <p class="text-[11px] text-neutral-500 dark:text-fg-faint">
                 New to Hostinger?
-                <a href="https://www.hostinger.com/vps/tinyhelm-hosting?ref=tinyhelm.io" target="_blank"
+                <a href="https://www.hostinger.com/vps/tinyhelm-hosting?ref=tinyhelm.com" target="_blank"
                     rel="noopener noreferrer"
                     class="font-medium text-coollabs hover:underline dark:text-brand-light">Create an account</a>
                 through TinyHelm's affiliate link.

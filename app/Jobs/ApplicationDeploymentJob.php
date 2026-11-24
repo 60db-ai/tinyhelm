@@ -2958,7 +2958,7 @@ class ApplicationDeploymentJob implements ShouldBeEncrypted, ShouldQueue
             return;
         }
 
-        throw new DeploymentException('Before deploying to multiple servers, you must set a Docker image in the General tab. More information: https://tinyhelm.io/docs/knowledge-base/server/multiple-servers');
+        throw new DeploymentException('Before deploying to multiple servers, you must set a Docker image in the General tab. More information: https://tinyhelm.com/docs/knowledge-base/server/multiple-servers');
     }
 
     /**
@@ -5327,7 +5327,7 @@ COPY ./nginx.conf /etc/nginx/conf.d/default.conf");
             }
             $unsupported_options = unsupportedDockerRunOptions($this->application->custom_docker_run_options);
             if (count($unsupported_options) > 0) {
-                $this->application_deployment_queue->addLogEntry('Warning: These custom Docker options are not supported and were not applied: '.implode(', ', $unsupported_options).'. See https://tinyhelm.io/docs/applications/builds/custom-docker-options for the supported options.', 'stderr');
+                $this->application_deployment_queue->addLogEntry('Warning: These custom Docker options are not supported and were not applied: '.implode(', ', $unsupported_options).'. See https://tinyhelm.com/docs/applications/builds/custom-docker-options for the supported options.', 'stderr');
             }
             if ((bool) $this->application->settings->is_consistent_container_name_enabled) {
                 $docker_compose['services'][$this->application->uuid] = $docker_compose['services'][$this->container_name];

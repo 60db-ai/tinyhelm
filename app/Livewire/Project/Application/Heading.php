@@ -225,12 +225,12 @@ class Heading extends Component
                 return;
             }
             if ($this->application->isBuildServerEnabled() && str($this->application->docker_registry_image_name)->isEmpty()) {
-                $this->dispatch('error', 'Failed to deploy.', 'To use a build server, you must first set a Docker image.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/build-server">documentation</a>');
+                $this->dispatch('error', 'Failed to deploy.', 'To use a build server, you must first set a Docker image.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/build-server">documentation</a>');
 
                 return;
             }
             if ($this->application->additional_servers->count() > 0 && str($this->application->docker_registry_image_name)->isEmpty()) {
-                $this->dispatch('error', 'Failed to deploy.', 'Before deploying to multiple servers, you must first set a Docker image in the General tab.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/multiple-servers">documentation</a>');
+                $this->dispatch('error', 'Failed to deploy.', 'Before deploying to multiple servers, you must first set a Docker image in the General tab.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/multiple-servers">documentation</a>');
 
                 return;
             }
@@ -291,7 +291,7 @@ class Heading extends Component
             $this->authorize('deploy', $this->application);
 
             if ($this->application->additional_servers->count() > 0 && str($this->application->docker_registry_image_name)->isEmpty()) {
-                $this->dispatch('error', 'Failed to deploy', 'Before deploying to multiple servers, you must first set a Docker image in the General tab.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/multiple-servers">documentation</a>');
+                $this->dispatch('error', 'Failed to deploy', 'Before deploying to multiple servers, you must first set a Docker image in the General tab.<br>More information here: <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/multiple-servers">documentation</a>');
 
                 return;
             }

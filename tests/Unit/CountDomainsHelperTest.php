@@ -7,12 +7,12 @@ it('returns zero for null or empty fqdn', function () {
 });
 
 it('counts a single domain', function () {
-    expect(countDomains('https://app.tinyhelm.io'))->toBe(1)
-        ->and(countDomains(' https://app.tinyhelm.io '))->toBe(1);
+    expect(countDomains('https://app.tinyhelm.com'))->toBe(1)
+        ->and(countDomains(' https://app.tinyhelm.com '))->toBe(1);
 });
 
 it('counts multiple comma-separated domains', function () {
-    expect(countDomains('https://app.tinyhelm.io,https://cloud.tinyhelm.io/dashboard'))->toBe(2)
+    expect(countDomains('https://app.tinyhelm.com,https://cloud.tinyhelm.com/dashboard'))->toBe(2)
         ->and(countDomains('https://a.com, https://b.com , https://c.com'))->toBe(3);
 });
 

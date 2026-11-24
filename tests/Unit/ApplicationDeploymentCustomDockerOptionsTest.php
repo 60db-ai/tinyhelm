@@ -104,7 +104,7 @@ it('warns in the deployment log about unsupported custom docker options', functi
     $service = generateComposeServiceWithCustomDockerOptions('--network=host -e FOO=bar --init', function ($queue) {
         $queue->shouldReceive('addLogEntry')
             ->once()
-            ->with('Warning: These custom Docker options are not supported and were not applied: --network, -e. See https://tinyhelm.io/docs/applications/builds/custom-docker-options for the supported options.', 'stderr');
+            ->with('Warning: These custom Docker options are not supported and were not applied: --network, -e. See https://tinyhelm.com/docs/applications/builds/custom-docker-options for the supported options.', 'stderr');
     });
 
     expect($service)->toHaveKey('init', true);

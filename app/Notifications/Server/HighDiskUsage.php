@@ -68,7 +68,7 @@ class HighDiskUsage extends CustomEmailNotification implements ThrottledNotifica
 
         $message->addField('Disk usage', "{$this->disk_usage}%", true);
         $message->addField('Threshold', "{$this->server_disk_usage_notification_threshold}%", true);
-        $message->addField('What to do?', '[Link](https://tinyhelm.io/docs/knowledge-base/server/automated-cleanup)', true);
+        $message->addField('What to do?', '[Link](https://tinyhelm.com/docs/knowledge-base/server/automated-cleanup)', true);
         $message->addField('Change Settings', '[Threshold]('.base_url().'/server/'.$this->server->uuid.'#advanced) | [Notification]('.base_url().'/notifications/discord)');
 
         return $message;
@@ -77,7 +77,7 @@ class HighDiskUsage extends CustomEmailNotification implements ThrottledNotifica
     public function toTelegram(): array
     {
         return [
-            'message' => "TinyHelm: Server '{$this->server->name}' high disk usage detected!\nDisk usage: {$this->disk_usage}%. Threshold: {$this->server_disk_usage_notification_threshold}%.\nPlease cleanup your disk to prevent data-loss.\nHere are some tips: https://tinyhelm.io/docs/knowledge-base/server/automated-cleanup.",
+            'message' => "TinyHelm: Server '{$this->server->name}' high disk usage detected!\nDisk usage: {$this->disk_usage}%. Threshold: {$this->server_disk_usage_notification_threshold}%.\nPlease cleanup your disk to prevent data-loss.\nHere are some tips: https://tinyhelm.com/docs/knowledge-base/server/automated-cleanup.",
         ];
     }
 
@@ -89,7 +89,7 @@ class HighDiskUsage extends CustomEmailNotification implements ThrottledNotifica
             message: "Server '{$this->server->name}' high disk usage detected!<br/><br/><b>Disk usage:</b> {$this->disk_usage}%.<br/><b>Threshold:</b> {$this->server_disk_usage_notification_threshold}%.<br/>Please cleanup your disk to prevent data-loss.",
             buttons: [
                 'Change settings' => base_url().'/server/'.$this->server->uuid.'#advanced',
-                'Tips for cleanup' => 'https://tinyhelm.io/docs/knowledge-base/server/automated-cleanup',
+                'Tips for cleanup' => 'https://tinyhelm.com/docs/knowledge-base/server/automated-cleanup',
             ],
         );
     }
@@ -100,7 +100,7 @@ class HighDiskUsage extends CustomEmailNotification implements ThrottledNotifica
         $description .= "Disk usage: {$this->disk_usage}%\n";
         $description .= "Threshold: {$this->server_disk_usage_notification_threshold}%\n\n";
         $description .= "Please cleanup your disk to prevent data-loss.\n";
-        $description .= "Tips for cleanup: https://tinyhelm.io/docs/knowledge-base/server/automated-cleanup\n";
+        $description .= "Tips for cleanup: https://tinyhelm.com/docs/knowledge-base/server/automated-cleanup\n";
         $description .= "Change settings:\n";
         $description .= '- Threshold: '.base_url().'/server/'.$this->server->uuid."#advanced\n";
         $description .= '- Notifications: '.base_url().'/notifications/slack';

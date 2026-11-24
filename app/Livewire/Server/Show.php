@@ -478,7 +478,7 @@ class Show extends Component
             } else {
                 $this->isReachable = $this->server->settings->is_reachable;
                 $this->dispatch('refreshServerShow')->to(Navbar::class);
-                $this->dispatch('error', 'Server is not reachable.', 'Please validate your configuration and connection.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/openssh">documentation</a> for further help. <br><br>Error: '.$error);
+                $this->dispatch('error', 'Server is not reachable.', 'Please validate your configuration and connection.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/openssh">documentation</a> for further help. <br><br>Error: '.$error);
 
                 return;
             }
@@ -658,7 +658,7 @@ class Show extends Component
                     $this->server->settings->save();
                     ServerReachabilityChanged::dispatch($this->server);
                 } else {
-                    $this->dispatch('error', 'Server is not reachable.', 'Please validate your configuration and connection.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.io/docs/knowledge-base/server/openssh">documentation</a> for further help. <br><br>Error: '.$error);
+                    $this->dispatch('error', 'Server is not reachable.', 'Please validate your configuration and connection.<br><br>Check this <a target="_blank" class="underline" href="https://tinyhelm.com/docs/knowledge-base/server/openssh">documentation</a> for further help. <br><br>Error: '.$error);
 
                     return;
                 }

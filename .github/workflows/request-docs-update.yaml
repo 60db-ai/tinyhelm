@@ -37,7 +37,7 @@ jobs:
               This will help ensure that our documentation remains accurate and up-to-date for all users.
 
               TinyHelm Docs Repository: https://github.com/coollabsio/tinyhelm-docs
-              How to Contribute a new Service to the Docs: https://tinyhelm.io/docs/get-started/contribute/service#adding-a-new-service-template-to-the-tinyhelm-documentation
+              How to Contribute a new Service to the Docs: https://tinyhelm.com/docs/get-started/contribute/service#adding-a-new-service-template-to-the-tinyhelm-documentation
           - label: "🛠️ Feature"
             body: |
               Hi @${{ github.event.pull_request.user.login }}! 👋
@@ -47,7 +47,7 @@ jobs:
               This will help ensure that our documentation remains accurate and up-to-date for all users.
 
               TinyHelm Docs Repository: https://github.com/coollabsio/tinyhelm-docs
-              How to Contribute to the Docs: https://tinyhelm.io/docs/get-started/contribute/documentation
+              How to Contribute to the Docs: https://tinyhelm.com/docs/get-started/contribute/documentation
     steps:
       - name: Comment on the pull request
         if: >-

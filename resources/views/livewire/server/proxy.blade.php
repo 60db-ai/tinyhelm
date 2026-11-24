@@ -76,7 +76,7 @@
                             ]" />
                         @if ($redirectEnabled)
                             <x-forms.input canGate="update" :canResource="$server"
-                                placeholder="https://app.tinyhelm.io" id="redirectUrl"
+                                placeholder="https://app.tinyhelm.com" id="redirectUrl"
                                 label="Redirect URL"
                                 helper="Leave empty to return a 503 response instead of redirecting." />
                         @endif
@@ -145,7 +145,7 @@
                                     for this branch is {{ $this->latestTraefikVersion }}. Test the update before applying it
                                     to production servers.
                                     <a class="font-medium underline"
-                                        href="https://tinyhelm.io/docs/core/networking/proxy/traefik/update"
+                                        href="https://tinyhelm.com/docs/core/networking/proxy/traefik/update"
                                         target="_blank">Learn how to update Traefik.</a>
                                 </x-callout>
                             @endif
@@ -155,7 +155,7 @@
                                     {{ $this->latestNewerTraefikVersion }}). Review the Traefik changelog for breaking
                                     changes before upgrading.
                                     <a class="font-medium underline"
-                                        href="https://tinyhelm.io/docs/core/networking/proxy/traefik/update"
+                                        href="https://tinyhelm.com/docs/core/networking/proxy/traefik/update"
                                         target="_blank">Learn how to update Traefik.</a>
                                 </x-callout>
                             @endif

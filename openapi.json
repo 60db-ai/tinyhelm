@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "https:\/\/app.tinyhelm.io\/api\/v1",
+            "url": "https:\/\/app.tinyhelm.com\/api\/v1",
             "description": "TinyHelm Cloud API. Change the host to your own instance if you are self-hosting."
         }
     ],
@@ -787,7 +787,7 @@
                                                 },
                                                 "domain": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")"
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")"
                                                 },
                                                 "redirect": {
                                                     "type": "string",
@@ -1459,7 +1459,7 @@
                                                 },
                                                 "domain": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")"
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")"
                                                 },
                                                 "redirect": {
                                                     "type": "string",
@@ -2134,7 +2134,7 @@
                                                 },
                                                 "domain": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")"
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")"
                                                 },
                                                 "redirect": {
                                                     "type": "string",
@@ -2806,7 +2806,7 @@
                                                 },
                                                 "domain": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")"
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")"
                                                 },
                                                 "redirect": {
                                                     "type": "string",
@@ -4716,7 +4716,7 @@
                                                 },
                                                 "domain": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")"
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")"
                                                 },
                                                 "redirect": {
                                                     "type": "string",
@@ -23133,7 +23133,7 @@
                                                 },
                                                 "url": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")."
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")."
                                                 }
                                             },
                                             "type": "object"
@@ -23472,7 +23472,7 @@
                                                 },
                                                 "url": {
                                                     "type": "string",
-                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.io,https:\/\/app2.tinyhelm.io\")."
+                                                    "description": "Comma-separated list of URLs (e.g. \"https:\/\/app.tinyhelm.com,https:\/\/app2.tinyhelm.com\")."
                                                 }
                                             },
                                             "type": "object"

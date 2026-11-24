@@ -7,7 +7,7 @@
                 :tokens="$available_tokens" />
             <p class="text-[11px] text-neutral-500 dark:text-fg-faint">
                 New to Hetzner?
-                <a href="https://tinyhelm.io/hetzner" target="_blank"
+                <a href="https://tinyhelm.com/hetzner" target="_blank"
                     class="font-medium text-coollabs hover:underline dark:text-brand-light">Create an account</a>
                 through TinyHelm's affiliate link.
             </p>

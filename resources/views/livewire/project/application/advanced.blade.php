@@ -95,13 +95,13 @@
                     helper="Advanced behavior for compose-based deployments.">
                     <div class="grid w-full gap-4 sm:grid-cols-2">
                         <x-forms.listbox id="isRawComposeDeploymentEnabled" label="Compose deployment" onChange="instantSave"
-                            helper="WARNING: Advanced use cases only. In raw mode your compose file is deployed as-is. Nothing is modified by TinyHelm and you need to configure the proxy parts. More info in the <a class='underline dark:text-white' href='https://tinyhelm.io/docs/knowledge-base/docker/compose#raw-docker-compose-deployment'>documentation</a>."
+                            helper="WARNING: Advanced use cases only. In raw mode your compose file is deployed as-is. Nothing is modified by TinyHelm and you need to configure the proxy parts. More info in the <a class='underline dark:text-white' href='https://tinyhelm.com/docs/knowledge-base/docker/compose#raw-docker-compose-deployment'>documentation</a>."
                             :options="[
                                 ['value' => false, 'label' => 'Managed by TinyHelm'],
                                 ['value' => true, 'label' => 'Raw (deploy file as-is)'],
                             ]" :disabled="! $canUpdate" />
                         <x-forms.listbox id="isConnectToDockerNetworkEnabled" label="Predefined network" onChange="instantSave"
-                            helper="By default a compose resource only gets its own internal network. Connecting to a TinyHelm predefined network may require different internal DNS names.<br><br>Production and its preview deployments share this network: a service name such as <b>db</b> resolves to the production container, also from a preview. Use <b>${SERVICE_NAME_DB}</b> as the hostname to reach the service of the same deployment. More info <a class='underline dark:text-white' target='_blank' href='https://tinyhelm.io/docs/applications/deployments/preview-deployments#docker-compose-preview-names'>here</a>."
+                            helper="By default a compose resource only gets its own internal network. Connecting to a TinyHelm predefined network may require different internal DNS names.<br><br>Production and its preview deployments share this network: a service name such as <b>db</b> resolves to the production container, also from a preview. Use <b>${SERVICE_NAME_DB}</b> as the hostname to reach the service of the same deployment. More info <a class='underline dark:text-white' target='_blank' href='https://tinyhelm.com/docs/applications/deployments/preview-deployments#docker-compose-preview-names'>here</a>."
                             :options="[
                                 ['value' => false, 'label' => 'Isolated network only'],
                                 ['value' => true, 'label' => 'Connect to predefined network'],

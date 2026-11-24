@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use OpenApi\Attributes as OA;
 
 #[OA\Info(title: 'TinyHelm', version: '0.1')]
-#[OA\Server(url: 'https://app.tinyhelm.io/api/v1', description: 'TinyHelm Cloud API. Change the host to your own instance if you are self-hosting.')]
+#[OA\Server(url: 'https://app.tinyhelm.com/api/v1', description: 'TinyHelm Cloud API. Change the host to your own instance if you are self-hosting.')]
 #[OA\SecurityScheme(
     type: 'http',
     scheme: 'bearer',

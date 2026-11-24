@@ -844,7 +844,7 @@ function enableCloudflareDomainConnectForTest(): void
 
     config([
         'constants.tinyhelm.self_hosted' => false,
-        'services.domain_connect.provider_id' => 'tinyhelm.io',
+        'services.domain_connect.provider_id' => 'tinyhelm.com',
         'services.domain_connect.service_id' => 'hosting',
         'services.domain_connect.key_id' => '_dcpubkeyv1',
         'services.domain_connect.private_key' => $privateKey,

@@ -88,7 +88,7 @@ class CheckProxy
             foreach ($conflicts as $port => $conflict) {
                 if ($conflict) {
                     if ($fromUI) {
-                        throw new \Exception("Port $port is in use.<br>You must stop the process using this port.<br><br>Docs: <a target='_blank' class='dark:text-white hover:underline' href='https://tinyhelm.io/docs'>https://tinyhelm.io/docs</a><br>Discord: <a target='_blank' class='dark:text-white hover:underline' href='https://tinyhelm.io/discord'>https://tinyhelm.io/discord</a>");
+                        throw new \Exception("Port $port is in use.<br>You must stop the process using this port.<br><br>Docs: <a target='_blank' class='dark:text-white hover:underline' href='https://tinyhelm.com/docs'>https://tinyhelm.com/docs</a><br>Discord: <a target='_blank' class='dark:text-white hover:underline' href='https://tinyhelm.com/discord'>https://tinyhelm.com/discord</a>");
                     } else {
                         return false;
                     }

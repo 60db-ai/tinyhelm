@@ -77,12 +77,12 @@ return [
 
     /*
     | Domain Connect (Cloudflare automatic DNS).
-    | Template: resources/domain-connect/tinyhelm.io.hosting.json
+    | Template: resources/domain-connect/tinyhelm.com.hosting.json
     | Publish public key TXT at {key_id}.{syncPubKeyDomain} and onboard with Cloudflare.
     | @see https://developers.cloudflare.com/dns/reference/domain-connect/
     */
     'domain_connect' => [
-        'provider_id' => env('DOMAIN_CONNECT_PROVIDER_ID', 'tinyhelm.io'),
+        'provider_id' => env('DOMAIN_CONNECT_PROVIDER_ID', 'tinyhelm.com'),
         'service_id' => env('DOMAIN_CONNECT_SERVICE_ID', 'hosting'),
         'key_id' => env('DOMAIN_CONNECT_KEY_ID', '_dcpubkeyv1'),
         'private_key' => env('DOMAIN_CONNECT_PRIVATE_KEY'),

@@ -131,7 +131,7 @@ test('shows the SSH error when the new key cannot connect and keeps the old key'
     Livewire::test(Show::class, ['server_uuid' => $this->server->uuid])
         ->call('setPrivateKey', $newKey->id)
         ->assertDispatched('error', fn (string $event, array $params): bool => str_contains($params[0], 'Permission denied (publickey,password).')
-            && str_contains($params[0], 'https://tinyhelm.io/docs/knowledge-base/server/openssh'));
+            && str_contains($params[0], 'https://tinyhelm.com/docs/knowledge-base/server/openssh'));
 
     expect($this->server->fresh()->private_key_id)->toBe($this->currentPrivateKey->id);
 });

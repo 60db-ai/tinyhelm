@@ -206,7 +206,7 @@ After completing these steps, you'll have a fresh development setup.
 
 ## Additional Development Guidelines
 ### Adding a New Service
-To add a new service to TinyHelm, please refer to our documentation: [Adding a New Service](https://tinyhelm.io/docs/get-started/contribute/service)
+To add a new service to TinyHelm, please refer to our documentation: [Adding a New Service](https://tinyhelm.com/docs/get-started/contribute/service)
 
 ### Development for Documentation
-To contribute to the TinyHelm documentation, please refer to this guide: [Contributing to the TinyHelm Documentation](https://tinyhelm.io/docs/get-started/contribute/documentation)
+To contribute to the TinyHelm documentation, please refer to this guide: [Contributing to the TinyHelm Documentation](https://tinyhelm.com/docs/get-started/contribute/documentation)
