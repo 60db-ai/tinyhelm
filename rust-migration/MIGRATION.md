@@ -32,7 +32,8 @@ Each step: port, run `scripts/parity/compare.py` until every role matches, push 
    (Sanctum token lookup, `api.token.team`, API enabled, abilities with root bypass, `read:sensitive`,
    throttle, audit events). Requests it cannot replicate yet (members with access grants, scoped tokens,
    IP allow-lists) are forwarded to Laravel. Parity fixtures (`scripts/parity/fixtures.php`) and harness.
-2. [ ] **Full parity for the 33 native routes** (payload shapes, sensitive masking, audit events on writes).
+2. [x] **Full parity for the 33 native routes** (payload shapes, sensitive masking, validation, audit events on
+   writes): `compare.py` 119/119 across 8 roles. Rare cases are delegated to Laravel and marked `ponytail:`.
 3. [ ] **DB-only controllers**: tags/projects/environments (rest), team, notifications, security keys,
    cloud tokens, S3 storages, cloud-init scripts, integration tokens, destinations, audit events, resources,
    deployments list, scheduled tasks (CRUD), shared env (project/environment/server).

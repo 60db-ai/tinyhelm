@@ -15,6 +15,7 @@ pub mod projects;
 pub mod respond;
 pub mod servers;
 pub mod services;
+pub mod support;
 pub mod tags;
 pub mod team;
 pub mod throttle;
@@ -25,7 +26,7 @@ use sqlx::PgPool;
 /// Shared imports for the handler modules (they also see each other's helpers through it).
 pub(crate) mod prelude {
     pub(crate) use axum::{
-        extract::{Path, Query, State},
+        extract::{Path, State},
         http::StatusCode,
         response::{IntoResponse, Response},
         Extension, Json,
@@ -36,17 +37,27 @@ pub(crate) mod prelude {
 
     pub(crate) use super::audit;
     pub(crate) use super::auth::Ctx;
-    pub(crate) use super::model::{all_to_laravel, to_laravel, ModelSpec};
+    pub(crate) use super::model::{to_laravel, ModelSpec};
     pub(crate) use super::{
         applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
-        services::*, tags::*, team::*,
+        services::*, support::*, tags::*, team::*,
     };
 }
 
 /// Pool on DATABASE_URL (the database Laravel uses). None if unset or unreachable.
 pub async fn pool() -> Option<PgPool> {
     let url = std::env::var("DATABASE_URL").ok()?;
-    match PgPoolOptions::new().max_connections(10).connect(&url).await {
+    // Laravel's pgsql connection runs `SET TIME ZONE 'UTC'` (config/database.php); timestamps written
+    // with now() must match what PHP writes.
+    let options = PgPoolOptions::new()
+        .max_connections(10)
+        .after_connect(|conn, _meta| {
+            Box::pin(async move {
+                sqlx::Executor::execute(conn, "SET TIME ZONE 'UTC'").await?;
+                Ok(())
+            })
+        });
+    match options.connect(&url).await {
         Ok(p) => Some(p),
         Err(e) => {
             tracing::error!("native db connect failed: {e}");

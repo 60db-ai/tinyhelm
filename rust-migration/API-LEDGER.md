@@ -13,7 +13,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/broadcasting/auth` | `BroadcastController@authenticate` | — | proxied | — |
 | POST | `/api/feedback` | `OtherController@feedback` | — | proxied | — |
 | GET | `/api/health` | `OtherController@healthcheck` | — | proxied | — |
-| GET | `/api/v1/applications` | `ApplicationsController@applications` | read | native (applications) | partial |
+| GET | `/api/v1/applications` | `ApplicationsController@applications` | read | native (applications) | full |
 | POST | `/api/v1/applications/dockerfile` | `ApplicationsController@create_dockerfile_application` | write | proxied | — |
 | POST | `/api/v1/applications/dockerimage` | `ApplicationsController@create_dockerimage_application` | write | proxied | — |
 | POST | `/api/v1/applications/private-deploy-key` | `ApplicationsController@create_private_deploy_key_application` | write | proxied | — |
@@ -21,7 +21,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/v1/applications/private-github-app` | `ApplicationsController@create_private_gh_app_application` | write | proxied | — |
 | POST | `/api/v1/applications/public` | `ApplicationsController@create_public_application` | write | proxied | — |
 | DELETE | `/api/v1/applications/{uuid}` | `ApplicationsController@delete_by_uuid` | delete | proxied | — |
-| GET | `/api/v1/applications/{uuid}` | `ApplicationsController@application_by_uuid` | read | native (applications) | partial |
+| GET | `/api/v1/applications/{uuid}` | `ApplicationsController@application_by_uuid` | read | native (applications) | full |
 | PATCH | `/api/v1/applications/{uuid}` | `ApplicationsController@update_by_uuid` | write | proxied | — |
 | POST | `/api/v1/applications/{uuid}/clone` | `ApplicationsController@clone_by_uuid` | write | proxied | — |
 | GET | `/api/v1/applications/{uuid}/destinations` | `ApplicationsController@destinations` | read | proxied | — |
@@ -31,11 +31,11 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/v1/applications/{uuid}/dns` | `DnsController@createApplicationRecord` | write | proxied | — |
 | POST | `/api/v1/applications/{uuid}/dns/replace` | `DnsController@replaceApplicationRecord` | write | proxied | — |
 | DELETE | `/api/v1/applications/{uuid}/dns/{hostname}` | `DnsController@releaseApplicationRecord` | delete | proxied | — |
-| GET | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@envs` | read | native (applications) | partial |
-| PATCH | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@update_env_by_uuid` | write | native (applications) | partial |
-| POST | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@create_env` | write | native (applications) | partial |
+| GET | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@envs` | read | native (applications) | full |
+| PATCH | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@update_env_by_uuid` | write | native (applications) | full |
+| POST | `/api/v1/applications/{uuid}/envs` | `ApplicationsController@create_env` | write | native (applications) | full |
 | PATCH | `/api/v1/applications/{uuid}/envs/bulk` | `ApplicationsController@create_bulk_envs` | write | proxied | — |
-| DELETE | `/api/v1/applications/{uuid}/envs/{env_uuid}` | `ApplicationsController@delete_env_by_uuid` | delete | native (applications) | partial |
+| DELETE | `/api/v1/applications/{uuid}/envs/{env_uuid}` | `ApplicationsController@delete_env_by_uuid` | delete | native (applications) | full |
 | GET | `/api/v1/applications/{uuid}/logs` | `ApplicationsController@logs_by_uuid` | read:sensitive | proxied | — |
 | POST | `/api/v1/applications/{uuid}/migrate` | `ApplicationsController@migrate_by_uuid` | write | proxied | — |
 | POST | `/api/v1/applications/{uuid}/move` | `ApplicationsController@move_by_uuid` | write | proxied | — |
@@ -82,7 +82,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | GET | `/api/v1/cloud-tokens/{uuid}` | `CloudProviderTokensController@show` | read | proxied | — |
 | PATCH | `/api/v1/cloud-tokens/{uuid}` | `CloudProviderTokensController@update` | write | proxied | — |
 | POST | `/api/v1/cloud-tokens/{uuid}/validate` | `CloudProviderTokensController@validateToken` | write | proxied | — |
-| GET | `/api/v1/databases` | `DatabasesController@databases` | read | native (databases) | partial |
+| GET | `/api/v1/databases` | `DatabasesController@databases` | read | native (databases) | full |
 | POST | `/api/v1/databases/clickhouse` | `DatabasesController@create_database_clickhouse` | write | proxied | — |
 | POST | `/api/v1/databases/dragonfly` | `DatabasesController@create_database_dragonfly` | write | proxied | — |
 | POST | `/api/v1/databases/keydb` | `DatabasesController@create_database_keydb` | write | proxied | — |
@@ -93,7 +93,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/v1/databases/redis` | `DatabasesController@create_database_redis` | write | proxied | — |
 | POST | `/api/v1/databases/sqlite` | `DatabasesController@create_database_sqlite` | write | proxied | — |
 | DELETE | `/api/v1/databases/{uuid}` | `DatabasesController@delete_by_uuid` | delete | proxied | — |
-| GET | `/api/v1/databases/{uuid}` | `DatabasesController@database_by_uuid` | read | native (databases) | partial |
+| GET | `/api/v1/databases/{uuid}` | `DatabasesController@database_by_uuid` | read | native (databases) | full |
 | PATCH | `/api/v1/databases/{uuid}` | `DatabasesController@update_by_uuid` | write | proxied | — |
 | GET | `/api/v1/databases/{uuid}/backups` | `DatabasesController@database_backup_details_uuid` | read | proxied | — |
 | POST | `/api/v1/databases/{uuid}/backups` | `DatabasesController@create_backup` | write | proxied | — |
@@ -102,11 +102,11 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | GET | `/api/v1/databases/{uuid}/backups/{scheduled_backup_uuid}/executions` | `DatabasesController@list_backup_executions` | read | proxied | — |
 | DELETE | `/api/v1/databases/{uuid}/backups/{scheduled_backup_uuid}/executions/{execution_uuid}` | `DatabasesController@delete_execution_by_uuid` | delete | proxied | — |
 | POST | `/api/v1/databases/{uuid}/clone` | `DatabasesController@clone_by_uuid` | write | proxied | — |
-| GET | `/api/v1/databases/{uuid}/envs` | `DatabasesController@envs` | read | native (databases) | partial |
-| PATCH | `/api/v1/databases/{uuid}/envs` | `DatabasesController@update_env_by_uuid` | write | native (databases) | partial |
-| POST | `/api/v1/databases/{uuid}/envs` | `DatabasesController@create_env` | write | native (databases) | partial |
+| GET | `/api/v1/databases/{uuid}/envs` | `DatabasesController@envs` | read | native (databases) | full |
+| PATCH | `/api/v1/databases/{uuid}/envs` | `DatabasesController@update_env_by_uuid` | write | native (databases) | full |
+| POST | `/api/v1/databases/{uuid}/envs` | `DatabasesController@create_env` | write | native (databases) | full |
 | PATCH | `/api/v1/databases/{uuid}/envs/bulk` | `DatabasesController@create_bulk_envs` | write | proxied | — |
-| DELETE | `/api/v1/databases/{uuid}/envs/{env_uuid}` | `DatabasesController@delete_env_by_uuid` | delete | native (databases) | partial |
+| DELETE | `/api/v1/databases/{uuid}/envs/{env_uuid}` | `DatabasesController@delete_env_by_uuid` | delete | native (databases) | full |
 | POST | `/api/v1/databases/{uuid}/imports` | `DatabasesController@create_import` | write | proxied | — |
 | POST | `/api/v1/databases/{uuid}/imports/uploads` | `DatabasesController@upload_import` | write | proxied | — |
 | GET | `/api/v1/databases/{uuid}/imports/{activity_id}` | `DatabasesController@show_import` | read | proxied | — |
@@ -184,12 +184,12 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | PATCH | `/api/v1/notifications/telegram` | `NotificationsController@update_telegram` | write | proxied | — |
 | GET | `/api/v1/notifications/webhook` | `NotificationsController@webhook` | read | proxied | — |
 | PATCH | `/api/v1/notifications/webhook` | `NotificationsController@update_webhook` | write | proxied | — |
-| GET | `/api/v1/projects` | `ProjectController@projects` | read | native (projects) | partial |
-| POST | `/api/v1/projects` | `ProjectController@create_project` | write | native (projects) | partial |
-| DELETE | `/api/v1/projects/{uuid}` | `ProjectController@delete_project` | delete | native (projects) | partial |
+| GET | `/api/v1/projects` | `ProjectController@projects` | read | native (projects) | full |
+| POST | `/api/v1/projects` | `ProjectController@create_project` | write | native (projects) | full |
+| DELETE | `/api/v1/projects/{uuid}` | `ProjectController@delete_project` | delete | native (projects) | full |
 | GET | `/api/v1/projects/{uuid}` | `ProjectController@project_by_uuid` | read | proxied | — |
-| PATCH | `/api/v1/projects/{uuid}` | `ProjectController@update_project` | write | native (projects) | partial |
-| GET | `/api/v1/projects/{uuid}/environments` | `ProjectController@get_environments` | read | native (projects) | partial |
+| PATCH | `/api/v1/projects/{uuid}` | `ProjectController@update_project` | write | native (projects) | full |
+| GET | `/api/v1/projects/{uuid}/environments` | `ProjectController@get_environments` | read | native (projects) | full |
 | POST | `/api/v1/projects/{uuid}/environments` | `ProjectController@create_environment` | write | proxied | — |
 | DELETE | `/api/v1/projects/{uuid}/environments/{environment_name_or_uuid}` | `ProjectController@delete_environment` | delete | proxied | — |
 | PATCH | `/api/v1/projects/{uuid}/environments/{environment_name_or_uuid}` | `ProjectController@update_environment` | write | proxied | — |
@@ -222,7 +222,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | GET | `/api/v1/security/keys/{uuid}` | `SecurityController@key_by_uuid` | read | proxied | — |
 | PATCH | `/api/v1/security/keys/{uuid}` | `SecurityController@update_key` | write | proxied | — |
 | POST | `/api/v1/sentinel/push` | `SentinelController@push` | — | proxied | — |
-| GET | `/api/v1/servers` | `ServersController@servers` | read | native (servers) | partial |
+| GET | `/api/v1/servers` | `ServersController@servers` | read | native (servers) | full |
 | POST | `/api/v1/servers` | `ServersController@create_server` | write | proxied | — |
 | POST | `/api/v1/servers/digitalocean` | `DigitalOceanController@createServer` | write | proxied | — |
 | POST | `/api/v1/servers/hetzner` | `HetznerController@createServer` | write | proxied | — |
@@ -233,7 +233,7 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | GET | `/api/v1/servers/{server_uuid}/destinations` | `DestinationsController@index_by_server` | read | proxied | — |
 | POST | `/api/v1/servers/{server_uuid}/destinations` | `DestinationsController@create` | write | proxied | — |
 | DELETE | `/api/v1/servers/{uuid}` | `ServersController@delete_server` | delete | proxied | — |
-| GET | `/api/v1/servers/{uuid}` | `ServersController@server_by_uuid` | read | native (servers) | partial |
+| GET | `/api/v1/servers/{uuid}` | `ServersController@server_by_uuid` | read | native (servers) | full |
 | PATCH | `/api/v1/servers/{uuid}` | `ServersController@update_server` | write | proxied | — |
 | GET | `/api/v1/servers/{uuid}/cloudflare-tunnel` | `ServerCloudflareTunnelController@show` | read | proxied | — |
 | PATCH | `/api/v1/servers/{uuid}/cloudflare-tunnel` | `ServerCloudflareTunnelController@update` | write | proxied | — |
@@ -269,10 +269,10 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/v1/servers/{uuid}/transfer/complete` | `ServerTransferController@complete` | write | proxied | — |
 | GET | `/api/v1/servers/{uuid}/validate` | `OtherController@post_required` | write | proxied | — |
 | POST | `/api/v1/servers/{uuid}/validate` | `ServersController@validate_server` | write | proxied | — |
-| GET | `/api/v1/services` | `ServicesController@services` | read | native (services) | partial |
+| GET | `/api/v1/services` | `ServicesController@services` | read | native (services) | full |
 | POST | `/api/v1/services` | `ServicesController@create_service` | write | proxied | — |
 | DELETE | `/api/v1/services/{uuid}` | `ServicesController@delete_by_uuid` | delete | proxied | — |
-| GET | `/api/v1/services/{uuid}` | `ServicesController@service_by_uuid` | read | native (services) | partial |
+| GET | `/api/v1/services/{uuid}` | `ServicesController@service_by_uuid` | read | native (services) | full |
 | PATCH | `/api/v1/services/{uuid}` | `ServicesController@update_by_uuid` | write | proxied | — |
 | GET | `/api/v1/services/{uuid}/applications` | `ServiceApplicationsController@index` | read | proxied | — |
 | GET | `/api/v1/services/{uuid}/applications/{app_uuid}` | `ServiceApplicationsController@show` | read | proxied | — |
@@ -300,11 +300,11 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | POST | `/api/v1/services/{uuid}/dns` | `DnsController@createServiceRecord` | write | proxied | — |
 | POST | `/api/v1/services/{uuid}/dns/replace` | `DnsController@replaceServiceRecord` | write | proxied | — |
 | DELETE | `/api/v1/services/{uuid}/dns/{hostname}` | `DnsController@releaseServiceRecord` | delete | proxied | — |
-| GET | `/api/v1/services/{uuid}/envs` | `ServicesController@envs` | read | native (services) | partial |
-| PATCH | `/api/v1/services/{uuid}/envs` | `ServicesController@update_env_by_uuid` | write | native (services) | partial |
-| POST | `/api/v1/services/{uuid}/envs` | `ServicesController@create_env` | write | native (services) | partial |
+| GET | `/api/v1/services/{uuid}/envs` | `ServicesController@envs` | read | native (services) | full |
+| PATCH | `/api/v1/services/{uuid}/envs` | `ServicesController@update_env_by_uuid` | write | native (services) | full |
+| POST | `/api/v1/services/{uuid}/envs` | `ServicesController@create_env` | write | native (services) | full |
 | PATCH | `/api/v1/services/{uuid}/envs/bulk` | `ServicesController@create_bulk_envs` | write | proxied | — |
-| DELETE | `/api/v1/services/{uuid}/envs/{env_uuid}` | `ServicesController@delete_env_by_uuid` | delete | native (services) | partial |
+| DELETE | `/api/v1/services/{uuid}/envs/{env_uuid}` | `ServicesController@delete_env_by_uuid` | delete | native (services) | full |
 | GET | `/api/v1/services/{uuid}/logs` | `ServicesController@logs_by_uuid` | read:sensitive | proxied | — |
 | POST | `/api/v1/services/{uuid}/migrate` | `ServicesController@migrate_by_uuid` | write | proxied | — |
 | POST | `/api/v1/services/{uuid}/move` | `ServicesController@move_by_uuid` | write | proxied | — |
@@ -333,16 +333,16 @@ The Rust-only `GET /api/v1/dashboard` (SPA aggregate) is not a Laravel route.
 | GET | `/api/v1/services/{uuid}/vulnerabilities` | `VulnerabilitiesController@service` | read | proxied | — |
 | GET | `/api/v1/settings/email` | `InstanceEmailSettingsController@show` | read | proxied | — |
 | PATCH | `/api/v1/settings/email` | `InstanceEmailSettingsController@update` | write:sensitive | proxied | — |
-| GET | `/api/v1/tags` | `TagsController@tags` | read | native (tags) | partial |
-| POST | `/api/v1/tags` | `TagsController@create` | write | native (tags) | partial |
-| DELETE | `/api/v1/tags/{uuid}` | `TagsController@delete` | delete | native (tags) | partial |
+| GET | `/api/v1/tags` | `TagsController@tags` | read | native (tags) | full |
+| POST | `/api/v1/tags` | `TagsController@create` | write | native (tags) | full |
+| DELETE | `/api/v1/tags/{uuid}` | `TagsController@delete` | delete | native (tags) | full |
 | PATCH | `/api/v1/tags/{uuid}` | `TagsController@update` | write | proxied | — |
-| GET | `/api/v1/team` | `TeamController@current_team` | read | native (team) | partial |
+| GET | `/api/v1/team` | `TeamController@current_team` | read | native (team) | full |
 | PATCH | `/api/v1/team` | `TeamController@update_current_team` | write | proxied | — |
-| GET | `/api/v1/team/envs` | `SharedEnvironmentVariablesController@team_envs` | read | native (team) | partial |
-| POST | `/api/v1/team/envs` | `SharedEnvironmentVariablesController@team_create_env` | write | native (team) | partial |
-| DELETE | `/api/v1/team/envs/{env_id}` | `SharedEnvironmentVariablesController@team_delete_env` | delete | native (team) | partial |
-| PATCH | `/api/v1/team/envs/{env_id}` | `SharedEnvironmentVariablesController@team_update_env` | write | native (team) | partial |
+| GET | `/api/v1/team/envs` | `SharedEnvironmentVariablesController@team_envs` | read | native (team) | full |
+| POST | `/api/v1/team/envs` | `SharedEnvironmentVariablesController@team_create_env` | write | native (team) | full |
+| DELETE | `/api/v1/team/envs/{env_id}` | `SharedEnvironmentVariablesController@team_delete_env` | delete | native (team) | full |
+| PATCH | `/api/v1/team/envs/{env_id}` | `SharedEnvironmentVariablesController@team_update_env` | write | native (team) | full |
 | GET | `/api/v1/team/members` | `TeamController@current_team_members` | read | proxied | — |
 | GET | `/api/v1/teams` | `TeamController@teams` | read | proxied | — |
 | GET | `/api/v1/teams/current` | `TeamController@current_team` | read | proxied | — |

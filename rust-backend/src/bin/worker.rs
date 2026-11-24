@@ -39,6 +39,12 @@ async fn main() {
             .unwrap_or(5),
     );
     let pool = PgPoolOptions::new()
+        .after_connect(|conn, _meta| {
+            Box::pin(async move {
+                sqlx::Executor::execute(conn, "SET TIME ZONE 'UTC'").await?;
+                Ok(())
+            })
+        })
         .max_connections(5)
         .connect(&url)
         .await

@@ -235,7 +235,7 @@ pub async fn instant_remote_process(
 fn ssh_args(server: &ServerConnection, disable_mux: bool) -> Result<Vec<String>, RemoteError> {
     let key_path = ensure_key_file(server)?;
     let mut args: Vec<String> = Vec::new();
-    let mut opt = |args: &mut Vec<String>, value: String| args.extend(["-o".to_string(), value]);
+    let opt = |args: &mut Vec<String>, value: String| args.extend(["-o".to_string(), value]);
     if !disable_mux && env_bool("MUX_ENABLED", true) {
         let socket = runtime_dir("mux")?.join(format!("mux_{}", server.uuid));
         opt(&mut args, "ControlMaster=auto".into());
