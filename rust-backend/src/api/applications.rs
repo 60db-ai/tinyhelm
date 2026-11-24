@@ -196,7 +196,7 @@ pub async fn list_applications(State(state): State<crate::AppState>, req: Reques
                 Err(e) => return query_err("list_applications tags", e),
             }
         }
-        match serialize_application(pool, row, access, false).await {
+        match serialize_application(pool, row, access, false, !access.sensitive).await {
             Ok(v) => out.push(v),
             Err(e) => return query_err("list_applications relations", e),
         }
@@ -235,10 +235,47 @@ pub async fn get_application(
         // ponytail: see list_applications.
         return crate::proxy(State(state), req).await;
     }
-    match serialize_application(pool, row, access, true).await {
+    match serialize_application(pool, row, access, true, !access.sensitive).await {
         Ok(v) => ok_json(v),
         Err(e) => query_err("get_application relations", e),
     }
+}
+
+/// `Application::toArray()` as other models embed it when a controller lazy-loads the relation (a
+/// scheduled task's `application`, a file storage's `resource`): the model's `$hidden` applies for every
+/// token (the non-sensitive API shape) plus `id` and `private_key_id`, without `settings`. Server secrets
+/// (`validation_logs`, the saved proxy configuration) stay unless `strip_server_secrets`, which callers set
+/// when the response goes through `serializeApiResponse()` for a token that may not read them.
+/// None for a missing or soft-deleted application (the relation is null then).
+pub(crate) async fn embedded_application(
+    pool: &PgPool,
+    app_id: i64,
+    app_key: Option<&[u8; 32]>,
+    strip_server_secrets: bool,
+) -> Result<Option<Value>, sqlx::Error> {
+    let row = sqlx::query_scalar::<_, Value>(
+        r#"SELECT to_jsonb(a) || jsonb_build_object(
+            'additional_servers_count', (SELECT count(*) FROM additional_destinations ad
+                JOIN servers s ON s.id = ad.server_id AND s.deleted_at IS NULL WHERE ad.application_id = a.id),
+            'additional_networks_count', (SELECT count(*) FROM additional_destinations ad
+                JOIN standalone_dockers sd ON sd.id = ad.standalone_docker_id WHERE ad.application_id = a.id))
+        FROM applications a WHERE a.id = $1 AND a.deleted_at IS NULL"#,
+    )
+    .bind(app_id)
+    .fetch_optional(pool)
+    .await?;
+    let Some(row) = row else { return Ok(None) };
+    let private_key_id = row.get("private_key_id").cloned().unwrap_or(Value::Null);
+    let access = Access {
+        sensitive: false,
+        app_key,
+    };
+    let mut app = serialize_application(pool, row, access, false, strip_server_secrets).await?;
+    if let Value::Object(m) = &mut app {
+        m.insert("id".into(), Value::from(app_id));
+        m.insert("private_key_id".into(), private_key_id);
+    }
+    Ok(Some(app))
 }
 
 fn has_generated_compose(row: &Value) -> bool {
@@ -255,7 +292,7 @@ fn url_query_value(query: &str, key: &str) -> Option<String> {
     })
 }
 
-fn percent_decode(s: &str) -> String {
+pub(crate) fn percent_decode(s: &str) -> String {
     let bytes = s.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;
@@ -290,6 +327,7 @@ async fn serialize_application(
     row: Value,
     access: Access<'_>,
     with_settings: bool,
+    strip_server_secrets: bool,
 ) -> Result<Value, sqlx::Error> {
     let raw = match row {
         Value::Object(m) => m,
@@ -368,7 +406,8 @@ async fn serialize_application(
     }
 
     let mut out = Value::Object(app);
-    if !access.sensitive {
+    // `serializeApiResponse()` strips server secrets unless the token may read them.
+    if strip_server_secrets {
         remove_server_proxy_secrets(&mut out);
     }
     Ok(out)

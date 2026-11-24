@@ -6,15 +6,19 @@
 
 pub mod applications;
 pub mod audit;
+pub mod audit_events;
 pub mod auth;
 pub mod dashboard;
 pub mod databases;
+pub mod deployments;
 pub mod envs;
 pub mod model;
 pub mod projects;
 pub mod respond;
+pub mod scheduled_tasks;
 pub mod servers;
 pub mod services;
+pub mod storages;
 pub mod support;
 pub mod tags;
 pub mod team;
@@ -42,6 +46,7 @@ pub(crate) mod prelude {
         applications::*, dashboard::*, databases::*, envs::*, projects::*, respond::*, servers::*,
         services::*, support::*, tags::*, team::*,
     };
+    pub(crate) use super::{audit_events::*, deployments::*, scheduled_tasks::*, storages::*};
 }
 
 /// Pool on DATABASE_URL (the database Laravel uses). None if unset or unreachable.
@@ -83,6 +88,10 @@ pub const GROUPS: &[&str] = &[
     "databases",
     "tags",
     "team",
+    "scheduled_tasks",
+    "audit_events",
+    "deployments",
+    "destinations",
 ];
 
 /// Native routes for the enabled groups, all behind [`auth::native_guard`].
@@ -169,6 +178,50 @@ pub fn router(state: AppState, enabled: &[&str]) -> Router<AppState> {
         r = r
             .route("/api/v1/tags", get(list_tags).post(create_tag))
             .route("/api/v1/tags/:uuid", delete(delete_tag));
+    }
+    if on("scheduled_tasks") {
+        r = r
+            .route(
+                "/api/v1/applications/:uuid/scheduled-tasks",
+                get(list_app_scheduled_tasks).post(create_app_scheduled_task),
+            )
+            .route(
+                "/api/v1/applications/:uuid/scheduled-tasks/:task_uuid",
+                patch(update_app_scheduled_task).delete(delete_app_scheduled_task),
+            )
+            .route(
+                "/api/v1/applications/:uuid/scheduled-tasks/:task_uuid/executions",
+                get(list_app_task_executions),
+            );
+    }
+    if on("audit_events") {
+        r = r.route("/api/v1/audit-events", get(list_audit_events));
+    }
+    if on("deployments") {
+        r = r
+            .route("/api/v1/deployments", get(list_deployments))
+            .route("/api/v1/deployments/:uuid", get(get_deployment))
+            .route(
+                "/api/v1/deployments/applications/:uuid",
+                get(list_application_deployments),
+            );
+    }
+    if on("destinations") {
+        r = r
+            .route("/api/v1/destinations", get(list_destinations))
+            .route("/api/v1/destinations/:uuid", get(get_destination))
+            .route(
+                "/api/v1/servers/:server_uuid/destinations",
+                get(list_server_destinations),
+            )
+            .route(
+                "/api/v1/applications/:uuid/destinations",
+                get(list_application_destinations),
+            )
+            .route(
+                "/api/v1/applications/:uuid/storages",
+                get(list_application_storages),
+            );
     }
     // A path served natively for some methods must still reach Laravel for the others
     // (e.g. PATCH /applications/{uuid}/envs/bulk matches the DELETE-only {env_uuid} route).
