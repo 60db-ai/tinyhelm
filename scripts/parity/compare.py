@@ -141,6 +141,17 @@ def read_cases(tokens: dict[str, str], ids: dict[str, str]) -> list[Case]:
         Case("owner_read POST /projects", "POST", "/projects", tokens["owner_read"], {"name": "parity-denied"}),
         Case("owner_read POST /team/envs", "POST", "/team/envs", tokens["owner_read"], {"key": "P_DENIED", "value": "x"}),
         Case("owner_deploy DELETE /tags/x", "DELETE", "/tags/does-not-exist", tokens["owner_deploy"]),
+        # Env validation and lookup failures (no side effects).
+        Case("owner_write POST app /envs invalid", "POST", f"/applications/{ids['application']}/envs", tokens["owner_write"],
+             {"key": "1BAD", "is_literal": "yes", "extra": 1}),
+        Case("owner_write POST db /envs missing key", "POST", f"/databases/{ids['database']}/envs", tokens["owner_write"], {"value": 5}),
+        Case("owner_write PATCH app /envs unknown key", "PATCH", f"/applications/{ids['application']}/envs", tokens["owner_write"],
+             {"key": "PARITY_DOES_NOT_EXIST", "value": "x"}),
+        Case("owner_write PATCH db /envs unknown key", "PATCH", f"/databases/{ids['database']}/envs", tokens["owner_write"],
+             {"key": "PARITY_DOES_NOT_EXIST"}),
+        Case("owner_write POST /envs unknown app", "POST", "/applications/does-not-exist/envs", tokens["owner_write"], {"key": "A"}),
+        Case("owner_write DELETE db /envs unknown env", "DELETE", f"/databases/{ids['database']}/envs/nope", tokens["owner_write"]),
+        Case("owner_read POST app /envs", "POST", f"/applications/{ids['application']}/envs", tokens["owner_read"], {"key": "A"}),
     ]
     return cases
 
@@ -150,6 +161,39 @@ WRITE_SPECS = [
     ("projects", "/projects", lambda side, stamp: {"name": f"parity-{side}-{stamp}"}, "uuid", "/projects/{id}"),
     ("team envs", "/team/envs", lambda side, stamp: {"key": f"PARITY_{side.upper()}_{stamp}", "value": "v"}, "id", "/team/envs/{id}"),
 ]
+
+
+def paired_env_checks(laravel: str, rust: str, token: str, ids: dict[str, str]) -> list[tuple[str, list[str]]]:
+    """Resource env vars: create, update, then delete on each side with distinct keys, comparing every step."""
+    stamp = str(int(time.time()))
+    checks: list[tuple[str, list[str]]] = []
+    for label, base_path in (("app env", f"/applications/{ids['application']}"), ("db env", f"/databases/{ids['database']}")):
+        keys = {side: f"PARITY_ENV_{side.upper()}_{stamp}" for side in ("laravel", "rust")}
+        bases = {"laravel": laravel, "rust": rust}
+        created = {s: call(bases[s], "POST", base_path + "/envs", token, {"key": keys[s], "value": " v1 ", "is_literal": True}) for s in bases}
+        checks.append((f"create {label}", compare(created["laravel"], created["rust"], VOLATILE_KEYS)))
+        updated = {s: call(bases[s], "PATCH", base_path + "/envs", token, {"key": keys[s], "value": "v2", "comment": "c", "is_shown_once": False}) for s in bases}
+        checks.append((f"update {label}", compare(updated["laravel"], updated["rust"], VOLATILE_KEYS | {"env_key", "real_value", "value"})))
+        unchanged = {s: call(bases[s], "PATCH", base_path + "/envs", token, {"key": keys[s], "value": "v2"}) for s in bases}
+        checks.append((f"no-op update {label}", compare(unchanged["laravel"], unchanged["rust"], VOLATILE_KEYS)))
+        listed = {s: call(bases[s], "GET", base_path + "/envs", token, None) for s in bases}
+        checks.append((f"list after create {label}", [] if listed["laravel"].status == listed["rust"].status else ["status differs"]))
+        deleted: dict[str, Result] = {}
+        for s in bases:
+            env_list = listed[s].body if isinstance(listed[s].body, list) else []
+            for env in env_list:
+                if isinstance(env, dict) and env.get("key") == keys[s]:
+                    if not env.get("is_preview"):
+                        deleted[s] = call(bases[s], "DELETE", f"{base_path}/envs/{env['uuid']}", token, None)
+            # The application's preview copy goes too, so no PARITY rows stay behind.
+            for env in env_list:
+                if isinstance(env, dict) and env.get("key") == keys[s] and env.get("is_preview"):
+                    call(bases[s], "DELETE", f"{base_path}/envs/{env['uuid']}", token, None)
+        if len(deleted) == 2:
+            checks.append((f"delete {label}", compare(deleted["laravel"], deleted["rust"], VOLATILE_KEYS)))
+        else:
+            checks.append((f"delete {label}", [f"could not find created env on: {sorted(set(bases) - set(deleted))}"]))
+    return checks
 
 
 def paired_write_checks(laravel: str, rust: str, token: str) -> list[tuple[str, list[str]]]:
@@ -209,7 +253,9 @@ def main() -> int:
         failures += report(case.label, compare(lv, rs), args.verbose)
 
     if not args.no_writes and (not args.only or "write" in args.only):
-        for label, problems in paired_write_checks(args.laravel, args.rust, tokens["owner_write"]):
+        writes = paired_write_checks(args.laravel, args.rust, tokens["owner_write"])
+        writes += paired_env_checks(args.laravel, args.rust, tokens["owner_write"], ids)
+        for label, problems in writes:
             total += 1
             failures += report(f"owner_write {label}", problems, args.verbose)
 
