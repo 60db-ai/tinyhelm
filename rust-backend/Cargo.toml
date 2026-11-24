@@ -19,6 +19,8 @@ serde_json = "1.0.137"
 sqlx = { version = "0.8.3", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "json"] }
 sha2 = "0.10.8"
 hex = "0.4.3"
+# Laravel validation patterns (Unicode classes like \p{L}).
+regex = "1.11.1"
 cuid2 = "0.1.4"
 # Laravel-compatible encryption (AES-256-CBC + HMAC-SHA256) for environment variable values.
 aes = "0.8.4"
